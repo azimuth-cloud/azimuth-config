@@ -1,3 +1,4 @@
 # azimuth-config
 
-This repository contains the Azimuth configuration used for the CFMS portal.
+This repository provides base configurations for deploying the Azimuth portal, and
+an example concrete environment.
