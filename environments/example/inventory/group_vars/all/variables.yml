@@ -77,8 +77,8 @@ azimuth_current_cloud_name: example
 # The label for the current cloud
 azimuth_current_cloud_label: Example
 # The auth URL for the target OpenStack cloud
-azimuth_openstack_auth_url: https://arcus.openstack.hpc.cam.ac.uk:5000/v3
+azimuth_openstack_auth_url: https://cloud.example.com:5000/v3
 
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # should be the id of a Rocky 8 image that will be used for Slurm clusters
-azimuth_caas_stackhpc_slurm_appliance_rocky8_image: aebeee6a-1435-42fc-91f7-edc861a2d8cf
+azimuth_caas_stackhpc_slurm_appliance_rocky8_image: "<rocky 8 image id>"
