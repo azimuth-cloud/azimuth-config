@@ -48,7 +48,7 @@ This repository also contains an example of a concrete environment in
 A site may wish to define mixin environments containing site-specific information that is common
 across several concrete environments, e.g. image and flavor IDs or the location of an ACME server.
 
-An typical layering of inventories might be:
+A typical layering of inventories might be:
 
 ```
 base -> singlenode -> site -> development
