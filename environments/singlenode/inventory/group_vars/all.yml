@@ -1,0 +1,35 @@
+# Set the install_mode variable that is used by the provision playbook to select a code path
+install_mode: singlenode
+
+# Give the node a name corresponding to the environment
+infra_name: "azimuth-{{ azimuth_config_environment }}"
+
+# Use the external IP for the infra as the Zenith SSHD host
+zenith_sshd_host: "{{ infra_external_ip }}"
+# Port 22 is used for SSH access to the host, so use a different port for the Zenith SSHD
+zenith_sshd_service_port: 2222
+
+# Expose the ports for the ingress controller and Zenith SSHD
+_ingress_exposed_port_ranges:
+  - name: http
+    min: 80
+    max: 80
+  - name: https
+    min: 443
+    max: 443
+_zenith_exposed_port_ranges: >-
+  {{-
+    [
+      {
+        "name": "zenith_sshd",
+        "min": zenith_sshd_service_port,
+        "max": zenith_sshd_service_port
+      }
+    ]
+    if azimuth_apps_enabled
+    else []
+  }}
+infra_exposed_port_ranges: "{{ _ingress_exposed_port_ranges + _zenith_exposed_port_ranges }}"
+
+# Use a single replica for Consul
+consul_server_replicas: 1

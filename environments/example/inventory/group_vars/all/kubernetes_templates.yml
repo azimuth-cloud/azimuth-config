@@ -1,0 +1,88 @@
+#####
+# This file defines the available Kubernetes cluster templates
+#
+# Templates can be defined in any way that the operator desires
+# Here, a mixin approach is demonstrated to avoid duplication between templates
+#####
+
+azimuth_capi_operator_mixin_kube_1_22_6:
+  global:
+    kubernetesVersion: 1.22.6
+  machineImage: ubuntu-2004-kube-v1.22.6
+  machineImageId: "<image id for 1.22.6 image>"
+
+azimuth_capi_operator_mixin_kube_1_23_3:
+  global:
+    kubernetesVersion: 1.23.3
+  machineImage: ubuntu-2004-kube-v1.23.3
+  machineImageId: "<image id for 1.23.3 image>"
+
+# This mixin provisions Kubernetes nodes on the same network that Azimuth creates for
+# regular VMs, rather than each cluster having its own network
+azimuth_capi_operator_mixin_portal_net:
+  clusterNetworking:
+    internalNetwork:
+      networkFilter:
+        tags: portal-internal
+
+# This mixin provisions Kubernetes nodes on an SR-IOV enabled VLAN, with SR-IOV enabled ports
+# This requires that a VLAN with the given tag is made available to each project (it doesn't
+# have to be the same VLAN, but the tag must be present)
+azimuth_capi_operator_mixin_sriov:
+  clusterNetworking:
+    internalNetwork:
+      networkFilter:
+        tags: sriov-vlan
+  controlPlane:
+    machineNetworking:
+      ports:
+        - vnicType: direct
+  nodeGroupDefaults:
+    machineNetworking:
+      ports:
+        - vnicType: direct
+  # Because SR-IOV ports don't have any port security, we can tell
+  # Calico that it only needs to apply the VXLAN at the cluster boundary
+  addons:
+    cni:
+      calico:
+        installation:
+          calicoNetwork:
+            ipPools:
+              - cidr: __KUBEADM_POD_CIDR__
+                encapsulation: VXLANCrossSubnet
+
+# Build the templates by composing the mixins together
+azimuth_capi_operator_cluster_templates:
+  - name: kube-1-22-6
+    label: v1.22.6
+    description: Kubernetes 1.22.6 with HA control plane.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_22_6 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+  - name: kube-1-23-3
+    label: v1.23.3
+    description: Kubernetes 1.23.3 with HA control plane.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_23_3 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+  - name: kube-1-22-6-sriov
+    label: v1.22.6 / SR-IOV
+    description: Kubernetes 1.22.6 with HA control plane and SR-IOV enabled networking.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_22_6 |
+          combine(azimuth_capi_operator_mixin_sriov)
+      }}
+  - name: kube-1-23-3-sriov
+    label: v1.23.3 / SR-IOV
+    description: Kubernetes 1.23.3 with HA control plane and SR-IOV enabled networking.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_23_3 |
+          combine(azimuth_capi_operator_mixin_sriov)
+      }}

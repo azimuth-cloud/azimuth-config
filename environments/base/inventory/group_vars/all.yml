@@ -1,0 +1,77 @@
+#####
+# This file contains defaults that apply to all hosts
+#####
+
+# Convert envvars for the active environment into Ansible variables
+azimuth_config_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ROOT') }}"
+azimuth_config_environment: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT') }}"
+azimuth_config_environment_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT_ROOT') }}"
+
+# If the task is running locally, use local work and bin directories
+# Otherwise, use directories on the host
+local_bin_directory: "{{ (azimuth_config_root, '.bin') | path_join }}"
+local_work_directory: "{{ (azimuth_config_root, '.work') | path_join }}"
+bin_directory: "{{ local_bin_directory if ansible_connection == 'local' else '/usr/local/bin' }}"
+work_directory: "{{ local_work_directory if ansible_connection == 'local' else ansible_env.HOME }}"
+
+# Use the configured bin and work directories for Terraform
+terraform_binary_directory: "{{ bin_directory }}"
+# Use the local work directory for the Terraform project
+terraform_project_path: "{{ (work_directory, 'terraform') | path_join }}"
+# Get the Terraform backend type from the environment variables
+terraform_backend_type: "{{ lookup('env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') | default('local', True) }}"
+
+# Use the configured work directory for prepping Cluster API and AWX manifests
+clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_join }}"
+awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
+
+certmanager_enabled: yes
+harbor_enabled: yes
+
+# Create a proxy cache project for public Docker Hub images
+harbor_proxy_cache_projects:
+  - name: dockerhub-public
+    registry: docker.io
+    type: docker-hub
+    url: https://hub.docker.com
+
+# Azimuth features to enable
+azimuth_apps_enabled: yes
+azimuth_kubernetes_enabled: yes
+azimuth_clusters_enabled: yes
+
+# The base domain for Azimuth ingress resources
+# This should be set by the concrete environment
+ingress_base_domain: "{{ undef(hint = 'ingress_base_domain is required') }}"
+# The subdomain that should be used for the portal
+ingress_azimuth_portal_subdomain: portal
+# The subdomain that should be used for the registrar
+ingress_zenith_registrar_subdomain: registrar
+# The subdomain that should be used for the Harbor core
+ingress_harbor_core_subdomain: registry
+# The subdomain that should be used for the Harbor notary
+ingress_harbor_notary_subdomain: notary
+
+# Annotations for Azimuth ingress resources
+ingress_annotations: {}
+
+# A pre-existing wildcard certificate and key for the base domain
+ingress_tls_wildcard_certificate:
+ingress_tls_wildcard_key: "{{ undef(hint = 'ingress_tls_wildcard_key is required') }}"
+
+# TLS-related annotations, e.g. for cert-manager
+# If cert-manager + the cluster issuer are enabled, the required annotation to use the issuer
+# will be picked up by default
+# If specified, the wildcard certificate will take precedence over this
+ingress_tls_annotations: >-
+  {{
+    certmanager_ingress_annotations
+    if not ingress_tls_wildcard_certificate and certmanager_ingress_annotations is defined
+    else {}
+  }}
+
+# Indicates if TLS should be enabled
+ingress_tls_enabled: "{{ not not (ingress_tls_wildcard_certificate or ingress_tls_annotations) }}"
+# The name of the secret containing the wildcard certificate
+ingress_tls_secret_name: "{{ 'azimuth-tls' if ingress_tls_wildcard_certificate else None }}"
+

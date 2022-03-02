@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+#####
+## This script SSHs to the Terraform-provisioned seed node by querying the Terraform state for
+## connection details
+#####
+
+set -e
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
+fi
+
+AZIMUTH_TERRAFORM_BACKEND_TYPE="${AZIMUTH_TERRAFORM_BACKEND_TYPE:-local}"
+if [ "$AZIMUTH_TERRAFORM_BACKEND_TYPE" = "local" ]; then
+    # If the Terraform backend is local, that means the provisioning is run on the current host
+    # Hence there should be a pre-existing Terraform project directory we can point at
+    terraform_dir="${AZIMUTH_TERRAFORM_LOCAL_PATH:-"$AZIMUTH_CONFIG_ROOT/.work/terraform"}"
+else
+    echo "Cannot handle Terraform backend type - $AZIMUTH_TERRAFORM_BACKEND_TYPE" 2>&1
+    exit 1
+fi
+
+# Read the required variables from the Terraform state
+tfstate_file="$(mktemp)"
+terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
+node_ip="$(jq -r '.outputs.cluster_gateway_ip.value' "$tfstate_file")"
+# Write the SSH key to a temporary file
+deploy_key="$(mktemp)"
+jq -r '.outputs.cluster_ssh_private_key.value' "$tfstate_file" > "$deploy_key"
+
+# Run the SSH command
+exec ssh -o UserKnownHostsFile=/dev/null -A -i $deploy_key ubuntu@$node_ip "$@"

@@ -1,0 +1,7 @@
+# Set the install_mode variable that is used by the provision playbook to select a code path
+install_mode: ha
+
+# Give the seed node a name corresponding to the environment
+infra_name: "azimuth-{{ azimuth_config_environment }}-seed"
+# Give the HA cluster a name corresponding to the environment
+capi_cluster_release_name: "azimuth-{{ azimuth_config_environment }}"

@@ -1,0 +1,59 @@
+#####
+# This script activates the specified environment
+#
+# It needs to be sourced rather than just executed as it sets environment variables
+# for the current shell
+#####
+
+if [ -z "$1" ]; then
+    echo "Usage: source /path/to/activate [environment]" >&2
+    return 1
+fi
+
+AZIMUTH_CONFIG_ENVIRONMENT="$1"
+AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
+AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
+
+if [ ! -d "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Unrecognised environment" 2>&1
+    return 1
+fi
+
+ANSIBLE_CONFIG="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/ansible.cfg"
+if [ ! -f "$ANSIBLE_CONFIG" ]; then
+    echo "Specified environment does not contain an ansible.cfg" 2>&1
+    return 1
+fi
+
+# Configure OpenStack connectivity
+OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
+OS_CLOUD="openstack"
+if [ ! -f "$OS_CLIENT_CONFIG_FILE" ]; then
+    echo "Specified environment does not contain a clouds.yaml" 2>&1
+    return 1
+fi
+
+# Only export the environment variables if the environment is a concrete environment
+export \
+  AZIMUTH_CONFIG_ENVIRONMENT \
+  AZIMUTH_CONFIG_ROOT \
+  AZIMUTH_CONFIG_ENVIRONMENT_ROOT \
+  ANSIBLE_CONFIG \
+  OS_CLIENT_CONFIG_FILE \
+  OS_CLOUD
+
+# Source any variables from an env file in the config root
+if [ -f "$AZIMUTH_CONFIG_ROOT/env" ]; then
+  set -a
+  source "$AZIMUTH_CONFIG_ROOT/env"
+  set +a
+fi
+
+# Also export any variables in an env file in the environment
+if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" ]; then
+  set -a
+  source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env"
+  set +a
+fi
+
+echo "Activated environment at $AZIMUTH_CONFIG_ENVIRONMENT_ROOT"
