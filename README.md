@@ -5,7 +5,7 @@ This repository contains utilities and configuration for managing deployments of
 from the [azimuth-ops Ansible collection](https://github.com/stackhpc/ansible-collection-azimuth-ops)
 to deploy and manage instances of Azimuth and it's dependencies.
 
-## Environments
+## Environments
 
 The repository is designed to be forked for a specific site and contains configuration for
 multiple environments. Some of these environments are "concrete", meaning that they provide
