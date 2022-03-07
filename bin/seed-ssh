@@ -18,8 +18,13 @@ if [ "$AZIMUTH_TERRAFORM_BACKEND_TYPE" = "local" ]; then
     # Hence there should be a pre-existing Terraform project directory we can point at
     terraform_dir="${AZIMUTH_TERRAFORM_LOCAL_PATH:-"$AZIMUTH_CONFIG_ROOT/.work/terraform"}"
 else
-    echo "Cannot handle Terraform backend type - $AZIMUTH_TERRAFORM_BACKEND_TYPE" 2>&1
-    exit 1
+    # If the Terraform backend type is something other than local, make a terraform
+    # directory containing a backend configuration that specifies the type
+    # The rest of the configuration should come from environment variables
+    terraform_dir="$AZIMUTH_CONFIG_ROOT/.work/terraform"
+    mkdir -p "$terraform_dir"
+    echo -e "terraform {\n  backend \"${AZIMUTH_TERRAFORM_BACKEND_TYPE}\" {}\n}" > "$terraform_dir/backend.tf"
+    terraform -chdir="$terraform_dir" init
 fi
 
 # Read the required variables from the Terraform state
