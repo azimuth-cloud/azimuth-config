@@ -41,14 +41,14 @@ export \
 # Source any variables from an env file in the config root
 if [ -f "$AZIMUTH_CONFIG_ROOT/env" ]; then
   set -a
-  source "$AZIMUTH_CONFIG_ROOT/env"
+  source "$AZIMUTH_CONFIG_ROOT/env" || return 1
   set +a
 fi
 
 # Also export any variables in an env file in the environment
 if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" ]; then
   set -a
-  source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env"
+  source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" || return 1
   set +a
 fi
 
