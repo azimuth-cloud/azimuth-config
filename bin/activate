@@ -28,10 +28,6 @@ fi
 # Configure OpenStack connectivity
 OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
 OS_CLOUD="openstack"
-if [ ! -f "$OS_CLIENT_CONFIG_FILE" ]; then
-    echo "Specified environment does not contain a clouds.yaml" 2>&1
-    return 1
-fi
 
 # Only export the environment variables if the environment is a concrete environment
 export \
