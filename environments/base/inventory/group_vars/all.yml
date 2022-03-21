@@ -10,7 +10,7 @@ azimuth_config_environment_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT_R
 # If the task is running locally, use local work and bin directories
 # Otherwise, use directories on the host
 local_bin_directory: "{{ (azimuth_config_root, '.bin') | path_join }}"
-local_work_directory: "{{ (azimuth_config_root, '.work') | path_join }}"
+local_work_directory: "{{ (azimuth_config_root, '.work', azimuth_config_environment) | path_join }}"
 bin_directory: "{{ local_bin_directory if ansible_connection == 'local' else '/usr/local/bin' }}"
 work_directory: "{{ local_work_directory if ansible_connection == 'local' else ansible_env.HOME }}"
 
