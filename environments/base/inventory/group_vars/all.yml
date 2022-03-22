@@ -28,6 +28,8 @@ awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 # Enable cert-manager by default
 # By default, a cluster issuer will be created that uses ZeroSSL to issue certificates
 certmanager_enabled: yes
+# By default, only enable the cluster issuer when not using a wildcard certificate
+certmanager_acmehttp01issuer_enabled: "{{ not ingress_tls_wildcard_certificate }}"
 
 # Create a mirror registry in Harbor for public Docker Hub images by default
 harbor_enabled: yes
@@ -58,8 +60,15 @@ ingress_harbor_notary_subdomain: notary
 ingress_annotations: {}
 
 # A pre-existing wildcard certificate and key for the base domain
-ingress_tls_wildcard_certificate:
-ingress_tls_wildcard_key: "{{ undef(hint = 'ingress_tls_wildcard_key is required') }}"
+# These should be dropped in to the environment as {environment}/tls/tls.{crt,key}
+#   The certificate file is allowed not to exist, as usage is gated on it
+ingress_tls_wildcard_certificate_file: "{{ (azimuth_config_environment_root, 'tls', 'tls.crt') | path_join }}"
+#   We ignore errors from the lookup as the file is allowed not to exist
+#   In that case, we use cert-manager annotations if available, else TLS is disabled
+ingress_tls_wildcard_certificate: "{{ lookup('file', ingress_tls_wildcard_certificate_file, errors = 'ignore') or None }}"
+#   The key file must exist, but is only used when the certificate file is present
+ingress_tls_wildcard_key_file: "{{ (azimuth_config_environment_root, 'tls', 'tls.key') | path_join }}"
+ingress_tls_wildcard_key: "{{ lookup('file', ingress_tls_wildcard_key_file) }}"
 
 # TLS-related annotations, e.g. for cert-manager
 # If cert-manager + the cluster issuer are enabled, the required annotation to use the issuer
@@ -76,4 +85,3 @@ ingress_tls_annotations: >-
 ingress_tls_enabled: "{{ not not (ingress_tls_wildcard_certificate or ingress_tls_annotations) }}"
 # The name of the secret containing the wildcard certificate
 ingress_tls_secret_name: "{{ 'azimuth-tls' if ingress_tls_wildcard_certificate else None }}"
-
