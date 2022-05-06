@@ -17,12 +17,15 @@ infra_fixed_floatingip: "<pre-allocated floating ip>"
 # OR
 # The name of the floating IP pool to allocate a floating IP from
 infra_floatingip_pool: "<floating ip pool>"
+# OR
+# The ID of a provisioning network that will be used to access the seed node
+infra_provisioning_network_id: "<provisioning network id>"
 
 # The key of an Ubuntu 20.04 image in the infra_community_images variable to use for the node
 infra_image_key: ubuntu_2004_20220411
 # OR
 # The image id of an Ubuntu 20.04 image to use for the node
-# infra_image_id: "<image id>"
+infra_image_id: "<image id>"
 
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
