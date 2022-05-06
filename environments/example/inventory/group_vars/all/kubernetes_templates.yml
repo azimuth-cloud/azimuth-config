@@ -5,17 +5,20 @@
 # Here, a mixin approach is demonstrated to avoid duplication between templates
 #####
 
-azimuth_capi_operator_mixin_kube_1_22_6:
+azimuth_capi_operator_mixin_kube_1_21_11:
   global:
-    kubernetesVersion: 1.22.6
-  machineImage: ubuntu-2004-kube-v1.22.6
-  machineImageId: "<image id for 1.22.6 image>"
+    kubernetesVersion: 1.21.11
+  machineImageId: "{{ infra_community_image_info.kube_1_21_11 }}"
 
-azimuth_capi_operator_mixin_kube_1_23_3:
+azimuth_capi_operator_mixin_kube_1_22_8:
   global:
-    kubernetesVersion: 1.23.3
-  machineImage: ubuntu-2004-kube-v1.23.3
-  machineImageId: "<image id for 1.23.3 image>"
+    kubernetesVersion: 1.22.8
+  machineImageId: "{{ infra_community_image_info.kube_1_22_8 }}"
+
+azimuth_capi_operator_mixin_kube_1_23_5:
+  global:
+    kubernetesVersion: 1.23.5
+  machineImageId: "{{ infra_community_image_info.kube_1_23_5 }}"
 
 # This mixin provisions Kubernetes nodes on the same network that Azimuth creates for
 # regular VMs, rather than each cluster having its own network
@@ -54,35 +57,51 @@ azimuth_capi_operator_mixin_sriov:
 
 # Build the templates by composing the mixins together
 azimuth_capi_operator_cluster_templates:
-  - name: kube-1-22-6
-    label: v1.22.6
-    description: Kubernetes 1.22.6 with HA control plane.
+  - name: kube-1-21-11
+    label: v1.21.11
+    description: Kubernetes 1.21.11 with HA control plane.
     values: >-
       {{
-        azimuth_capi_operator_mixin_kube_1_22_6 |
+        azimuth_capi_operator_mixin_kube_1_21_11 |
           combine(azimuth_capi_operator_mixin_portal_net)
       }}
-  - name: kube-1-23-3
-    label: v1.23.3
-    description: Kubernetes 1.23.3 with HA control plane.
+  - name: kube-1-22-8
+    label: v1.22.8
+    description: Kubernetes 1.22.8 with HA control plane.
     values: >-
       {{
-        azimuth_capi_operator_mixin_kube_1_23_3 |
+        azimuth_capi_operator_mixin_kube_1_22_8 |
           combine(azimuth_capi_operator_mixin_portal_net)
       }}
-  - name: kube-1-22-6-sriov
-    label: v1.22.6 / SR-IOV
-    description: Kubernetes 1.22.6 with HA control plane and SR-IOV enabled networking.
+  - name: kube-1-23-5
+    label: v1.23.5
+    description: Kubernetes 1.23.5 with HA control plane.
     values: >-
       {{
-        azimuth_capi_operator_mixin_kube_1_22_6 |
+        azimuth_capi_operator_mixin_kube_1_23_5 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+  - name: kube-1-21-11-sriov
+    label: v1.21.11 / SR-IOV
+    description: Kubernetes 1.21.11 with HA control plane and SR-IOV enabled networking.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_21_11 |
           combine(azimuth_capi_operator_mixin_sriov)
       }}
-  - name: kube-1-23-3-sriov
-    label: v1.23.3 / SR-IOV
-    description: Kubernetes 1.23.3 with HA control plane and SR-IOV enabled networking.
+  - name: kube-1-22-8-sriov
+    label: v1.22.8 / SR-IOV
+    description: Kubernetes 1.22.8 with HA control plane and SR-IOV enabled networking.
     values: >-
       {{
-        azimuth_capi_operator_mixin_kube_1_23_3 |
+        azimuth_capi_operator_mixin_kube_1_22_8 |
+          combine(azimuth_capi_operator_mixin_sriov)
+      }}
+  - name: kube-1-23-5-sriov
+    label: v1.23.5 / SR-IOV
+    description: Kubernetes 1.23.5 with HA control plane and SR-IOV enabled networking.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_23_5 |
           combine(azimuth_capi_operator_mixin_sriov)
       }}

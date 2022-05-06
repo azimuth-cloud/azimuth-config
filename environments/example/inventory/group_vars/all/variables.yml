@@ -18,12 +18,17 @@ infra_fixed_floatingip: "<pre-allocated floating ip>"
 # The name of the floating IP pool to allocate a floating IP from
 infra_floatingip_pool: "<floating ip pool>"
 
-# The image id of an Ubuntu 20.04 image
-infra_image_id: "<image id>"
+# The key of an Ubuntu 20.04 image in the infra_community_images variable to use for the node
+infra_image_key: ubuntu_2004_20220411
+# OR
+# The image id of an Ubuntu 20.04 image to use for the node
+# infra_image_id: "<image id>"
+
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
 # For a single node deployment, >= 16GB RAM is recommended
 infra_flavor_id: "<flavor id>"
+
 # The size in GB for the data volume
 # This will hold all cluster data, including Kubernetes resources, and also PVC data
 infra_data_volume_size: 100
@@ -36,9 +41,9 @@ infra_data_volume_size: 100
 # Must correspond to the clouds.yaml for the environment
 capi_cluster_openstack_project_id: "<openstack project id>"
 # The Kubernetes version that will be used for the HA cluster
-capi_cluster_kubernetes_version: 1.22.6
-# The name of the image that will be used
-capi_cluster_machine_image: "ubuntu-2004-kube-v{{ capi_cluster_kubernetes_version }}"
+capi_cluster_kubernetes_version: 1.22.8
+# The ID of the image that will be used
+capi_cluster_machine_image_id: "{{ infra_community_image_info.kube_1_22_8 }}"
 # The name of the flavor to use for control plane nodes
 capi_cluster_control_plane_flavor: "<flavor name>"
 # The name of the flavor to use for worker nodes
@@ -81,4 +86,4 @@ azimuth_openstack_auth_url: https://cloud.example.com:5000/v3
 
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # should be the id of a Rocky 8 image that will be used for Slurm clusters
-azimuth_caas_stackhpc_slurm_appliance_rocky8_image: "<rocky 8 image id>"
+azimuth_caas_stackhpc_slurm_appliance_rocky8_image: "{{ infra_community_image_info.rocky_8_5_20211114 }}"

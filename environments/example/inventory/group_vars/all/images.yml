@@ -1,0 +1,38 @@
+infra_community_images:
+  #####
+  # Ubuntu 20.04 images supporting the web console
+  #####
+  ubuntu_2004_20220411:
+    name: Ubuntu-Focal-20.04-20220411
+    source_url: https://cloud-images.ubuntu.com/focal/20220411/focal-server-cloudimg-amd64.img
+    container_format: bare
+    disk_format: qcow2
+    web_console_supported: true
+
+  #####
+  # Cluster API images supporting different Kubernetes versions
+  #####
+  kube_1_21_11:
+    name: ubuntu-2004-kube-v1.21.11
+    source_url: https://minio.services.osism.tech/openstack-k8s-capi-images/ubuntu-2004-kube-v1.21/ubuntu-2004-kube-v1.21.11.qcow2
+    container_format: bare
+    disk_format: qcow2
+  kube_1_22_8:
+    name: ubuntu-2004-kube-v1.22.8
+    source_url: https://minio.services.osism.tech/openstack-k8s-capi-images/ubuntu-2004-kube-v1.22/ubuntu-2004-kube-v1.22.8.qcow2
+    container_format: bare
+    disk_format: qcow2
+  kube_1_23_5:
+    name: ubuntu-2004-kube-v1.23.5
+    source_url: https://minio.services.osism.tech/openstack-k8s-capi-images/ubuntu-2004-kube-v1.23/ubuntu-2004-kube-v1.23.5.qcow2
+    container_format: bare
+    disk_format: qcow2
+
+  ######
+  # Rocky 8 image for CaaS
+  ######
+  rocky_8_5_20211114:
+    name: Rocky-8.5-20211114
+    source_url: http://download.rockylinux.org/pub/rocky/8.5/images/Rocky-8-GenericCloud-8.5-20211114.2.x86_64.qcow2
+    container_format: bare
+    disk_format: qcow2
