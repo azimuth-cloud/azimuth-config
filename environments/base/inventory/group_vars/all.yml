@@ -14,6 +14,9 @@ local_work_directory: "{{ (azimuth_config_root, '.work', azimuth_config_environm
 bin_directory: "{{ local_bin_directory if ansible_connection == 'local' else '/usr/local/bin' }}"
 work_directory: "{{ local_work_directory if ansible_connection == 'local' else ansible_env.HOME }}"
 
+# Use the configured work directory for image download and convert
+infra_community_images_workdir: "{{ (work_directory, 'images') | path_join }}"
+
 # Use the configured bin and work directories for Terraform
 terraform_binary_directory: "{{ bin_directory }}"
 # Use the local work directory for the Terraform project
