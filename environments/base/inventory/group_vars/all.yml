@@ -42,6 +42,9 @@ harbor_proxy_cache_projects:
     type: docker-hub
     url: https://hub.docker.com
 
+# Indicates whether to install a Grafana to show cloud metrics
+cloud_metrics_enabled: no
+
 # Azimuth features to enable
 azimuth_apps_enabled: yes
 azimuth_kubernetes_enabled: yes
@@ -58,6 +61,8 @@ ingress_zenith_registrar_subdomain: registrar
 ingress_harbor_core_subdomain: registry
 # The subdomain that should be used for the Harbor notary
 ingress_harbor_notary_subdomain: notary
+# The subdomain that should be used for the Grafana for cloud metrics
+ingress_cloud_metrics_grafana_subdomain: metrics
 
 # Annotations for Azimuth ingress resources
 ingress_annotations: {}
