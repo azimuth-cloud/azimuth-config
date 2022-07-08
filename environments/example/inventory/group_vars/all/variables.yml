@@ -87,6 +87,30 @@ azimuth_current_cloud_label: Example
 # The auth URL for the target OpenStack cloud
 azimuth_openstack_auth_url: https://cloud.example.com:5000/v3
 
+#####
+# Configuration of authenticators / authentication methods
+#####
+# Whether the password authenticator should be enabled (enabled by default)
+azimuth_authenticator_password_enabled: true
+# The label for the password authenticator
+azimuth_authenticator_password_label: "Username + Password"
+
+# Whether the appcred authenticator should be enabled (not enabled by default)
+azimuth_authenticator_appcred_enabled: false
+# The label for the appcred authenticator
+azimuth_authenticator_appcred_label: "Application Credential"
+
+# Whether the federated authenticator should be enabled (not enabled by default)
+azimuth_authenticator_federated_enabled: false
+# The label for the federated authenticator
+azimuth_authenticator_federated_label: "Federated"
+# The provider for the federated authenticator
+# This should correspond to the Keystone federation URL, e.g. <auth url>/auth/OS-FEDERATION/websso/<provider>
+azimuth_authenticator_federated_provider: oidc
+
+#####
+# Configuration for CaaS appliances
+#####
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # should be the id of a Rocky 8 image that will be used for Slurm clusters
 azimuth_caas_stackhpc_slurm_appliance_rocky8_image: "{{ infra_community_image_info.rocky_8_5_20211114 }}"
