@@ -112,5 +112,17 @@ azimuth_authenticator_federated_provider: oidc
 # Configuration for CaaS appliances
 #####
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
-# should be the id of a Rocky 8 image that will be used for Slurm clusters
-azimuth_caas_stackhpc_slurm_appliance_rocky8_image: "{{ infra_community_image_info.rocky_8_5_20211114 }}"
+# is the id of a Rocky 8 image that will be used for Slurm clusters
+azimuth_caas_stackhpc_slurm_appliance_image: "{{ infra_community_image_info.rocky_8_5_20211114 }}"
+# The name of the flavor to use for login nodes
+azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
+# The name of the flavor to use for control nodes
+azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
+
+# The ID of the desktop or webconsole image to use for the workstation appliance
+# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
+azimuth_caas_stackhpc_workstation_image: "{{ infra_community_image_info.workstation_220706_1537 }}"
+
+# The ID of the repo2docker image to use
+# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
+azimuth_caas_stackhpc_repo2docker_image: "{{ infra_community_image_info.repo2docker_20220630_0932 }}"
