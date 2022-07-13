@@ -1,0 +1,91 @@
+#####
+# This file defines the available Kubernetes cluster templates
+#
+# Templates can be defined in any way that the operator desires
+# Here, a mixin approach is used to avoid duplication between templates
+#####
+
+azimuth_capi_operator_mixin_kube_1_22_11:
+  global:
+    kubernetesVersion: 1.22.11
+  machineImageId: "{{ azimuth_capi_operator_kube_1_22_11_image }}"
+
+azimuth_capi_operator_mixin_kube_1_23_8:
+  global:
+    kubernetesVersion: 1.23.8
+  machineImageId: "{{ azimuth_capi_operator_kube_1_23_8_image }}"
+
+azimuth_capi_operator_mixin_kube_1_24_2:
+  global:
+    kubernetesVersion: 1.24.2
+  machineImageId: "{{ azimuth_capi_operator_kube_1_24_2_image }}"
+
+# This mixin provisions Kubernetes nodes on the same network that Azimuth creates for
+# regular VMs, rather than each cluster having its own network
+azimuth_capi_operator_mixin_portal_net:
+  clusterNetworking:
+    internalNetwork:
+      networkFilter:
+        tags: portal-internal
+
+# This mixin provisions Kubernetes nodes on a VLAN using SR-IOV enabled ports
+# This requires that a VLAN with the given tag is made available to each project (it doesn't
+# have to be the same VLAN, but the tag must be present)
+azimuth_capi_operator_mixin_sriov:
+  clusterNetworking:
+    internalNetwork:
+      networkFilter:
+        tags: sriov-vlan
+  controlPlane:
+    machineNetworking:
+      ports:
+        - vnicType: direct
+  nodeGroupDefaults:
+    machineNetworking:
+      ports:
+        - vnicType: direct
+  # Because SR-IOV ports don't have any port security, we can tell
+  # Calico that it only needs to apply the VXLAN at the cluster boundary
+  addons:
+    cni:
+      calico:
+        installation:
+          calicoNetwork:
+            ipPools:
+              - cidr: __KUBEADM_POD_CIDR__
+                encapsulation: VXLANCrossSubnet
+
+# Build the default templates by composing the mixins together
+azimuth_capi_operator_default_cluster_templates:
+  - name: kube-1-22-11
+    label: v1.22.11
+    description: Kubernetes 1.22.11 with HA control plane.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_22_11 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+  - name: kube-1-23-8
+    label: v1.23.8
+    description: Kubernetes 1.23.8 with HA control plane.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_23_8 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+  - name: kube-1-24-2
+    label: v1.24.2
+    description: Kubernetes 1.24.2 with HA control plane.
+    values: >-
+      {{
+        azimuth_capi_operator_mixin_kube_1_24_2 |
+          combine(azimuth_capi_operator_mixin_portal_net)
+      }}
+# Allow extra templates to be defined using a separate variable
+azimuth_capi_operator_extra_cluster_templates: []
+# The full list of Kubernetes cluster templates to install
+azimuth_capi_operator_cluster_templates: >-
+  {{-
+    azimuth_capi_operator_default_cluster_templates +
+      azimuth_capi_operator_extra_cluster_templates
+  }}
