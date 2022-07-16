@@ -1,0 +1,70 @@
+# Environments
+
+An Azimuth configuration repository is structured as multiple "environments" that can be
+composed to form an Azimuth deployment. Some of these environments are "concrete", meaning
+that they provide enough information to make a deployment (e.g. development, staging, production),
+and some are "mixin" environments providing common configuration that can be consumed by
+concrete environments using
+[Ansible's support for multiple inventories](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#using-multiple-inventory-sources).
+
+Environments live in the `environments` directory of your configuration repository. A mixin
+environment contains only `group_vars` files and an empty hosts file (so that Ansible treats
+it as an inventory). A concrete environment must contain an `ansible.cfg` file defining the
+"layering" of inventories and a `clouds.yaml` file containing an
+[OpenStack Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
+for the project into which Azimuth will be deployed.
+
+The following fragment demonstrates how to layer inventories in the `ansible.cfg` file for
+a highly-available (HA) deployment:
+
+```ini
+[defaults]
+inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
+```
+
+!!! tip
+
+    If the same variable is defined in multiple inventories, the right-most inventory takes precedence.
+
+For a single node deployment, replace the `ha` environment with `singlenode`. The
+`community_images` and `kubernetes_templates` environments provide best practice configuration
+for those components.
+
+The following mixin environments are provided and maintained in this repository, and should
+be used as the basis for your concrete environments:
+
+`base`
+: Contains the core configuration required to enable an environment and sets defaults.
+
+`ha`
+: Contains overrides that are specific to an HA deployment.
+
+`singlenode`
+: Contains overrides that are specific to a single-node deployment.
+
+`community_images`
+: Contains configuration defining the images that will be uploaded to the target cloud
+  as part of the Azimuth deployment - required to support Cluster-as-a-Service appliances
+  and Kubernetes clusters.
+
+`kubernetes_templates`
+: Contains configuration defining the Kubernetes templates that will be installed.
+
+By keeping the `azimuth-config` repository as an upstream of your site configuration repository,
+you can rebase onto or merge the latest configuration to pick up changes to these mixins.
+
+The `azimuth-config` repository also contains an example of a concrete environment in
+[environments/example](https://github.com/stackhpc/azimuth-config/tree/main/environments/example)
+that should be used as a basis for your own concrete environment(s).
+
+Depending how many concrete environments you have, you may wish to define mixin environments
+containing site-specific information that is common to several concrete environments, e.g. image
+and flavor IDs or the location of an ACME server.
+
+A typical layering of inventories might be:
+
+```
+base -> singlenode -> community_images -> kubernetes_templates -> site -> development
+base -> ha -> community_images -> kubernetes_templates -> site -> staging
+base -> ha -> community_images -> kubernetes_templates -> site -> production
+```

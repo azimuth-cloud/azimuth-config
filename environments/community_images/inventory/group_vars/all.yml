@@ -6,11 +6,11 @@
 # azimuth-ops will convert images where this differs from the source format
 infra_community_images_target_disk_format: qcow2
 
-# Defines the images that will uploaded to the target cloud as community images
-infra_community_images:
-  # Ubuntu 20.04 image, primarily for the K3S seed
+# The default community images
+infra_community_images_default:
+  # Ubuntu 20.04 image, primarily for the K3S node
   ubuntu_2004_20220712:
-    name: Ubuntu-Focal-20.04-20220712
+    name: ubuntu-focal-20220712
     source_url: https://cloud-images.ubuntu.com/focal/20220712/focal-server-cloudimg-amd64.img
     source_disk_format: qcow2
     container_format: bare
@@ -45,20 +45,25 @@ infra_community_images:
     source_disk_format: qcow2
     container_format: bare
     disk_format: "{{ infra_community_images_target_disk_format }}"
-
   workstation_20220711_2135:
     name: ubuntu-focal-desktop-220711-2135
     source_url: https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/ubuntu-focal-desktop-220711-2135.qcow2
     source_disk_format: qcow2
     container_format: bare
     disk_format: "{{ infra_community_images_target_disk_format }}"
-
   rocky_8_20220702:
     name: Rocky8-20220702
     source_url: http://download.rockylinux.org/pub/rocky/8.6/images/Rocky-8-GenericCloud-8.6.20220702.0.x86_64.qcow2
     source_disk_format: qcow2
     container_format: bare
     disk_format: "{{ infra_community_images_target_disk_format }}"
+
+# Overrides or additional community images
+infra_community_images_extra: {}
+
+# Defines the images that will uploaded to the target cloud as community images
+infra_community_images: >-
+  {{ infra_community_images_default | combine(infra_community_images_extra, recursive = True) }}
 
 # The key of the image in infra_community_images to use for the seed/single node
 infra_image_key: ubuntu_2004_20220712
