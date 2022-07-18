@@ -23,7 +23,7 @@ zenith_registrar_subdomain_token_signing_key: "<some secret key>"
 !!! danger
 
     This key should be kept secret. If you want to keep it in Git - which is recommended - then
-    it [must be encrypted](../secrets.md).
+    it [must be encrypted](../repository/secrets.md).
 
 ## SSHD port number
 

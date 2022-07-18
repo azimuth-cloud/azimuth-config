@@ -30,7 +30,7 @@ awx_admin_password: "<secure password>"
 !!! danger
 
     This password should be kept secret. If you want to keep the password in Git - which is
-    recommended - then it [must be encrypted](../secrets.md).
+    recommended - then it [must be encrypted](../repository/secrets.md).
 
 ## StackHPC Appliances
 

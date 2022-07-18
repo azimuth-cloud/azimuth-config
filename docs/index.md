@@ -27,10 +27,11 @@ cluster within an OpenStack project on the target cloud to host our Azimuth depl
 This is exactly what the playbooks in the `azimuth-ops` collection will do, when driven by
 a configuration derived from `azimuth-config`.
 
-`azimuth-ops` can deploy Azimuth and all of its dependencies in two modes:
+There are two methods that `azimuth-ops` can use to deploy Azimuth and all of its
+dependencies:
 
   1. Onto a managed single-node [K3S](https://k3s.io/) cluster in an OpenStack project.
-  1. Onto a managed highly-available Kubernetes cluster in an OpenStack project.
+  2. Onto a managed highly-available Kubernetes cluster in an OpenStack project.
 
 Option 1 is useful for development or demo deployments, but is not suitable for a production
 deployment.

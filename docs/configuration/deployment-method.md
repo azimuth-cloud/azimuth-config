@@ -20,7 +20,7 @@ onto this cluster.
 
 To use the single node deployment method, use the `singlenode` environment in your `ansible.cfg`:
 
-```ini
+```ini  title="ansible.cfg"
 [defaults]
 inventory = ../base/inventory,../singlenode/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
 ```
@@ -54,7 +54,7 @@ and on the same network. The Azimuth stack is then deployed onto this cluster.
 
 To use the HA deployment method, use the `ha` environment in your `ansible.cfg`:
 
-```ini
+```ini  title="ansible.cfg"
 [defaults]
 inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
 ```

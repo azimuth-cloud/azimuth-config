@@ -1,4 +1,4 @@
-# Configuration repository
+# Azimuth configuration repository
 
 The `azimuth-config` repository provides best-practice configuration for Azimuth deployments
 that can be inherited by site-specific configuration repositories using

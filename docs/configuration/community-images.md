@@ -26,7 +26,7 @@ when listing images in Horizon or via the CLI or API.
 that defines a default set of images. To use these defaults, just include the inventory for
 the environment in your `ansible.cfg`:
 
-```ini
+```ini  title="ansible.cfg"
 [defaults]
 inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
 ```

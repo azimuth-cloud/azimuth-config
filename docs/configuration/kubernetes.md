@@ -1,11 +1,36 @@
 # Kubernetes
 
-Kubernetes support is enabled by default in the reference configuration. To disable it, just
-set:
+Kubernetes support in Azimuth is implemented using [Cluster API](https://cluster-api.sigs.k8s.io/)
+with the [OpenStack provider](https://github.com/kubernetes-sigs/cluster-api-provider-openstack).
 
-```yaml
-azimuth_kubernetes_enabled: no
-```
+Azimuth provides an opinionated interface on top of Cluster API by implementing
+[its own Kubernetes operator](https://github.com/stackhpc/azimuth-capi-operator).
+This operator exposes two new
+[custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+which are used by the Azimuth API to manage Kubernetes clusters:
+
+`clustertemplates.azimuth.stackhpc.com`
+: A cluster template represents a "type" of Kubernetes cluster. In particular, this is used
+  to provide different Kubernetes versions, but can also be used to provide advanced configuration
+  options, e.g. networking configuration or additional addons, that are not exposed to the
+  end user.
+
+`clusters.azimuth.stackhpc.com`
+: A cluster represents the user-facing definition of a Kubernetes cluster. It references a
+  template, from which the Kubernetes version and other advanced options are taken, but allows
+  the user to specify one or more node groups and toggle a few simple options such as
+  auto-healing and whether the monitoring stack is deployed on the cluster.
+
+For each `Cluster`, the operator manages a release of the
+[stackhpc/capi-helm-charts/openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster).
+The Helm release in turn manages Cluster API resources for the cluster along with
+a number of [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/)
+that manage the addons for the cluster.
+
+To get the values for the release, the operator first derives some values from the `Cluster`
+object which are merged with the values defined in the referenced template. The result of
+that merge is then merged with any global configuration that has been specified before being
+passed to Helm.
 
 !!! tip
 
@@ -21,6 +46,15 @@ azimuth_kubernetes_enabled: no
 
     However the default values should be sufficient for most deployments of Azimuth.
 
+## Disabling Kubernetes
+
+Kubernetes support is enabled by default in the reference configuration. To disable it, just
+set:
+
+```yaml
+azimuth_kubernetes_enabled: no
+```
+
 ## Multiple external networks
 
 In the case where multiple external networks are available to tenants, you must tell Azimuth
@@ -30,9 +64,87 @@ which one to use for floating IPs for Kubernetes services in tenant clusters:
 azimuth_capi_operator_external_network_id: "<network id>"
 ```
 
+## Images
+
+When building a cluster, Cluster API requires that an image exists in the target cloud,
+accessible to the target project, that has the correct version of
+[kubelet](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/) and
+[kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) available.
+
+`azimuth-ops` is able to upload suitable images using the
+[community_images mixin environment](./community-images.md). If you would prefer to manage
+the images using another mechanism, suitable images can be built using the
+[Kubernetes image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
+
+The ID of the image for a particular Kubernetes version must be given in the cluster
+template.
+
 ## Cluster templates
 
-TODO
+`azimuth-ops` is able to manage a set of Kubernetes cluster templates, which are defined
+using the variable `azimuth_capi_operator_cluster_templates`.
+
+`azimuth-config` includes a mixin environment -
+[kubernetes_templates](https://github.com/stackhpc/azimuth-config/tree/main/environments/kubernetes_templates) -
+that defines a default set of templates for recent Kubernetes versions. The default
+templates are configured so that Kubernetes nodes will go onto the Azimuth
+`portal-internal` network for the project in which the cluster is being deployed.
+
+To use the default templates, just include the inventory for the mixin environment in
+your `ansible.cfg`:
+
+```ini  title="ansible.cfg"
+[defaults]
+inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
+```
+
+If you want to include additional templates, e.g. for advanced networking configurations,
+you can specify them using the following variable:
+
+```yaml
+azimuth_capi_operator_extra_cluster_templates:
+  - name: kube-1-24-2-sriov
+    label: v1.24.2 / SR-IOV
+    description: >-
+      Kubernetes 1.24.2 with HA control plane and high-performance networking.
+    values:
+      # Specify the image and version for the cluster
+      global:
+        kubernetesVersion: 1.24.2
+      machineImageId: "{{ infra_community_image_info.kube_1_24_2 }}"
+      # Use the network tagged for SR-IOV
+      clusterNetworking:
+        internalNetwork:
+          networkFilter:
+            tags: sriov-vlan
+      # Use direct ports for the control plane and workers
+      controlPlane:
+        machineNetworking:
+          ports:
+            - vnicType: direct
+      nodeGroupDefaults:
+        machineNetworking:
+          ports:
+            - vnicType: direct
+      # Because SR-IOV ports don't have any port security, we can tell
+      # Calico that it only needs to apply the VXLAN at the cluster boundary
+      # to avoid double-encapsulation
+      addons:
+        cni:
+          calico:
+            installation:
+              calicoNetwork:
+                ipPools:
+                  - cidr: __KUBEADM_POD_CIDR__
+                    encapsulation: VXLANCrossSubnet
+```
+
+!!! info
+
+    If you choose not to use the `kubernetes_templates` mixin environment, you will need
+    to specify all your own templates using the `azimuth_capi_operator_cluster_templates`
+    variable. This has the same format as `azimuth_capi_operator_extra_cluster_templates`
+    above.
 
 ## Harbor registry
 
@@ -59,7 +171,7 @@ harbor_secret_key: "<secure secret key>"
 !!! danger
 
     These values should be kept secret. If you want to keep them in Git - which is recommended -
-    then they [must be encrypted](../secrets.md).
+    then they [must be encrypted](../repository/secrets.md).
 
 ### Disabling Harbor
 

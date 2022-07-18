@@ -54,7 +54,7 @@ files in your environment:
 !!! danger
 
     The TLS key should be kept secret. If you want to keep it in Git - which is recommended -
-    then it [must be encrypted](../secrets.md).
+    then it [must be encrypted](../repository/secrets.md).
 
 When these files exist in an environment, `azimuth-ops` will automatically pick them up
 and use them.

@@ -1,14 +1,17 @@
 site_name: Azimuth Deployment Documentation
 repo_url: https://github.com/stackhpc/azimuth-config
-copyright: Copyright &copy; StackHPC
+copyright: Copyright &copy; StackHPC 2022
 edit_uri: ''
 
 nav:
   - Home: index.md
   - environments.md
-  - setup.md
-  - Azimuth Configuration:
-      - Introduction: configuration/index.md
+  - Repository:
+      - Introduction: repository/setup.md
+      - repository/secrets.md
+      - repository/terraform.md
+  - Configuration:
+      - Introduction: configuration/introduction.md
       - configuration/prerequisites.md
       - configuration/deployment-method.md
       - configuration/target-cloud.md
@@ -18,14 +21,24 @@ nav:
       - configuration/community-images.md
       - configuration/kubernetes.md
       - configuration/caas.md
-  - secrets.md
-  - terraform.md
-  - deployment.md
-  - debugging.md
+  - Deployment: deployment.md
+  - Debugging:
+      - Introduction: debugging/introduction.md
+      - debugging/access-k3s.md
+      - debugging/access-ha.md
+      - debugging/access-monitoring.md
+      - debugging/zenith-services.md
+      - debugging/kubernetes.md
+      - debugging/caas.md
 
 theme:
   features:
     - navigation.tracking
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
   name: material
 
 markdown_extensions:
