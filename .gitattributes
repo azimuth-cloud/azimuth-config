@@ -1,0 +1,7 @@
+clouds.yaml                                                filter=git-crypt diff=git-crypt
+secrets.yml                                                filter=git-crypt diff=git-crypt
+*.key                                                      filter=git-crypt diff=git-crypt
+env.secret                                                 filter=git-crypt diff=git-crypt
+# Don't encrypt the example environment
+environments/example/clouds.yaml                           !filter !diff
+environments/example/inventory/group_vars/all/secrets.yml  !filter !diff

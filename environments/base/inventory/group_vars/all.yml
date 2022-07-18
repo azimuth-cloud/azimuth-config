@@ -29,18 +29,21 @@ clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_jo
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 
 # Enable cert-manager by default
-# By default, a cluster issuer will be created that uses ZeroSSL to issue certificates
+# By default, a cluster issuer will be created that uses Let's Encrypt to issue certificates
 certmanager_enabled: yes
 # By default, only enable the cluster issuer when not using a wildcard certificate
 certmanager_acmehttp01issuer_enabled: "{{ not ingress_tls_wildcard_certificate }}"
 
 # Create a mirror registry in Harbor for public Docker Hub images by default
 harbor_enabled: yes
-harbor_proxy_cache_projects:
+harbor_proxy_cache_default_projects:
   docker.io:
     name: dockerhub-public
     type: docker-hub
     url: https://hub.docker.com
+harbor_proxy_cache_extra_projects: {}
+harbor_proxy_cache_projects: >-
+  {{ harbor_proxy_cache_default_projects | combine(harbor_proxy_cache_extra_projects) }}
 
 # Indicates whether to install a Grafana to show cloud metrics
 cloud_metrics_enabled: no

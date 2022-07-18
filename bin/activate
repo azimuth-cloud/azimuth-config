@@ -25,30 +25,42 @@ if [ ! -f "$ANSIBLE_CONFIG" ]; then
     return 1
 fi
 
-# Configure OpenStack connectivity
-OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
-OS_CLOUD="openstack"
-
 # Only export the environment variables if the environment is a concrete environment
 export \
   AZIMUTH_CONFIG_ENVIRONMENT \
   AZIMUTH_CONFIG_ROOT \
   AZIMUTH_CONFIG_ENVIRONMENT_ROOT \
-  ANSIBLE_CONFIG \
-  OS_CLIENT_CONFIG_FILE \
-  OS_CLOUD
+  ANSIBLE_CONFIG
 
-# Source any variables from an env file in the config root
+# Configure OpenStack connectivity
+OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
+if [ -f "$OS_CLIENT_CONFIG_FILE" ]; then
+  export OS_CLIENT_CONFIG_FILE
+  export OS_CLOUD="openstack"
+fi
+
+# Source any variables from env files in the config root
 if [ -f "$AZIMUTH_CONFIG_ROOT/env" ]; then
   set -a
   source "$AZIMUTH_CONFIG_ROOT/env" || return 1
   set +a
 fi
+if [ -f "$AZIMUTH_CONFIG_ROOT/env.secret" ]; then
+  set -a
+  source "$AZIMUTH_CONFIG_ROOT/env.secret" || return 1
+  set +a
+fi
 
-# Also export any variables in an env file in the environment
+
+# Also export any variables in env files in the environment
 if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" ]; then
   set -a
   source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" || return 1
+  set +a
+fi
+if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env.secret" ]; then
+  set -a
+  source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env.secret" || return 1
   set +a
 fi
 
