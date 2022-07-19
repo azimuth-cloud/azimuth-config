@@ -145,4 +145,74 @@ source ./bin/activate my-site
 
 ### S3
 
-DOCUMENTATION COMING SOON!
+If you are using an S3-API-compatible object store, such as [Ceph Object Gateway](https://docs.ceph.com/en/latest/radosgw/index.html), to host your configuration repository, you can use the
+[Terraform S3 backend](https://www.terraform.io/language/settings/backends/s3)
+to facilitate the remote storage of the Terraform state for your environments. 
+
+!!! tip
+
+    Depending on the provider of your S3-API-compatible object store, the specific configuration options and
+    their values required in the following section may differ. The configuration provided below is for Ceph Object Gateway.
+
+!!! warning
+    All configuration options described in the Terraform S3 backend [documentation](https://www.terraform.io/language/settings/backends/s3) should
+    be specified as environment variables with the prefix `AZIMUTH_TERRAFORM_BACKEND_S3_`.
+
+All non-secret configuration options can be specified in the `env` file of your environment.
+ 
+```sh  title="env"
+# Use the s3 backend type [note lowercase "s"]
+AZIMUTH_TERRAFORM_BACKEND_TYPE=s3
+
+# An *existing* bucket to store state in
+AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET=azimuth-terraform-state
+
+# State "key" or filename
+AZIMUTH_TERRAFORM_BACKEND_S3_KEY=azimuth.tfstate
+
+# This must be specified for all S3 backends, but its value is often
+# arbitrary when using Ceph Object Gateway
+AZIMUTH_TERRAFORM_BACKEND_S3_REGION=notused-but-required-for-s3-backed
+
+# S3 endpoint (no "http(s)://" required)
+AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT=example.com
+
+# Skip credentials validation via the STS API as this doesn't exist for
+# Ceph Object Gateway
+AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_CREDENTIALS_VALIDATION="true"
+
+# Force path-style S3 URLs (https://<HOST>/<BUCKET> instead of 
+# https://<BUCKET>.<HOST>).
+AZIMUTH_TERRAFORM_BACKEND_S3_FORCE_PATH_STYLE="true"
+
+# Skip validation of provided region name.
+AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_REGION_VALIDATION="true"
+```
+
+Then specify your S3 credentials in the `env.secret` file in your environment. By [default](secrets.md), this file is encrypted by `git-crypt`.
+
+```sh  title="env.secret"
+AWS_ACCESS_KEY_ID=<secret_key>
+AWS_SECRET_ACCESS_KEY=<access_key>
+```
+
+Finally, add a new vars file to your environment's Ansible inventory to allow Ansible to read the values of the non-secret
+environment variables:
+
+!!! warning
+    It is not required to specify `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` here!
+
+```yaml title="environments/your_en/inventory/group_vars/all/terraform_state.yml"
+---
+
+terraform_backend_type: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') }}"
+
+terraform_backend_config:
+  bucket: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET') }}"
+  region: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_REGION') }}"
+  key: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_KEY') }}"
+  endpoint: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT') }}"
+  skip_credentials_validation: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_CREDENTIALS_VALIDATION') }}"
+  force_path_style: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_FORCE_PATH_STYLE') }}"
+  skip_region_validation: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_REGION_VALIDATION') }}"
+```
