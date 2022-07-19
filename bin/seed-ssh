@@ -34,6 +34,25 @@ else
             exit 1
         fi
         echo "    container = \"${AZIMUTH_TERRAFORM_BACKEND_SWIFT_CONTAINER}\"" >> "$terraform_dir/backend.tf"
+    elif [ "$AZIMUTH_TERRAFORM_BACKEND_TYPE" = "s3" ]; then
+        if [ -z "$AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET" ]; then
+            echo "AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET is required for the S3 backend" >&2
+            exit 1
+        fi
+        if [ -z "$AZIMUTH_TERRAFORM_BACKEND_S3_KEY" ]; then
+            echo "AZIMUTH_TERRAFORM_BACKEND_S3_KEY is required for the S3 backend" >&2
+            exit 1
+        fi
+        if [ -z "$AZIMUTH_TERRAFORM_BACKEND_S3_REGION" ]; then
+            echo "AZIMUTH_TERRAFORM_BACKEND_S3_REGION is required for the S3 backend" >&2
+            exit 1
+        fi
+        # Take all environment variable that are prefixed with AZIMUTH_TERRAFORM_BACKEND_S3_,
+        # remove the prefix, lowercase them, then add them to backend.tf.
+        for azimuth_s3_var in $(env | grep "^AZIMUTH_TERRAFORM_BACKEND_S3_" | cut -f1 -d =); do
+            tf_var=$(echo "${azimuth_s3_var//AZIMUTH_TERRAFORM_BACKEND_S3_/}" | tr '[:upper:]' '[:lower:]')
+            echo "    ${tf_var} = \"${!azimuth_s3_var}\"" >> "$terraform_dir/backend.tf"
+        done
     fi
     echo "  }" >> "$terraform_dir/backend.tf"
     echo "}" >> "$terraform_dir/backend.tf"
@@ -45,7 +64,7 @@ tfstate_file="$(mktemp)"
 PATH="${AZIMUTH_CONFIG_ROOT}/.bin:$PATH" terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
 node_ip="$(jq -r '.outputs.cluster_gateway_ip.value' "$tfstate_file")"
 # Write the SSH key to a temporary file
-deploy_key="$(mktemp)"
+deploy_key="$(mktemp -p ${terraform_dir})"
 jq -r '.outputs.cluster_ssh_private_key.value' "$tfstate_file" > "$deploy_key"
 
 # Run the SSH command
