@@ -12,6 +12,10 @@ Keystone v3 endpoint:
 azimuth_openstack_auth_url: https://openstack.example-cloud.org:5000/v3
 ```
 
+!!! warning
+
+    Make sure to include the trailing `/v3`, otherwise authentication will fail.
+
 Azimuth does not currently have support for specifying a custom CA for verifying TLS. If the
 target cloud uses a TLS certificate that is not verifiable using the operating-system default
 trustroots, TLS verification must be disabled:

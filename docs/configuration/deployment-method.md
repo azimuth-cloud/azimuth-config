@@ -81,9 +81,11 @@ infra_data_volume_size: 100
 capi_cluster_openstack_project_id: "<openstack project id>"
 
 # The name of the flavor to use for control plane nodes
+# A flavor with at least 2 CPUs, 8GB RAM and 100GB root disk is recommended
 capi_cluster_control_plane_flavor: "<flavor name>"
 
 # The name of the flavor to use for worker nodes
+# A flavor with at least 4 CPUs, 16GB RAM and 100GB root disk is recommended
 capi_cluster_worker_flavor: "<flavor name>"
 
 # The number of worker nodes
