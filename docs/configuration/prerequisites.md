@@ -2,6 +2,8 @@
 
 In order to deploy Azimuth, a small number of prerequisites must be fulfilled.
 
+## OpenStack cloud
+
 Firstly, there must be an OpenStack cloud onto which you will deploy Azimuth and which
 the Azimuth installation will target.
 
@@ -14,15 +16,21 @@ or
 [LoadBalancer services](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer)
 on tenant Kubernetes clusters.
 
+### OpenStack project quotas
+
 There must be an OpenStack project into which Azimuth will be deployed, with appropriate
 quotas. In particular, for a high-availability deployment the project should be permitted
 to use **three** floating IPs - one for accessing the "management node", one for the
 [Kubernetes Ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
 and one for the Zenith SSHD server.
 
+## Application Credential
+
 You should create an
 [Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
 for the project and save the resulting `clouds.yaml` as `./environments/<name>/clouds.yaml`.
+
+## Wildcard DNS
 
 As discussed in the Azimuth Architecture document, Azimuth and Zenith expect to be given
 control of a entire subdomain, e.g. `*.apps.example.org`, where Azimuth will be exposed as

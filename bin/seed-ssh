@@ -42,7 +42,7 @@ fi
 
 # Read the required variables from the Terraform state
 tfstate_file="$(mktemp)"
-terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
+PATH="${AZIMUTH_CONFIG_ROOT}/.bin:$PATH" terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
 node_ip="$(jq -r '.outputs.cluster_gateway_ip.value' "$tfstate_file")"
 # Write the SSH key to a temporary file
 deploy_key="$(mktemp)"

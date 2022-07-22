@@ -23,16 +23,14 @@ a highly-available (HA) deployment:
 
 ```ini  title="ansible.cfg"
 [defaults]
-inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
+inventory = ../base/inventory,../ha/inventory,./inventory
 ```
+
+For a single node deployment, replace the `ha` environment with `singlenode`.
 
 !!! tip
 
     If the same variable is defined in multiple inventories, the right-most inventory takes precedence.
-
-For a single node deployment, replace the `ha` environment with `singlenode`. The
-`community_images` and `kubernetes_templates` environments provide best practice configuration
-for those components.
 
 ## Available mixin environments
 
@@ -48,14 +46,6 @@ be used as the basis for your concrete environments:
 `singlenode`
 : Contains overrides that are specific to a single-node deployment.
 
-`community_images`
-: Contains configuration defining the images that will be uploaded to the target cloud
-  as part of the Azimuth deployment - required to support Cluster-as-a-Service appliances
-  and Kubernetes clusters.
-
-`kubernetes_templates`
-: Contains configuration defining the Kubernetes templates that will be installed.
-
 By keeping the `azimuth-config` repository as an upstream of your site configuration repository,
 you can rebase onto or merge the latest configuration to pick up changes to these mixins.
 
@@ -70,9 +60,9 @@ and flavor IDs or the location of an ACME server.
 A typical layering of inventories might be:
 
 ```
-base -> singlenode -> community_images -> kubernetes_templates -> site -> development
-base -> ha -> community_images -> kubernetes_templates -> site -> staging
-base -> ha -> community_images -> kubernetes_templates -> site -> production
+base -> singlenode -> site -> development
+base -> ha -> site -> staging
+base -> ha -> site -> production
 ```
 
 ## Linux environment variables

@@ -22,7 +22,7 @@ infra_floatingip_pool: "<floating ip pool>"
 infra_provisioning_network_id: "<provisioning network id>"
 
 # The image id of an Ubuntu 20.04 image to use for the node
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # infra_image_id: "<image id>"
 
 # The id of the flavor to use for the node
@@ -42,10 +42,10 @@ infra_data_volume_size: 100
 # Must correspond to the clouds.yaml for the environment
 capi_cluster_openstack_project_id: "<openstack project id>"
 # The Kubernetes version that will be used for the HA cluster
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # capi_cluster_kubernetes_version: 1.23.8
 # The ID of the image that will be used for the nodes of the HA cluster
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # capi_cluster_machine_image_id: "<image id>"
 # The name of the flavor to use for control plane nodes
 capi_cluster_control_plane_flavor: "<flavor name>"
@@ -113,7 +113,7 @@ azimuth_authenticator_federated_provider: oidc
 #####
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # is the id of a Rocky 8 image that will be used for Slurm clusters
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
 # The name of the flavor to use for login nodes
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
@@ -122,10 +122,10 @@ azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
 
 # The ID of the desktop or webconsole image to use for the workstation appliance
 # See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # azimuth_caas_stackhpc_workstation_image: "<image id>"
 
 # The ID of the repo2docker image to use for the repo2docker appliance
 # See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
-#   N.B. If using the community_images inventory, this is populated automatically
+#   N.B. This is populated automatically using community images by default
 # azimuth_caas_stackhpc_repo2docker_image: "<image id>"

@@ -1,4 +1,6 @@
 .ansible
 .bin
+.venv
 .work
 .python-version
+/clouds.yaml*

@@ -1,0 +1,17 @@
+#####
+# This script creates a virtualenv and installs the required dependencies
+#####
+
+AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
+
+AZIMUTH_VENV="$AZIMUTH_CONFIG_ROOT/.venv"
+if [ ! -d "$AZIMUTH_VENV" ]; then
+  echo "Creating virtual environment at $AZIMUTH_VENV"
+  python -m venv "$AZIMUTH_VENV"
+fi
+
+echo "Upgrading pip"
+"$AZIMUTH_VENV/bin/python" -m pip install -U pip
+
+echo "Installing requirements"
+"$AZIMUTH_VENV/bin/python" -m pip install -r "$AZIMUTH_CONFIG_ROOT/requirements.txt"

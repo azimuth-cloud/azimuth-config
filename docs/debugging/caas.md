@@ -19,7 +19,7 @@ the inventories look correct and check the permissions assigned to teams.
 
 !!! tip
 
-    You can also make changes in the AWX UI that will be reflected in the
-    cluster types and clusters available in Azimuth.
+    You can also make changes in the AWX UI that will be reflected in the cluster types
+    and clusters available in Azimuth.
 
     However make sure you know what you are doing!

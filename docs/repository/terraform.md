@@ -67,8 +67,13 @@ For the full set of available environment variables, see the Terraform docs.
 
 #### GitLab
 
-If you are using [GitLab](https://about.gitlab.com/) to host your configuration repository,
-either `gitlab.com` or self-hosted, you can use
+!!! tip
+
+    This is the recommended option if you are using [GitLab](https://about.gitlab.com/)
+    for your config repository.
+
+If you are using GitLab to host your configuration repository, either `gitlab.com` or
+self-hosted, you can use
 [GitLab-managed Terraform state](https://docs.gitlab.com/ee/user/infrastructure/iac/terraform_state.html)
 to store the Terraform state for your environments.
 

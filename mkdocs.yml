@@ -5,6 +5,7 @@ edit_uri: ''
 
 nav:
   - Home: index.md
+  - try.md
   - environments.md
   - Repository:
       - Introduction: repository/setup.md

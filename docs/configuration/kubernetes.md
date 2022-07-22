@@ -13,7 +13,8 @@ which are used by the Azimuth API to manage Kubernetes clusters:
 : A cluster template represents a "type" of Kubernetes cluster. In particular, this is used
   to provide different Kubernetes versions, but can also be used to provide advanced configuration
   options, e.g. networking configuration or additional addons, that are not exposed to the
-  end user.
+  end user. Cluster templates can be deprecated, e.g. when a new Kubernetes version is released,
+  resulting in a warning being shown to the user that they should upgrade.
 
 `clusters.azimuth.stackhpc.com`
 : A cluster represents the user-facing definition of a Kubernetes cluster. It references a
@@ -72,8 +73,8 @@ accessible to the target project, that has the correct version of
 [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) available.
 
 `azimuth-ops` is able to upload suitable images using the
-[community_images mixin environment](./community-images.md). If you would prefer to manage
-the images using another mechanism, suitable images can be built using the
+[Community images functionality](./community-images.md). If you would prefer to manage the
+images using another mechanism, suitable images can be built using the
 [Kubernetes image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
 
 The ID of the image for a particular Kubernetes version must be given in the cluster
@@ -81,29 +82,33 @@ template.
 
 ## Cluster templates
 
-`azimuth-ops` is able to manage a set of Kubernetes cluster templates, which are defined
-using the variable `azimuth_capi_operator_cluster_templates`.
+`azimuth-ops` is able to manage the available Kubernetes cluster templates using the
+variable `azimuth_capi_operator_cluster_templates`. This variable is a dictionary that
+maps cluster template names to their specifications, and represents the **current** (i.e.
+not deprecated) cluster templates. `azimuth-ops` will *not* remove cluster templates,
+but it will mark any templates that are not present in this variable as deprecated.
 
-`azimuth-config` includes a mixin environment -
-[kubernetes_templates](https://github.com/stackhpc/azimuth-config/tree/main/environments/kubernetes_templates) -
-that defines a default set of templates for recent Kubernetes versions. The default
-templates are configured so that Kubernetes nodes will go onto the Azimuth
-`portal-internal` network for the project in which the cluster is being deployed.
+By default, `azimuth-ops` will ensure a cluster template is present for the latest
+patch version of each Kubernetes release that is currently maintained. These templates
+are configured so that Kubernetes nodes will go onto the Azimuth `portal-internal`
+network for the project in which the cluster is being deployed.
 
-To use the default templates, just include the inventory for the mixin environment in
-your `ansible.cfg`:
+### Disabling the default templates
 
-```ini  title="ansible.cfg"
-[defaults]
-inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
-```
-
-If you want to include additional templates, e.g. for advanced networking configurations,
-you can specify them using the following variable:
+To disable the default templates, just set the following:
 
 ```yaml
-azimuth_capi_operator_extra_cluster_templates:
-  - name: kube-1-24-2-sriov
+azimuth_capi_operator_cluster_templates_default: {}
+```
+
+### Custom cluster templates
+
+If you want to include custom cluster templates in addition to the default templates,
+e.g. for advanced networking configurations, you can specify them using the following:
+
+```yaml
+azimuth_capi_operator_cluster_templates_extra:
+  kube-1-24-2-sriov:
     label: v1.24.2 / SR-IOV
     description: >-
       Kubernetes 1.24.2 with HA control plane and high-performance networking.
@@ -111,7 +116,7 @@ azimuth_capi_operator_extra_cluster_templates:
       # Specify the image and version for the cluster
       global:
         kubernetesVersion: 1.24.2
-      machineImageId: "{{ infra_community_image_info.kube_1_24_2 }}"
+      machineImageId: "{{ community_images_image_ids.kube_1_24_2 }}"
       # Use the network tagged for SR-IOV
       clusterNetworking:
         internalNetwork:
@@ -138,13 +143,6 @@ azimuth_capi_operator_extra_cluster_templates:
                   - cidr: __KUBEADM_POD_CIDR__
                     encapsulation: VXLANCrossSubnet
 ```
-
-!!! info
-
-    If you choose not to use the `kubernetes_templates` mixin environment, you will need
-    to specify all your own templates using the `azimuth_capi_operator_cluster_templates`
-    variable. This has the same format as `azimuth_capi_operator_extra_cluster_templates`
-    above.
 
 ## Harbor registry
 

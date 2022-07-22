@@ -55,10 +55,6 @@ azimuth_caas_stackhpc_slurm_appliance_enabled: no
 The Slurm appliance requires the following configuration:
 
 ```yaml
-# The ID of a Rocky 8 image to use for the Slurm appliance
-#   TIP: This is auto-wired when using the community_images mixin environment
-azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
-
 # The name of a flavor to use for Slurm login nodes
 #   A flavor with at least 2 CPUs and 4GB RAM should be used
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
@@ -81,14 +77,6 @@ To disable the Linux Workstation appliance, use the following:
 azimuth_caas_stackhpc_workstation_enabled: no
 ```
 
-The Linux Workstation appliance requires the following configuration, which is provided
-by the `community_images` mixin environment when it is in use:
-
-```yaml
-# The ID of a workstation image from azimuth-images
-azimuth_caas_stackhpc_workstation_image: "<image id>"
-```
-
 ### repo2docker appliance
 
 The repo2docker appliance allows users to deploy a [Jupyter Notebook](https://jupyter.org/)
@@ -99,14 +87,6 @@ To disable the repo2docker appliance, use the following:
 
 ```yaml
 azimuth_caas_stackhpc_repo2docker_enabled: no
-```
-
-The repo2docker appliance requires the following configuration, which is provided by the
-`community_images` mixin environment when it is in use:
-
-```yaml
-# The ID of a repo2docker image from azimuth-images
-azimuth_caas_stackhpc_repo2docker_image: "<image id>"
 ```
 
 ## Custom appliances
@@ -137,6 +117,6 @@ azimuth_caas_awx_extra_projects:
     #     all playbooks in a project
     extraVars:
       __ALL__:
-        # Use the ID of an Ubuntu 20.04 image uploaded by azimuth-ops
-        cluster_image: "{{ infra_community_image_info.ubuntu_2004_20220712 }}"
+        # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
+        cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
 ```

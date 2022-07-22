@@ -15,14 +15,39 @@ AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}
 AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
 
 if [ ! -d "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Unrecognised environment" 2>&1
+    echo "Unrecognised environment '$1'" >&2
     return 1
 fi
 
 ANSIBLE_CONFIG="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/ansible.cfg"
 if [ ! -f "$ANSIBLE_CONFIG" ]; then
-    echo "Specified environment does not contain an ansible.cfg" 2>&1
+    echo "Specified environment does not contain an ansible.cfg" >&2
     return 1
+fi
+
+# Configure OpenStack connectivity if not already configured
+if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml" ]; then
+  # If the environment has a clouds.yaml, we ALWAYS use that in preference
+  export OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
+  export OS_CLOUD="${OS_CLOUD:-"openstack"}"
+elif [ -n "$OS_CLOUD" ]; then
+  # If a clouds.yaml file is otherwise specified, use it but make sure OS_CLIENT_CONFIG_FILE
+  # is also exported
+  # To do this, we search for the same files as the OpenStack SDK and set it
+  if [ -z "$OS_CLIENT_CONFIG_FILE" ]; then
+    # Use the first file that we find
+    if [ -f "$PWD/clouds.yaml" ]; then
+      export OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
+    elif [ -f "$HOME/.config/openstack/clouds.yaml" ]; then
+      export OS_CLIENT_CONFIG_FILE="$HOME/.config/openstack/clouds.yaml"
+    elif [ -f "/etc/openstack/clouds.yaml" ]; then
+      export OS_CLIENT_CONFIG_FILE="/etc/openstack/clouds.yaml"
+    fi
+  fi
+fi
+
+if [ -n "$OS_CLIENT_CONFIG_FILE" ]; then
+  echo "Using OpenStack credentials from $OS_CLIENT_CONFIG_FILE"
 fi
 
 # Only export the environment variables if the environment is a concrete environment
@@ -32,36 +57,39 @@ export \
   AZIMUTH_CONFIG_ENVIRONMENT_ROOT \
   ANSIBLE_CONFIG
 
-# Configure OpenStack connectivity
-OS_CLIENT_CONFIG_FILE="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml"
-if [ -f "$OS_CLIENT_CONFIG_FILE" ]; then
-  export OS_CLIENT_CONFIG_FILE
-  export OS_CLOUD="openstack"
-fi
-
 # Source any variables from env files in the config root
 if [ -f "$AZIMUTH_CONFIG_ROOT/env" ]; then
+  echo "Including envvars from $AZIMUTH_CONFIG_ROOT/env"
   set -a
   source "$AZIMUTH_CONFIG_ROOT/env" || return 1
   set +a
 fi
 if [ -f "$AZIMUTH_CONFIG_ROOT/env.secret" ]; then
+  echo "Including envvars from $AZIMUTH_CONFIG_ROOT/env.secret"
   set -a
   source "$AZIMUTH_CONFIG_ROOT/env.secret" || return 1
   set +a
 fi
 
-
 # Also export any variables in env files in the environment
 if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" ]; then
+  echo "Including envvars from $AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env"
   set -a
   source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env" || return 1
   set +a
 fi
 if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env.secret" ]; then
+  echo "Including envvars from $AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env.secret"
   set -a
   source "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/env.secret" || return 1
   set +a
+fi
+
+# If a Python virtualenv exists, activate it
+AZIMUTH_VENV="${AZIMUTH_VENV:-"$AZIMUTH_CONFIG_ROOT/.venv"}"
+if [ -f "$AZIMUTH_VENV/bin/activate" ]; then
+  echo "Activating Python venv at $AZIMUTH_VENV"
+  source "$AZIMUTH_VENV/bin/activate"
 fi
 
 echo "Activated environment at $AZIMUTH_CONFIG_ENVIRONMENT_ROOT"

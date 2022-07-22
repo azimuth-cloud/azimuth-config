@@ -15,10 +15,12 @@ bin_directory: "{{ local_bin_directory if ansible_connection == 'local' else '/u
 work_directory: "{{ local_work_directory if ansible_connection == 'local' else ansible_env.HOME }}"
 
 # Use the configured work directory for image download and convert
-infra_community_images_workdir: "{{ (work_directory, 'images') | path_join }}"
+community_images_workdir: "{{ (work_directory, 'images') | path_join }}"
 
 # Use the configured bin and work directories for Terraform
 terraform_binary_directory: "{{ bin_directory }}"
+# Use the Terraform binary that was downloaded into the binary directory
+terraform_binary_path: "{{ terraform_binary_directory }}/terraform"
 # Use the local work directory for the Terraform project
 terraform_project_path: "{{ (work_directory, 'terraform') | path_join }}"
 # Get the Terraform backend type from the environment variables

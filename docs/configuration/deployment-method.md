@@ -22,7 +22,7 @@ To use the single node deployment method, use the `singlenode` environment in yo
 
 ```ini  title="ansible.cfg"
 [defaults]
-inventory = ../base/inventory,../singlenode/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
+inventory = ../base/inventory,../singlenode/inventory,./inventory
 ```
 
 The following variables must be set to define the properties of the K3S node:
@@ -56,7 +56,7 @@ To use the HA deployment method, use the `ha` environment in your `ansible.cfg`:
 
 ```ini  title="ansible.cfg"
 [defaults]
-inventory = ../base/inventory,../ha/inventory,../community_images/inventory,../kubernetes_templates/inventory,./inventory
+inventory = ../base/inventory,../ha/inventory,./inventory
 ```
 
 The following variables must be set to define the properties of the K3S node and the
