@@ -38,9 +38,6 @@ infra_data_volume_size: 100
 # Configuration for the HA cluster
 #####
 
-# The project id in which the cluster will be deployed
-# Must correspond to the clouds.yaml for the environment
-capi_cluster_openstack_project_id: "<openstack project id>"
 # The Kubernetes version that will be used for the HA cluster
 #   N.B. This is populated automatically using community images by default
 # capi_cluster_kubernetes_version: 1.23.8

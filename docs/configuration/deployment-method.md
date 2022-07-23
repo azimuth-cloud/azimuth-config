@@ -66,19 +66,9 @@ Cluster API managed nodes:
 # The ID of the external network
 infra_external_network_id: "<network id>"
 
-# The floating IP pool to allocate a floating IP from for the K3S node
-# Usually this is the name of the external network
-infra_floatingip_pool: "<floating ip pool>"
-
 # The ID of the flavor to use for the K3S node
 # A flavor with at least 2 CPUs and 8GB RAM is recommended
 infra_flavor_id: "<flavor id>"
-
-# The size of the volume to use for K3S cluster data
-infra_data_volume_size: 100
-
-# The project id in which the HA cluster will be deployed
-capi_cluster_openstack_project_id: "<openstack project id>"
 
 # The name of the flavor to use for control plane nodes
 # A flavor with at least 2 CPUs, 8GB RAM and 100GB root disk is recommended

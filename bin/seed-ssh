@@ -37,7 +37,7 @@ else
     fi
     echo "  }" >> "$terraform_dir/backend.tf"
     echo "}" >> "$terraform_dir/backend.tf"
-    terraform -chdir="$terraform_dir" init
+    PATH="${AZIMUTH_CONFIG_ROOT}/.bin:$PATH" terraform -chdir="$terraform_dir" init
 fi
 
 # Read the required variables from the Terraform state
