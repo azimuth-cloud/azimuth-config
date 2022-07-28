@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+#####
+# This script is designed to be run in a CI pipeline in an isolated Ubuntu 20.04 environment
+#####
+
+set -eo pipefail
+
+case "$1" in
+  provision | destroy)
+    echo "Executing operation '$1'..."
+    AZIMUTH_OPERATION="$1"
+    ;;
+  *)
+    echo "No operation given - please specify either 'provision' or 'destroy'"
+    exit 1
+    ;;
+esac
+
+if [ -n "$GIT_CRYPT_KEY_B64" ]; then
+  # Unlock the repository
+  apt update
+  apt install git-crypt
+  echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
+fi
+
+# If no config environment is specified, use the GitLab CI environment name
+if [ -z "$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
+  if [ -n "$CI_ENVIRONMENT_SLUG" ]; then
+    AZIMUTH_CONFIG_ENVIRONMENT="$CI_ENVIRONMENT_SLUG"
+  else
+    echo "No environment specified" >&2
+    exit 1
+  fi
+fi
+
+# If no environment name is specified, use the GitLab CI environment name or
+# the config environment
+if [ -z "$AZIMUTH_ENVIRONMENT" ]; then
+  AZIMUTH_ENVIRONMENT="${CI_ENVIRONMENT_SLUG:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
+fi
+
+pip install -U pip
+pip install -r requirements.txt
+
+source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+ansible-galaxy install -f -r requirements.yml
+# Force Ansible to print colours for nicer logs
+export ANSIBLE_FORCE_COLOR=true
+exec ansible-playbook "stackhpc.azimuth_ops.${AZIMUTH_OPERATION}"

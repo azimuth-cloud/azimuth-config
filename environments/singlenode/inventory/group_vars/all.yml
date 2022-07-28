@@ -2,7 +2,7 @@
 install_mode: singlenode
 
 # Give the node a name corresponding to the environment
-infra_name: "azimuth-{{ azimuth_config_environment }}"
+infra_name: "azimuth-{{ azimuth_environment }}"
 
 # Use the external IP for the infra as the Zenith SSHD host
 zenith_sshd_host: "{{ infra_external_ip }}"

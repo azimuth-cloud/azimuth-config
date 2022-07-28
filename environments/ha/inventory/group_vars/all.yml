@@ -2,6 +2,6 @@
 install_mode: ha
 
 # Give the seed node a name corresponding to the environment
-infra_name: "azimuth-{{ azimuth_config_environment }}-seed"
+infra_name: "azimuth-{{ azimuth_environment }}-seed"
 # Give the HA cluster a name corresponding to the environment
-capi_cluster_release_name: "azimuth-{{ azimuth_config_environment }}"
+capi_cluster_release_name: "azimuth-{{ azimuth_environment }}"

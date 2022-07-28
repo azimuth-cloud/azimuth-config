@@ -58,9 +58,9 @@ To use the HTTP backend, you must set *at least* the following environment varia
 AZIMUTH_TERRAFORM_BACKEND_TYPE=http
 
 # The state endpoint for the environment
-# Using the AZIMUTH_CONFIG_ENVIRONMENT variables means this is different
-# for each environment without needing environment-specific variables
-TF_HTTP_ADDRESS="https://example.org/tfstate/${AZIMUTH_CONFIG_ENVIRONMENT}"
+# Using the AZIMUTH_ENVIRONMENT variable means this is different for each environment
+# without needing environment-specific variables
+TF_HTTP_ADDRESS="https://example.org/tfstate/${AZIMUTH_ENVIRONMENT}"
 ```
 
 For the full set of available environment variables, see the Terraform docs.
@@ -89,14 +89,14 @@ AZIMUTH_TERRAFORM_BACKEND_TYPE=http
 GITLAB_PROJECT_URL="https://gitlab.com/api/v4/projects/<project id>"
 
 # The state endpoint for the environment
-TF_HTTP_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}"
+TF_HTTP_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}"
 
 # The state-locking endpoint for the environment
-TF_HTTP_LOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}/lock"
+TF_HTTP_LOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}/lock"
 TF_HTTP_LOCK_METHOD="POST"
 
 # The state-unlocking endpoint for the environment
-TF_HTTP_UNLOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}/lock"
+TF_HTTP_UNLOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}/lock"
 TF_HTTP_UNLOCK_METHOD="DELETE"
 ```
 
