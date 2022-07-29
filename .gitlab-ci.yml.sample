@@ -9,6 +9,9 @@ variables:
   GIT_STRATEGY: clone
   # Write the Azimuth URL to an envfile in the local directory
   AZIMUTH_URL_ENVFILE: azimuth.env
+  # Use the pipeline credentials for Terraform
+  TF_HTTP_USERNAME: gitlab-ci-token
+  TF_HTTP_PASSWORD: $CI_JOB_TOKEN
 
 stages:
   # This stage owns the scheduled job that checks for upstream changes
@@ -38,7 +41,6 @@ upstream_merge:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "main"
   variables:
     GIT_STRATEGY: none
-    GIT_SSL_NO_VERIFY: "true"
   script:
     # Configure git to use the available credentials
     - git config --global credential.helper store
@@ -90,7 +92,9 @@ deploy_dynamic:
     # Do not run for commits to main
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
-    # Run when a push to a branch that is not main changes one of the relevant files
+    # Allow deployments to be manually triggered even when there are no changed files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
+    # Run when there is a push to a branch that is not main changes one of the relevant files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
       changes:
         # Files that affect the dynamic environment
@@ -117,14 +121,20 @@ deploy_dynamic:
 
 #####
 # This job tears down dynamic review environments
+#
+# We need to work around the fact that the source branch may no longer exist
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/22943
 #####
 stop_dynamic:
   stage: dynamic
   rules:
-    # Do not run for commits to main
+    # These rules must match deploy_dynamic, but with manual trigger
+    # Allow the job to fail so it does not block merges
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
-    # Run when a push to a branch that is not main changes one of the relevant files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
       changes:
         # Files that affect the dynamic environment
@@ -136,13 +146,19 @@ stop_dynamic:
         - environments/site/**
         - environments/dynamic/**
       when: manual
-      # Allow the job to fail so it does not block merges
       allow_failure: true
   environment:
     name: dynamic/$CI_COMMIT_REF_SLUG
     action: stop
   variables:
     AZIMUTH_CONFIG_ENVIRONMENT: dynamic
+    GIT_STRATEGY: none
+  before_script:
+    - git clone ${CI_REPOSITORY_URL} ${CI_PROJECT_NAME}
+    - cd ${CI_PROJECT_NAME}
+    # Use the commit SHA if it still exists because git garbage collection hasn't run yet
+    # If not, assume the branch has been merged and run the destroy from main instead
+    - git checkout ${CI_COMMIT_SHA} || git checkout main
   script:
     - ./bin/ci-exec destroy
 
@@ -155,7 +171,13 @@ stop_dynamic:
 deploy_staging:
   stage: staging
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+    # Prevent the job from running on any branch that is not main
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
+    # Allow deployments to be manually triggered on main even when there are no changed files
+    - if: $CI_PIPELINE_SOURCE == "web"
+    # Run for commits to main that change particular files
+    - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         # Files that affect the staging environment
         - env
@@ -186,7 +208,14 @@ deploy_staging:
 deploy_production:
   stage: production
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+    # Prevent the job from running on any branch that is not main
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
+    # Allow deployments to be manually triggered on main even when there are no changed files
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+    # Run for commits to main that change particular files
+    - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - env
         - env.secret
