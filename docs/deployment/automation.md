@@ -6,12 +6,25 @@ deployment rather than running deployment commands manually. Using this approach
 configuration changes are automatically deployed to test, staging and production
 environments, although deployments to production typically include a manual approval.
 
-!!! note
+!!! note  "Continuous delivery vs continuous deployment"
 
     Continuous delivery is very similar to
     [Continuous Deployment](https://en.wikipedia.org/wiki/Continuous_deployment) with
     the exception that in continuous deployment, production deployments are also fully
     automated with no manual intervention or approval.
+
+!!! tip  "Using a site mixin"
+
+    To get the maximum benefit from automated deployments and the
+    [feature branch workflow](../repository/index.md#making-changes-to-your-environment),
+    you should try to minimise the differences between the production, staging and
+    [dynamic review](#per-branch-dynamic-review-environments) environments.
+
+    The best way to do this is to use a
+    [site mixin](../environments.md#using-mixin-environments) that contains all the
+    site-specific configuration that is common between your environments, e.g. extra
+    community images, custom Kubernetes templates, networking configuration, and include
+    it in each of your concrete environments.
 
 ## GitLab CI/CD
 
@@ -127,8 +140,9 @@ Instead it must allocate an IP for itself and use a dynamic DNS service like
 
 A configuration environment for dynamic review environments is set up
 [in the usual way](../configuration/index.md), subject to the caveats above. The
-following is a minimal set of Ansible variables that are required, in addition to
-the `base` and `singlenode` mixin environments:
+following is a minimal set of Ansible variables that will work for most clouds, when
+combined with the `base` and `singlenode` mixin environments (plus any site-specific
+mixin environments):
 
 ```yaml
 # Configuration for the K3S node
@@ -153,11 +167,6 @@ awx_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: notsecret
 azimuth_secret_key: notsecret
 ```
-
-!!! tip
-
-    Remember to include your site environment in the configuration for dynamic
-    review environments, if you are using one.
 
 ### Automated synchronisation of upstream changes
 
