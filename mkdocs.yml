@@ -8,11 +8,11 @@ nav:
   - try.md
   - environments.md
   - Repository:
-      - Introduction: repository/setup.md
+      - repository/index.md
       - repository/secrets.md
       - repository/terraform.md
   - Configuration:
-      - Introduction: configuration/introduction.md
+      - configuration/index.md
       - configuration/prerequisites.md
       - configuration/deployment-method.md
       - configuration/target-cloud.md
@@ -22,9 +22,11 @@ nav:
       - configuration/community-images.md
       - configuration/kubernetes.md
       - configuration/caas.md
-  - Deployment: deployment.md
+  - Deployment:
+      - deployment/index.md
+      - deployment/automation.md
   - Debugging:
-      - Introduction: debugging/introduction.md
+      - debugging/index.md
       - debugging/access-k3s.md
       - debugging/access-ha.md
       - debugging/access-monitoring.md
@@ -35,10 +37,7 @@ nav:
 theme:
   features:
     - navigation.tracking
-    - navigation.tabs
-    # - navigation.tabs.sticky
-    - navigation.sections
-    - toc.integrate
+    - navigation.indexes
     - navigation.top
   name: material
 

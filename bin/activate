@@ -6,16 +6,21 @@
 #####
 
 if [ -z "$1" ]; then
-    echo "Usage: source /path/to/activate [environment]" >&2
+    echo "Usage: source /path/to/activate <config-environment> [environment-name]" >&2
     return 1
 fi
 
+# AZIMUTH_ENVIRONMENT is the name of the environment
+# AZIMUTH_CONFIG_ENVIRONMENT is the name of the configuration directory to use in ./environments
+# In most cases they will be the same, however for dynamic review configurations they will be different
 AZIMUTH_CONFIG_ENVIRONMENT="$1"
+AZIMUTH_ENVIRONMENT="${2:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
+
 AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
 AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
 
 if [ ! -d "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Unrecognised environment '$1'" >&2
+    echo "Unrecognised config environment '$AZIMUTH_CONFIG_ENVIRONMENT'" >&2
     return 1
 fi
 
@@ -52,6 +57,7 @@ fi
 
 # Only export the environment variables if the environment is a concrete environment
 export \
+  AZIMUTH_ENVIRONMENT \
   AZIMUTH_CONFIG_ENVIRONMENT \
   AZIMUTH_CONFIG_ROOT \
   AZIMUTH_CONFIG_ENVIRONMENT_ROOT \
@@ -92,4 +98,4 @@ if [ -f "$AZIMUTH_VENV/bin/activate" ]; then
   source "$AZIMUTH_VENV/bin/activate"
 fi
 
-echo "Activated environment at $AZIMUTH_CONFIG_ENVIRONMENT_ROOT"
+echo "Activated environment '$AZIMUTH_ENVIRONMENT' using config at $AZIMUTH_CONFIG_ENVIRONMENT_ROOT"

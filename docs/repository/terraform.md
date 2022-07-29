@@ -18,7 +18,7 @@ By default `azimuth-ops` will use the `local` backend, which stores the Terrafor
 a file on the local disk in the `.work` directory. This requires no explicit configuration,
 but comes with the usual caveats about keeping important state on your local machine.
 
-!!! warning
+!!! danger  "Not suitable for production"
 
     Local state is sufficient for a demonstration or evaluation, but for a shared or
     production deployment it is recommended to use remote state.
@@ -58,9 +58,9 @@ To use the HTTP backend, you must set *at least* the following environment varia
 AZIMUTH_TERRAFORM_BACKEND_TYPE=http
 
 # The state endpoint for the environment
-# Using the AZIMUTH_CONFIG_ENVIRONMENT variables means this is different
-# for each environment without needing environment-specific variables
-TF_HTTP_ADDRESS="https://example.org/tfstate/${AZIMUTH_CONFIG_ENVIRONMENT}"
+# Using the AZIMUTH_ENVIRONMENT variable means this is different for each environment
+# without needing environment-specific variables
+TF_HTTP_ADDRESS="https://example.org/tfstate/${AZIMUTH_ENVIRONMENT}"
 ```
 
 For the full set of available environment variables, see the Terraform docs.
@@ -89,14 +89,14 @@ AZIMUTH_TERRAFORM_BACKEND_TYPE=http
 GITLAB_PROJECT_URL="https://gitlab.com/api/v4/projects/<project id>"
 
 # The state endpoint for the environment
-TF_HTTP_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}"
+TF_HTTP_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}"
 
 # The state-locking endpoint for the environment
-TF_HTTP_LOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}/lock"
+TF_HTTP_LOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}/lock"
 TF_HTTP_LOCK_METHOD="POST"
 
 # The state-unlocking endpoint for the environment
-TF_HTTP_UNLOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_CONFIG_ENVIRONMENT}/lock"
+TF_HTTP_UNLOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONMENT}/lock"
 TF_HTTP_UNLOCK_METHOD="DELETE"
 ```
 
@@ -109,6 +109,13 @@ available, you can configure a project access token and store it (encrypted!) in
 TF_HTTP_USERNAME="project_<id>_bot"
 TF_HTTP_PASSWORD="<project access token>"
 ```
+
+!!! tip
+
+    If you are
+    [using GitLab CI/CD to automate deployments](../deployment/automation.md#gitlab-cicd)
+    then you do not need to set `TF_HTTP_{USERNAME,PASSWORD}` as the pipeline will be
+    issued with a token.
 
 If you are using personal GitLab credentials, then they should not be committed to the
 repository, even encrypted, because it is not possible to set the project scope.

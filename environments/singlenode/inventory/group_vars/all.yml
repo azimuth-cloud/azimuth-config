@@ -2,7 +2,10 @@
 install_mode: singlenode
 
 # Give the node a name corresponding to the environment
-infra_name: "azimuth-{{ azimuth_config_environment }}"
+infra_name: "azimuth-{{ azimuth_environment }}"
+
+# By default, use a base domain from a dynamic DNS service derived from the allocated floating IP
+ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
 
 # Use the external IP for the infra as the Zenith SSHD host
 zenith_sshd_host: "{{ infra_external_ip }}"

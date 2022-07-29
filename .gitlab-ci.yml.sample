@@ -1,0 +1,206 @@
+---
+
+default:
+  image: python:3.9
+
+variables:
+  # Because we are installing git-crypt as part of the job, we cannot reuse old
+  # checkouts where git-crypt is already initialised as this results in an error
+  GIT_STRATEGY: clone
+  # Write the Azimuth URL to an envfile in the local directory
+  AZIMUTH_URL_ENVFILE: azimuth.env
+
+stages:
+  # This stage owns the scheduled job that checks for upstream changes
+  - upstream-merge
+  # This stage owns the deploy and teardown jobs for dynamic environments
+  - dynamic
+  # This stage owns the deploy job for our staging environment
+  - staging
+  # This stage owns the deploy job for our production environment
+  - production
+
+#####
+# This job checks to see if there are changes from upstream to be merged
+#
+# If there are, it will create a new branch containing the changes and a corresponding merge request
+#
+# It runs as a scheduled job, for which a suitable schedule must be defined, e.g. daily or weekly
+#
+# This job writes back to the repository and to the merge requests API
+# To do this, it needs more power than is granted to the CI token
+# So CI variables must be set that contain an access token and the corresponding username
+# This can be a Project Access Token (paid feature) or a Personal Access Token (not ideal)
+#####
+upstream_merge:
+  stage: upstream-merge
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "main"
+  variables:
+    GIT_STRATEGY: none
+    GIT_SSL_NO_VERIFY: "true"
+  script:
+    # Configure git to use the available credentials
+    - git config --global credential.helper store
+    # Do our own clone to make sure we don't get unrelated history errors from detached heads
+    - git clone https://${GITLAB_PAT_USERNAME}:${GITLAB_PAT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git ${CI_PROJECT_NAME}
+    - cd ${CI_PROJECT_NAME}
+    # Tell git who we are for commits
+    - git config user.email "${CI_PROJECT_PATH_SLUG}-ci@${CI_SERVER_HOST}"
+    - git config user.name "${CI_PROJECT_NAME} CI"
+    # Create the merge branch
+    - ./bin/create-merge-branch
+    # Create a merge request for the branch
+    - |
+        if [ -f ".mergeenv" ]; then
+          source ".mergeenv"
+          BODY="{
+            \"id\": ${CI_PROJECT_ID},
+            \"title\": \"[$UPSTREAM_COMMIT] Merge changes from upstream\",
+            \"source_branch\": \"${BRANCH_NAME}\",
+            \"target_branch\": \"main\",
+            \"remove_source_branch\": true,
+            \"assignee_id\": \"${GITLAB_USER_ID}\"
+          }"
+          curl -kfsSL -X POST \
+            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+            --header "Authorization: Bearer ${GITLAB_PAT_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "${BODY}"
+        fi
+
+#####
+# This job deploys a dynamic review environment for the current branch
+#
+# Runs for every commit to every branch except main
+#
+# Each environment is a single node deployment that is isolated from the other
+# branches with it's own GitLab environment, Terraform state and OpenStack resources
+# (although they do share an OpenStack project)
+#
+# This allows configuration changes to be tested  before being merged to main,
+# subject to the differences between the dynamic and staging/production environments
+#
+# It is recommended to use a site mixin for the common configuration to increase the
+# efficacy of this process!
+#####
+deploy_dynamic:
+  stage: dynamic
+  rules:
+    # Do not run for commits to main
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    # Run when a push to a branch that is not main changes one of the relevant files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+      changes:
+        # Files that affect the dynamic environment
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**
+        - environments/singlenode/**
+        - environments/site/**
+        - environments/dynamic/**
+  artifacts:
+    reports:
+      dotenv: azimuth.env
+  environment:
+    name: dynamic/$CI_COMMIT_REF_SLUG
+    url: $AZIMUTH_URL
+    on_stop: stop_dynamic
+  variables:
+    # This is normally taken from the GitLab environment name, but in this case that
+    # depends on the branch name so we need to be explicit about the config to use
+    AZIMUTH_CONFIG_ENVIRONMENT: dynamic
+  script:
+    - ./bin/ci-exec provision
+
+#####
+# This job tears down dynamic review environments
+#####
+stop_dynamic:
+  stage: dynamic
+  rules:
+    # Do not run for commits to main
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    # Run when a push to a branch that is not main changes one of the relevant files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+      changes:
+        # Files that affect the dynamic environment
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**
+        - environments/singlenode/**
+        - environments/site/**
+        - environments/dynamic/**
+      when: manual
+      # Allow the job to fail so it does not block merges
+      allow_failure: true
+  environment:
+    name: dynamic/$CI_COMMIT_REF_SLUG
+    action: stop
+  variables:
+    AZIMUTH_CONFIG_ENVIRONMENT: dynamic
+  script:
+    - ./bin/ci-exec destroy
+
+#####
+# This job deploys Azimuth to the staging environment
+#
+# It runs automatically for every commit to main that changes one of the files
+# that affects the environment
+#####
+deploy_staging:
+  stage: staging
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+      changes:
+        # Files that affect the staging environment
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**
+        - environments/ha/**
+        - environments/site/**
+        - environments/staging/**
+  artifacts:
+    reports:
+      dotenv: azimuth.env
+  environment:
+    name: staging
+    url: $AZIMUTH_URL
+  script:
+    - ./bin/ci-exec provision
+
+#####
+# This job deploys Azimuth to the production environment
+#
+# It runs for every commit to main that changes one of the files that affects
+# the environment, but only if the staging deployment succeeded
+#
+# It also includes a manual gate that can be used as a confirmation that the
+# relevant testing has taken place on staging
+#####
+deploy_production:
+  stage: production
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+      changes:
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**
+        - environments/ha/**
+        - environments/site/**
+        - environments/production/**
+      when: manual
+  artifacts:
+    reports:
+      dotenv: azimuth.env
+  environment:
+    name: production
+    url: $AZIMUTH_URL
+  script:
+    - ./bin/ci-exec provision

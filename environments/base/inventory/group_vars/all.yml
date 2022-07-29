@@ -3,6 +3,7 @@
 #####
 
 # Convert envvars for the active environment into Ansible variables
+azimuth_environment: "{{ lookup('env', 'AZIMUTH_ENVIRONMENT') }}"
 azimuth_config_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ROOT') }}"
 azimuth_config_environment: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT') }}"
 azimuth_config_environment_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT_ROOT') }}"
@@ -10,7 +11,7 @@ azimuth_config_environment_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT_R
 # If the task is running locally, use local work and bin directories
 # Otherwise, use directories on the host
 local_bin_directory: "{{ (azimuth_config_root, '.bin') | path_join }}"
-local_work_directory: "{{ (azimuth_config_root, '.work', azimuth_config_environment) | path_join }}"
+local_work_directory: "{{ (azimuth_config_root, '.work', azimuth_environment) | path_join }}"
 bin_directory: "{{ local_bin_directory if ansible_connection == 'local' else '/usr/local/bin' }}"
 work_directory: "{{ local_work_directory if ansible_connection == 'local' else ansible_env.HOME }}"
 
@@ -98,6 +99,32 @@ ingress_tls_annotations: >-
 ingress_tls_enabled: "{{ not not (ingress_tls_wildcard_certificate or ingress_tls_annotations) }}"
 # The name of the secret containing the wildcard certificate
 ingress_tls_secret_name: "{{ 'azimuth-tls' if ingress_tls_wildcard_certificate else None }}"
+
+# Infer the OpenStack auth URL from the configured credential by default
+__os_cloud: >-
+  {{-
+    lookup(
+      'env',
+      'OS_CLOUD',
+      default = undef(hint = 'OS_CLOUD is not set')
+    )
+  }}
+#   This is the local path to the application credential
+__os_clouds_file: >-
+  {{-
+    lookup(
+      'env',
+      'OS_CLIENT_CONFIG_FILE',
+      default = undef(hint = 'OS_CLIENT_CONFIG_FILE is not set')
+    )
+  }}
+__os_auth_url: >-
+  {{-
+    lookup('file', __os_clouds_file) |
+      from_yaml |
+      json_query('clouds.' + __os_cloud + '.auth.auth_url')
+  }}
+azimuth_openstack_auth_url: "{{ __os_auth_url | trim('/') }}/v3"
 
 # Use the current project ID for the HA CAPI cluster
 capi_cluster_openstack_project_id: >-

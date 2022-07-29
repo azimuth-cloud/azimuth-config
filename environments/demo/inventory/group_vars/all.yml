@@ -48,45 +48,21 @@ azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: >-
 # Upload images as private
 # CaaS/Kubernetes will only work within the tenancy in which Azimuth is deployed
 community_images_default_visibility: private
-
-# Use a base domain from a dynamic DNS service derived from the allocated floating IP
-ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
+# However don't assume we are in control of the images, e.g. if there is another
+# Azimuth deployment on the same cloud
+community_images_update_existing_visibility: false
 
 # Disable HTTPS and certificate verification everywhere to avoid certificate issues
 ingress_tls_enabled: false
 
-# We should be able to infer the OpenStack auth URL from the configured app cred
-__os_cloud: >-
-  {{-
-    lookup(
-      'env',
-      'OS_CLOUD',
-      default = undef(hint = 'OS_CLOUD is not set')
-    )
-  }}
-#   This is the local path to the application credential
-__os_clouds_file: >-
-  {{-
-    lookup(
-      'env',
-      'OS_CLIENT_CONFIG_FILE',
-      default = undef(hint = 'OS_CLIENT_CONFIG_FILE is not set')
-    )
-  }}
-__os_auth_url: >-
-  {{-
-    lookup('file', __os_clouds_file) |
-      from_yaml |
-      json_query('clouds.' + __os_cloud + '.auth.auth_url')
-  }}
-azimuth_openstack_auth_url: "{{ __os_auth_url | trim('/') }}/v3"
+# Disable SSL verification for OpenStack in case it uses a custom CA
 azimuth_openstack_verify_ssl: false
 
 azimuth_current_cloud_name: demo
 
 # Use secrets that are not really secret for ease
 harbor_admin_password: admin
-harbor_secret_key: effc5a524681b5d3
+harbor_secret_key: abcdefghijklmnop
 awx_admin_password: admin
-zenith_registrar_subdomain_token_signing_key: 97b5c0c42c0e2b0524413a7309132f4a665aff6395815ac220748ba042da2060
-azimuth_secret_key: 445d84fd84c3af7b1cbd937131be1482741e11ac52e8d175533cfbd8abd11739
+zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
+azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
