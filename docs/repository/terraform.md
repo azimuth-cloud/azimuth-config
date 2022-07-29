@@ -100,30 +100,45 @@ TF_HTTP_UNLOCK_ADDRESS="${GITLAB_PROJECT_URL}/terraform/state/${AZIMUTH_ENVIRONM
 TF_HTTP_UNLOCK_METHOD="DELETE"
 ```
 
-If your GitLab installation has
-[bot users for projects](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html#bot-users-for-projects)
+The username and password (or token) that are used to authenticate with GitLab to manage
+the Terraform state are set using the `TF_HTTP_USERNAME` and `TF_HTTP_PASSWORD` environment
+variables respectively.
+
+If you are [using GitLab CI/CD to automate deployments](../deployment/automation.md#gitlab-cicd),
+then the pipeline will be issued with a suitable token. The
+[sample configuration](https://github.com/stackhpc/azimuth-config/blob/main/.gitlab-ci.yml.sample)
+includes configuration to populate these variables using this token.
+
+If you are not using automation but your GitLab installation has
+[project access tokens](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
 available, you can configure a project access token and store it (encrypted!) in the
-`env.secret` file:
+`env.secret` file, referencing the bot username:
 
 ```sh  title="env.secret"
 TF_HTTP_USERNAME="project_<id>_bot"
 TF_HTTP_PASSWORD="<project access token>"
 ```
 
-!!! tip
+If you need to access an environment deployed using automation, or you do not have project
+access tokens available, then you can use a
+[Personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html),
+which at least avoids using your password.
 
-    If you are
-    [using GitLab CI/CD to automate deployments](../deployment/automation.md#gitlab-cicd)
-    then you do not need to set `TF_HTTP_{USERNAME,PASSWORD}` as the pipeline will be
-    issued with a token.
+!!! danger  "Committing personal access tokens"
 
-If you are using personal GitLab credentials, then they should not be committed to the
-repository, even encrypted, because it is not possible to set the project scope.
-Instead, you can export them before activating your environment:
+    You should **never** commit a personal access token to the configuration repository,
+    even encrypted, because it is not possible to set a project scope.
+
+If using a personal access token, you should export the relevant variables before activating
+an environment:
 
 ```sh
+# Export directly
 export TF_HTTP_USERNAME="<username>"
 export TF_HTTP_PASSWORD="<token>"
+
+# Export from a file that has been added to .gitignore
+export $(cat env.gitlab-creds | xargs)
 
 source ./bin/activate my-site
 ```
