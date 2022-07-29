@@ -5,3 +5,8 @@ install_mode: ha
 infra_name: "azimuth-{{ azimuth_environment }}-seed"
 # Give the HA cluster a name corresponding to the environment
 capi_cluster_release_name: "azimuth-{{ azimuth_environment }}"
+
+# By default, use a base domain from a dynamic DNS service derived from the FIP
+# assigned to the ingress controller's load balancer
+ingress_base_domain: >-
+  apps.{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io

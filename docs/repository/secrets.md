@@ -86,7 +86,7 @@ git clone $REPOSITORY_URL
 cd $REPOSITORY_DIR
 
 # Unlock it using the base64-encoded key
-echo $GIT_CRYPT_KEY_B64 | base64 -D | git-crypt unlock -
+echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
 ```
 
 ### Using GPG keys

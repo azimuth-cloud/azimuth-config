@@ -58,10 +58,34 @@ git commit -m "Made some changes to my environment"
 git push
 ```
 
+## Making changes to your environment
+
+Once you have an environment deployed, it is recommended to use a
+[feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
+when making changes to your configuration repository.
+
+!!! tip "Automated deployments"
+
+    The feature branch workflow works particularly well when you use a
+    [continuous delivery approach to automate deployments](../deployment/automation.md).
+
+In this workflow, the required changes are made on a branch in the configuration repository.
+Once you are happy with the changes, you create a merge (or pull) request proposing the
+changes to `main`. These changes can then be reviewed before being merged to `main`.
+
+If you have automated deployments, the branch may even get a dynamic environment created
+for it where the result of the changes can be verified before the merge takes place.
+
 ## Synchronising changes from upstream
 
 Over time, as Azimuth changes, the best-practice configuration will also change to point
 at new Azimuth versions, upgraded dependencies and new images.
+
+!!! tip
+
+    This process
+    [can be automated](../deployment/automation.md#automated-synchronisation-of-upstream-changes)
+    if you have the tooling available.
 
 To incorporate the latest changes into your site-specific repository, use the following:
 
@@ -71,9 +95,13 @@ git merge upstream/main
 ```
 
 At this point, you will need to fix any conflicts where you have made changes to the same
-files that have been changed by `azimuth-config`. To avoid this, it is recommended not to
-modify any files that come from `azimuth-config` - instead you should use the environment
-layering to override variables where required.
+files that have been changed by `azimuth-config`.
+
+!!! danger  "Avoiding conflicts"
+
+    To avoid conflicts, you should **never** directly modify any files that come from
+    `azimuth-config` - instead you should use the environment layering to override
+    variables where required, and copy files if necessary.
 
 Once any conflicts have been resolved, you can commit and push the changes:
 

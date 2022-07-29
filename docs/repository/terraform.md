@@ -18,7 +18,7 @@ By default `azimuth-ops` will use the `local` backend, which stores the Terrafor
 a file on the local disk in the `.work` directory. This requires no explicit configuration,
 but comes with the usual caveats about keeping important state on your local machine.
 
-!!! warning
+!!! danger  "Not suitable for production"
 
     Local state is sufficient for a demonstration or evaluation, but for a shared or
     production deployment it is recommended to use remote state.
@@ -109,6 +109,13 @@ available, you can configure a project access token and store it (encrypted!) in
 TF_HTTP_USERNAME="project_<id>_bot"
 TF_HTTP_PASSWORD="<project access token>"
 ```
+
+!!! tip
+
+    If you are
+    [using GitLab CI/CD to automate deployments](../deployment/automation.md#gitlab-cicd)
+    then you do not need to set `TF_HTTP_{USERNAME,PASSWORD}` as the pipeline will be
+    issued with a token.
 
 If you are using personal GitLab credentials, then they should not be committed to the
 repository, even encrypted, because it is not possible to set the project scope.
