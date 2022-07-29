@@ -7,6 +7,8 @@ variables:
   # Because we are installing git-crypt as part of the job, we cannot reuse old
   # checkouts where git-crypt is already initialised as this results in an error
   GIT_STRATEGY: clone
+  # Write the Azimuth URL to an envfile in the local directory
+  AZIMUTH_URL_ENVFILE: azimuth.env
 
 stages:
   # This stage owns the scheduled job that checks for upstream changes
@@ -99,8 +101,12 @@ deploy_dynamic:
         - environments/singlenode/**
         - environments/site/**
         - environments/dynamic/**
+  artifacts:
+    reports:
+      dotenv: azimuth.env
   environment:
     name: dynamic/$CI_COMMIT_REF_SLUG
+    url: $AZIMUTH_URL
     on_stop: stop_dynamic
   variables:
     # This is normally taken from the GitLab environment name, but in this case that
@@ -159,9 +165,12 @@ deploy_staging:
         - environments/ha/**
         - environments/site/**
         - environments/staging/**
+  artifacts:
+    reports:
+      dotenv: azimuth.env
   environment:
     name: staging
-    url: https://portal.apps.staging.example.org
+    url: $AZIMUTH_URL
   script:
     - ./bin/ci-exec provision
 
@@ -187,8 +196,11 @@ deploy_production:
         - environments/site/**
         - environments/production/**
       when: manual
+  artifacts:
+    reports:
+      dotenv: azimuth.env
   environment:
     name: production
-    url: https://portal.apps.example.org
+    url: $AZIMUTH_URL
   script:
     - ./bin/ci-exec provision
