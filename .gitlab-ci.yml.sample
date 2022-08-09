@@ -8,7 +8,7 @@ variables:
   # checkouts where git-crypt is already initialised as this results in an error
   GIT_STRATEGY: clone
   # Write the Azimuth URL to an envfile in the local directory
-  AZIMUTH_URL_ENVFILE: azimuth.env
+  AZIMUTH_URL_ENVFILE: ${CI_PROJECT_DIR}/azimuth.env
   # Use the pipeline credentials for Terraform
   TF_HTTP_USERNAME: gitlab-ci-token
   TF_HTTP_PASSWORD: $CI_JOB_TOKEN
