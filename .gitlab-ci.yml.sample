@@ -101,10 +101,10 @@ deploy_dynamic:
         - env
         - env.secret
         - requirements.yml
-        - environments/base/**
-        - environments/singlenode/**
-        - environments/site/**
-        - environments/dynamic/**
+        - environments/base/**/*
+        - environments/singlenode/**/*
+        - environments/site/**/*
+        - environments/dynamic/**/*
   artifacts:
     reports:
       dotenv: azimuth.env
@@ -141,10 +141,10 @@ stop_dynamic:
         - env
         - env.secret
         - requirements.yml
-        - environments/base/**
-        - environments/singlenode/**
-        - environments/site/**
-        - environments/dynamic/**
+        - environments/base/**/*
+        - environments/singlenode/**/*
+        - environments/site/**/*
+        - environments/dynamic/**/*
       when: manual
       allow_failure: true
   environment:
@@ -183,10 +183,10 @@ deploy_staging:
         - env
         - env.secret
         - requirements.yml
-        - environments/base/**
-        - environments/ha/**
-        - environments/site/**
-        - environments/staging/**
+        - environments/base/**/*
+        - environments/ha/**/*
+        - environments/site/**/*
+        - environments/staging/**/*
   artifacts:
     reports:
       dotenv: azimuth.env
@@ -220,10 +220,10 @@ deploy_production:
         - env
         - env.secret
         - requirements.yml
-        - environments/base/**
-        - environments/ha/**
-        - environments/site/**
-        - environments/production/**
+        - environments/base/**/*
+        - environments/ha/**/*
+        - environments/site/**/*
+        - environments/production/**/*
       when: manual
   artifacts:
     reports:
