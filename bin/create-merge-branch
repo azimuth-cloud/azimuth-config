@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+#####
+# This script creates a branch that merges the latest upstream changes
+#####
+
+set -e
+
+# Only allow running on main
+CURRENT_BRANCH="$(git branch --show-current)"
+if [ "$CURRENT_BRANCH" != "main" ]; then
+  echo "[ERROR] This script can only be run on the main branch" >&2
+  exit 1
+fi
+
+if [ -n "$(git status --short)" ]; then
+  echo "[ERROR] This script cannot run with uncommitted changes" >&2
+  exit 1
+fi
+
+if ! git remote show upstream > /dev/null 2>&1; then
+  echo "[INFO] Adding upstream remote..."
+  git remote add upstream https://github.com/stackhpc/azimuth-config.git
+fi
+
+git remote show upstream
+
+echo "[INFO] Fetching remote branches..."
+git fetch upstream
+
+# Use the short sha from the upstream branch to distinguish merge branches
+UPSTREAM_COMMIT="$(git rev-parse --short upstream/main)"
+BRANCH_NAME="upstream-merge-${UPSTREAM_COMMIT}"
+
+# Check if the branch already exists on the origin
+# If it does, there is nothing more to do as the branch can be rebased from the MR if required
+if git show-branch "remotes/origin/$BRANCH_NAME" >/dev/null 2>&1; then
+  echo "[INFO] Merge branch already created for commit '${UPSTREAM_COMMIT}'"
+  exit
+fi
+
+echo "[INFO] Attempting to merge from upstream"
+git merge --strategy recursive -X theirs --no-commit upstream/main
+
+# Check if the merge resulted in any changes being staged
+if [ -n "$(git status --short)" ]; then
+  echo "[INFO] Merge resulted in the following changes"
+  git status
+
+  echo "[INFO] Checking out temporary branch '$BRANCH_NAME'..."
+  git checkout -b "$BRANCH_NAME"
+
+  echo "[INFO] Committing changes from upstream"
+  git commit -m "Merging changes from upstream"
+
+  echo "[INFO] Pushing changes to origin"
+  git push --set-upstream origin "$BRANCH_NAME"
+
+  # Go back to the main branch at the end
+  echo "[INFO] Reverting back to main"
+  git checkout main
+
+  echo "[INFO] Removing temporary branch"
+  git branch -d "$BRANCH_NAME"
+
+  # Write a file containing the branch name and upstream commit
+  # for automatic PR or MR creation that follows
+  echo "BRANCH_NAME=\"$BRANCH_NAME\"" > .mergeenv
+  echo "UPSTREAM_COMMIT=\"$UPSTREAM_COMMIT\"" >> .mergeenv
+else
+  echo "[INFO] Merge resulted in no changes"
+fi
