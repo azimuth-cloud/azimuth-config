@@ -23,7 +23,7 @@ If you prefer to manage your own virtual environments then you must ensure that
 the correct environment is activated and has the required dependencies installed
 before continuing. For example, if you use [pyenv](https://github.com/pyenv/pyenv)
 you can set the `PYENV_VERSION` environment variable
-[in your azimuth-config environment](./environments.md#linux-environment-variables):
+[in your azimuth-config environment](../environments.md#linux-environment-variables):
 
 ```sh  title="env"
 PYENV_VERSION=azimuth-config

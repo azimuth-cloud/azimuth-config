@@ -80,6 +80,32 @@ images using another mechanism, suitable images can be built using the
 The ID of the image for a particular Kubernetes version must be given in the cluster
 template.
 
+## Availability zones
+
+By default, an Azimuth installation assumes that there is a single
+[availability zone (AZ)](https://docs.openstack.org/nova/latest/admin/availability-zones.html)
+called `nova` - this is the default set up and common for small-to-medium sized clouds.
+
+If this is not the case for your target cloud, you can set some variables to determine
+the availability zones that are used for Kubernetes nodes. The possible options are discussed in
+[Availability Zones for Kubernetes nodes](./deployment-method.md#availability-zones-for-kubernetes-nodes).
+
+The relevant variables are:
+
+```yaml
+# Indicates whether to omit the failure domain (AZ) from control plane nodes
+azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
+
+# The AZs to consider for control plane nodes
+#   Only used if the flag above is false
+azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
+
+# The AZ to use for workers
+azimuth_capi_operator_capi_helm_worker_failure_domain: az1
+# Set to null to omit the AZ from worker nodes
+azimuth_capi_operator_capi_helm_worker_failure_domain: null
+```
+
 ## Cluster templates
 
 `azimuth-ops` is able to manage the available Kubernetes cluster templates using the

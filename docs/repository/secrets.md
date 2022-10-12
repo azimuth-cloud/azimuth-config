@@ -104,7 +104,7 @@ To add a GPG key to your repository, use the following command:
 git-crypt add-gpg-user USER_ID
 ```
 
-where `USER_ID` is key ID, a full fingerprint, an email address, or anything else that
+where `USER_ID` is a key ID, a full fingerprint, an email address, or anything else that
 uniquely identifies a public key to GPG.
 
 You will then need to push the changes to the repository that encode the user's access:

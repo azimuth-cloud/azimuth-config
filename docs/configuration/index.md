@@ -18,5 +18,5 @@ consulted directly.
     architectures before continuing.
 
     It is assumed that you have already followed the steps in
-    [Setting up a configuration repository](../repository/setup.md), and so have an environment for your
+    [Setting up a configuration repository](../repository/index.md), and so have an environment for your
     site that is ready to be configured.
