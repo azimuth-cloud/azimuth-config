@@ -18,7 +18,7 @@ be produced.
 ## Deploying a demo instance
 
 The Azimuth deployment requires a
-[clouds.yaml](https://docs.openstack.org/python-openstackclient/pike/configuration/index.html#clouds-yaml)
+[clouds.yaml](https://docs.openstack.org/python-openstackclient/latest/configuration/index.html#clouds-yaml)
 to run. Ideally, this should be an
 [Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html).
 
@@ -47,7 +47,9 @@ ansible-galaxy install -f -r requirements.yml
 ansible-playbook stackhpc.azimuth_ops.provision
 ```
 
-The URL for the Azimuth UI is printed at the end of the playbook run.
+The URL for the Azimuth UI is printed at the end of the playbook run. The
+credentials you use to authenticate with Azimuth are the same as you would
+use with the underlying OpenStack cloud.
 
 !!! warning
 
@@ -70,7 +72,7 @@ chance of running on any given cloud:
     for a DNS entry to be provisioned in advance.
   * TLS is disabled for [ingress](./configuration/ingress.md), allowing the
     Azimuth to work even when the deployment is not reachable from the
-    internet (*outboud* internet connectivity is still required).
+    internet (*outbound* internet connectivity is still required).
   * Verification of SSL certificates for the OpenStack API is disabled,
     allowing Azimuth to work even when the target cloud uses a custom CA.
   * The deployment secrets are **not secret**, as they are stored in plain

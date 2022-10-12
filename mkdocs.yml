@@ -35,11 +35,16 @@ nav:
       - debugging/caas.md
 
 theme:
+  name: material
+  logo: assets/azimuth-logo-white.png
+  favicon: assets/azimuth-logo-blue.png
   features:
     - navigation.tracking
     - navigation.indexes
     - navigation.top
-  name: material
+
+extra_css:
+  - assets/extra.css
 
 markdown_extensions:
   - tables

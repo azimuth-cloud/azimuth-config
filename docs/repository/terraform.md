@@ -124,7 +124,7 @@ access tokens available, then you can use a
 [Personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html),
 which at least avoids using your password.
 
-!!! danger  "Committing personal access tokens"
+!!! danger  "Never commit personal access tokens"
 
     You should **never** commit a personal access token to the configuration repository,
     even encrypted, because it is not possible to set a project scope.

@@ -10,7 +10,8 @@ updated images, CaaS appliance versions or Kubernetes versions.
 
 First make an empty Git repository using your service of choice (e.g.
 [GitHub](https://github.com/) or [GitLab](https://about.gitlab.com/)), then execute the
-following commands to turn the new empty repository into a copy of this repository:
+following commands to turn the new empty repository into a copy of the `azimuth-config`
+repository:
 
 ```sh
 # Clone the azimuth-config repository
@@ -30,7 +31,7 @@ git push -u origin main
 ```
 
 You now have an independent copy of the `azimuth-config` repository that has a link back
-to this repository via the `upstream` remote.
+to the source repository via the `upstream` remote.
 
 ## Creating a new environment
 
@@ -43,10 +44,9 @@ cp -r ./environments/example ./environments/my-site
 
 !!! tip
 
-    Copying the `example` environment, leaving the `example` environment in place, rather
-    than just renaming it avoids conflicts when synchronising changes from the
-    `azimuth-config` repository in the case where `azimuth-config` has changed the
-    `example` environment.
+    Copying the `example` environment, rather than just renaming it, avoids conflicts
+    when synchronising changes from the `azimuth-config` repository where the `example`
+    environment has changed.
 
 Once you have your new environment, you can make the required changes for your site.
 
