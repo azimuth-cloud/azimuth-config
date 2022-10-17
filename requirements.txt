@@ -1,3 +1,4 @@
 ansible-core
 jmespath
 python-openstackclient
+python-octaviaclient
