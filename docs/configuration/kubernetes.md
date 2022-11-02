@@ -2,18 +2,21 @@
 
 Kubernetes support in Azimuth is implemented using [Cluster API](https://cluster-api.sigs.k8s.io/)
 with the [OpenStack provider](https://github.com/kubernetes-sigs/cluster-api-provider-openstack).
+Support for cluster addons is provided by the
+[Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider), which
+provides functionality for installing [Helm](https://helm.sh/) charts and additional manifests.
 
 Azimuth provides an opinionated interface on top of Cluster API by implementing
 [its own Kubernetes operator](https://github.com/stackhpc/azimuth-capi-operator).
-This operator exposes two new
+This operator exposes two
 [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 which are used by the Azimuth API to manage Kubernetes clusters:
 
 `clustertemplates.azimuth.stackhpc.com`
 : A cluster template represents a "type" of Kubernetes cluster. In particular, this is used
-  to provide different Kubernetes versions, but can also be used to provide advanced configuration
-  options, e.g. networking configuration or additional addons, that are not exposed to the
-  end user. Cluster templates can be deprecated, e.g. when a new Kubernetes version is released,
+  to provide different Kubernetes versions, but can also be used to provide advanced
+  options, e.g. networking configuration or additional addons that are installed by default on
+  the cluster. Cluster templates can be deprecated, e.g. when a new Kubernetes version is released,
   resulting in a warning being shown to the user that they should upgrade.
 
 `clusters.azimuth.stackhpc.com`
@@ -23,10 +26,8 @@ which are used by the Azimuth API to manage Kubernetes clusters:
   auto-healing and whether the monitoring stack is deployed on the cluster.
 
 For each `Cluster`, the operator manages a release of the
-[stackhpc/capi-helm-charts/openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster).
-The Helm release in turn manages Cluster API resources for the cluster along with
-a number of [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/)
-that manage the addons for the cluster.
+[openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster).
+The Helm release in turn manages Cluster API resources for the cluster, including addons.
 
 To get the values for the release, the operator first derives some values from the `Cluster`
 object which are merged with the values defined in the referenced template. The result of
@@ -41,7 +42,7 @@ passed to Helm.
     clusters provisioned using Azimuth.
     
     In general, any of the options available for the
-    [stackhpc/capi-helm-charts/openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster)
+    [openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster)
     can be set using either the `azimuth_capi_operator_capi_helm_values_overrides` variable
     (for global configuration) or the `values` section for a specific Kubernetes template.
 
@@ -134,14 +135,18 @@ e.g. for advanced networking configurations, you can specify them using the foll
 
 ```yaml
 azimuth_capi_operator_cluster_templates_extra:
+  # The index in the dict is the template name
   kube-1-24-2-sriov:
+    # A human-readable label for the template
     label: v1.24.2 / SR-IOV
+    # A brief description of the template
     description: >-
       Kubernetes 1.24.2 with HA control plane and high-performance networking.
+    # Values for the openstack-cluster Helm chart
     values:
       # Specify the image and version for the cluster
-      global:
-        kubernetesVersion: 1.24.2
+      # These are the only required values
+      kubernetesVersion: 1.24.2
       machineImageId: "{{ community_images_image_ids.kube_1_24_2 }}"
       # Use the network tagged for SR-IOV
       clusterNetworking:

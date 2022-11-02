@@ -21,6 +21,7 @@ nav:
       - configuration/zenith.md
       - configuration/community-images.md
       - configuration/kubernetes.md
+      - configuration/kubernetes-apps.md
       - configuration/caas.md
   - Deployment:
       - deployment/index.md
@@ -60,3 +61,4 @@ markdown_extensions:
 plugins:
   - git-revision-date-localized:
       enable_creation_date: true
+  - search
