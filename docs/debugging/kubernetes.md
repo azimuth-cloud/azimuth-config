@@ -4,15 +4,15 @@ As described in [Configuring Kubernetes](../configuration/kubernetes.md), Azimut
 [Cluster API](https://cluster-api.sigs.k8s.io/) to manage tenant Kubernetes clusters.
 
 Cluster API resources are managed by releases of the
-[stackhpc/capi-helm-charts/openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster),
+[openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster),
 which in turn are managed by the
 [azimuth-capi-operator](https://github.com/stackhpc/azimuth-capi-operator) in response
-to changes to instances of the Kubernetes CRD `clusters.azimuth.stackhpc.com` resources.
-These resources are created, updated and delete in Kubernetes by the Azimuth API in
+to changes to instances of the `clusters.azimuth.stackhpc.com` custom resource.
+These instances are created, updated and deleted in Kubernetes by the Azimuth API in
 response to user actions.
 
-The Azimuth API creates a namespace for each tenant, in which cluster resources are
-created. These namespaces are of the form `az-<sanitized tenant name>`.
+The Azimuth API creates a namespace for each project, in which cluster resources are
+created. These namespaces are of the form `az-<sanitized project name>`.
 
 It is also important to note that the Kubernetes API servers for tenant clusters do
 not use Octavia load balancers like the Azimuth HA cluster. Instead, the API servers
@@ -34,9 +34,10 @@ demo   demo   kube-1-24-2   1.24.2               Ready   4            11d
 If no cluster resource exists, check if the Kubernetes CRDs are installed:
 
 ```command  title="On the K3S node, targetting the HA cluster if deployed"
-$ kubectl get crd | grep stackhpc
-clusters.azimuth.stackhpc.com                                2022-05-03T14:56:20Z
-clustertemplates.azimuth.stackhpc.com                        2022-05-03T14:56:20Z
+$ kubectl get crd | grep azimuth
+apptemplates.azimuth.stackhpc.com                            2022-11-02T11:11:13Z
+clusters.azimuth.stackhpc.com                                2022-11-02T10:53:26Z
+clustertemplates.azimuth.stackhpc.com                        2022-11-02T10:53:26Z
 ```
 
 If they do not exist, check if the `azimuth-capi-operator` is running:
@@ -78,6 +79,27 @@ state of the Cluster API resources that were created:
 
 ```command  title="On the K3S node, targetting the HA cluster if deployed"
 $ kubectl -n az-demo get cluster-api
+NAME                                                                  CLUSTER   BOOTSTRAP   TARGET NAMESPACE       RELEASE NAME                       PHASE      REVISION   AGE
+manifests.addons.stackhpc.com/demo-cloud-config                       demo      true        openstack-system       cloud-config                       Deployed   1          11d
+manifests.addons.stackhpc.com/demo-csi-cinder-storageclass            demo      true        openstack-system       csi-cinder-storageclass            Deployed   1          11d
+manifests.addons.stackhpc.com/demo-kube-prometheus-stack-client       demo      true        monitoring-system      kube-prometheus-stack-client       Deployed   2          11d
+manifests.addons.stackhpc.com/demo-kube-prometheus-stack-dashboards   demo      true        monitoring-system      kube-prometheus-stack-dashboards   Deployed   1          11d
+manifests.addons.stackhpc.com/demo-kubernetes-dashboard-client        demo      true        kubernetes-dashboard   kubernetes-dashboard-client        Deployed   2          11d
+manifests.addons.stackhpc.com/demo-loki-stack-dashboards              demo      true        monitoring-system      loki-stack-dashboards              Deployed   1          11d
+
+NAME                                                             CLUSTER   BOOTSTRAP   TARGET NAMESPACE         RELEASE NAME                PHASE      REVISION   CHART NAME                           CHART VERSION         AGE
+helmrelease.addons.stackhpc.com/dask-demo                        demo                  dask-demo                dask-demo                   Deployed   1          daskhub-azimuth                      0.1.0-dev.0.main.23   11d
+helmrelease.addons.stackhpc.com/demo-ccm-openstack               demo      true        openstack-system         ccm-openstack               Deployed   1          openstack-cloud-controller-manager   1.3.0                 11d
+helmrelease.addons.stackhpc.com/demo-cni-calico                  demo      true        tigera-operator          cni-calico                  Deployed   1          tigera-operator                      v3.23.3               11d
+helmrelease.addons.stackhpc.com/demo-csi-cinder                  demo      true        openstack-system         csi-cinder                  Deployed   1          openstack-cinder-csi                 2.2.0                 11d
+helmrelease.addons.stackhpc.com/demo-kube-prometheus-stack       demo      true        monitoring-system        kube-prometheus-stack       Deployed   1          kube-prometheus-stack                40.1.0                11d
+helmrelease.addons.stackhpc.com/demo-kubernetes-dashboard        demo      true        kubernetes-dashboard     kubernetes-dashboard        Deployed   1          kubernetes-dashboard                 5.10.0                11d
+helmrelease.addons.stackhpc.com/demo-loki-stack                  demo      true        monitoring-system        loki-stack                  Deployed   1          loki-stack                           2.8.2                 11d
+helmrelease.addons.stackhpc.com/demo-mellanox-network-operator   demo      true        network-operator         mellanox-network-operator   Deployed   1          network-operator                     1.3.0                 11d
+helmrelease.addons.stackhpc.com/demo-metrics-server              demo      true        kube-system              metrics-server              Deployed   1          metrics-server                       3.8.2                 11d
+helmrelease.addons.stackhpc.com/demo-node-feature-discovery      demo      true        node-feature-discovery   node-feature-discovery      Deployed   1          node-feature-discovery               0.11.2                11d
+helmrelease.addons.stackhpc.com/demo-nvidia-gpu-operator         demo      true        gpu-operator             nvidia-gpu-operator         Deployed   1          gpu-operator                         v1.11.1               11d
+
 NAME                                                                CLUSTER   AGE
 kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-control-plane-5kjjt   demo     11d
 kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-control-plane-897r6   demo     11d
@@ -124,14 +146,15 @@ openstackmachinetemplate.infrastructure.cluster.x-k8s.io/demo-sm0-7d76d0be      
 ```
 
 The `cluster.cluster.x-k8s.io` resource should be `Provisioned`, the `machine.cluster.x-k8s.io`
-resources should be `Running` with an associated `NODENAME` and the
-`openstackmachine.infrastructure.cluster.x-k8s.io` resources should be `ACTIVE`.
+resources should be `Running` with an associated `NODENAME`, the
+`openstackmachine.infrastructure.cluster.x-k8s.io` resources should be `ACTIVE` and the
+`{manifests,helmrelease}.addons.stackhpc.com` resources should all be `Deployed`.
 
 If this is not the case, first check the interactive console of the cluster nodes in Horizon
 to see if the nodes had any problems joining the cluster. Also
 [check to see if the Zenith service](./zenith-services.md) for the API server was created
 correctly - once all control plane nodes have registered correctly the `Endpoints` resource
-for the service should have three entries.
+for the service should have an entry for each control plane node (usually three).
 
 If these all look OK, check the logs of the Cluster API providers for any errors:
 
@@ -140,58 +163,8 @@ kubectl -n capi-system logs deploy/capi-controller-manager
 kubectl -n capi-kubeadm-bootstrap-system logs deploy/capi-kubeadm-bootstrap-controller-manager
 kubectl -n capi-kubeadm-control-plane-system logs deploy/capi-kubeadm-control-plane-controller-manager
 kubectl -n capo-system logs deploy/capo-controller-manager
+kubectl -n capi-addon-system logs deploy/cluster-api-addon-provider
 ```
-
-## Addon job status
-
-The `openstack-cluster` Helm chart deploys a set of
-[Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) that
-are responsible for deploying addons to the cluster, such as CNI, CNI and device plugins,
-the ingress controller and the monitoring stack.
-
-To check if any of these have failed, run the following:
-
-```command  title="On the K3S node, targetting the HA cluster if deployed"
-$ kubectl -n az-demo get job,po -l app.kubernetes.io/name=addons
-NAME                                                               COMPLETIONS   DURATION   AGE
-job.batch/demo-addons-ccm-openstack-install-738c1                  1/1           2m16s      11d
-job.batch/demo-addons-cloud-config-install-e48df                   1/1           2m11s      11d
-job.batch/demo-addons-cni-calico-install-09420                     1/1           2m28s      11d
-job.batch/demo-addons-csi-cinder-install-85612                     1/1           8m37s      11d
-job.batch/demo-addons-kube-prometheus-stack-client-install-4d5ec   1/1           11m        11d
-job.batch/demo-addons-kube-prometheus-stack-install-ea10d          1/1           11m        11d
-job.batch/demo-addons-kubeapps-client-install-ad5be                1/1           10m        11d
-job.batch/demo-addons-kubeapps-install-100bf                       1/1           9m53s      11d
-job.batch/demo-addons-kubernetes-dashboard-client-install-4fdfc    1/1           7m17s      11d
-job.batch/demo-addons-kubernetes-dashboard-install-c83e3           1/1           7m6s       11d
-job.batch/demo-addons-loki-stack-install-d34c2                     1/1           10m        11d
-job.batch/demo-addons-mellanox-network-operator-install-dece6      1/1           8m11s      11d
-job.batch/demo-addons-metrics-server-install-16e4f                 1/1           7m38s      11d
-job.batch/demo-addons-node-feature-discovery-install-4eb76         1/1           7m29s      11d
-job.batch/demo-addons-nvidia-gpu-operator-install-8b1be            1/1           8m41s      11d
-job.batch/demo-addons-prometheus-operator-crds-install-54f7c       1/1           2m36s      11d
-
-NAME                                                                 READY   STATUS      RESTARTS   AGE
-pod/demo-addons-ccm-openstack-install-738c1--1-7rg89                 0/1     Completed   0          11d
-pod/demo-addons-cloud-config-install-e48df--1-66zcs                  0/1     Completed   0          11d
-pod/demo-addons-cni-calico-install-09420--1-vx8s8                    0/1     Completed   0          11d
-pod/demo-addons-csi-cinder-install-85612--1-jpk87                    0/1     Completed   0          11d
-pod/demo-addons-kube-prometheus-stack-client-install-4d5e--1-9b27b   0/1     Completed   0          11d
-pod/demo-addons-kube-prometheus-stack-install-ea10d--1-wkrmv         0/1     Completed   0          11d
-pod/demo-addons-kubeapps-client-install-ad5be--1-9hr5b               0/1     Completed   0          11d
-pod/demo-addons-kubeapps-install-100bf--1-lcnl4                      0/1     Completed   0          11d
-pod/demo-addons-kubernetes-dashboard-client-install-4fdfc--1-x2sfj   0/1     Completed   0          11d
-pod/demo-addons-kubernetes-dashboard-install-c83e3--1-xbt8w          0/1     Completed   0          11d
-pod/demo-addons-loki-stack-install-d34c2--1-wdllx                    0/1     Completed   0          11d
-pod/demo-addons-mellanox-network-operator-install-dece6--1-qlszg     0/1     Completed   0          11d
-pod/demo-addons-metrics-server-install-16e4f--1-5wf2p                0/1     Completed   0          11d
-pod/demo-addons-node-feature-discovery-install-4eb76--1-vp9sm        0/1     Completed   0          11d
-pod/demo-addons-nvidia-gpu-operator-install-8b1be--1-wjxbw           0/1     Completed   0          11d
-pod/demo-addons-prometheus-operator-crds-install-54f7c--1-tk4w8      0/1     Completed   0          11d
-```
-
-If any of the pods have the status `CrashLoopBackOff`, take a look at the logs to see
-what is going wrong.
 
 ## Zenith service issues
 
@@ -212,27 +185,23 @@ were created correctly and that the pods are running:
 
 ```command  title="Targetting the tenant cluster"
 $ kubectl get zenith -A
-NAMESPACE              NAME                                                       PHASE       UPSTREAM SERVICE                MITM ENABLED   MITM AUTH        AGE
-kubeapps               client.zenith.stackhpc.com/kubeapps                        Available   kubeapps                        true           ServiceAccount   4d19h
-kubernetes-dashboard   client.zenith.stackhpc.com/kubernetes-dashboard            Available   kubernetes-dashboard            true           ServiceAccount   4d19h
-monitoring-system      client.zenith.stackhpc.com/kube-prometheus-stack           Available   kube-prometheus-stack-grafana   true           Basic            4d19h
+NAMESPACE              NAME                                               PHASE       UPSTREAM SERVICE                MITM ENABLED   MITM AUTH        AGE
+kubernetes-dashboard   client.zenith.stackhpc.com/kubernetes-dashboard    Available   kubernetes-dashboard            true           ServiceAccount   4d19h
+monitoring-system      client.zenith.stackhpc.com/kube-prometheus-stack   Available   kube-prometheus-stack-grafana   true           Basic            4d19h
 
-NAMESPACE              NAME                                                            SECRET                                     PHASE   FQDN                                                             AGE
-kubeapps               reservation.zenith.stackhpc.com/kubeapps                        kubeapps-zenith-credential                 Ready   gdxdxjtb9zy4g0jmrpyjqjts9vhjine4umzuy63nmt23c.apps.example.org   4d19h
-kubernetes-dashboard   reservation.zenith.stackhpc.com/kubernetes-dashboard            kubernetes-dashboard-zenith-credential     Ready   mwqgcdrk77nva18uzcct3g7jlo7obi7zlbcgemuhk6nhk.apps.example.org   4d19h
-monitoring-system      reservation.zenith.stackhpc.com/kube-prometheus-stack           kube-prometheus-stack-zenith-credential    Ready   zovdsnnesww2hiw074mvufvcfgczfbd2yhmuhsf3p59xa.apps.example.org   4d19h
+NAMESPACE              NAME                                                    SECRET                                    PHASE   FQDN                                                             AGE
+kubernetes-dashboard   reservation.zenith.stackhpc.com/kubernetes-dashboard    kubernetes-dashboard-zenith-credential    Ready   mwqgcdrk77nva18uzcct3g7jlo7obi7zlbcgemuhk6nhk.apps.example.org   4d19h
+monitoring-system      reservation.zenith.stackhpc.com/kube-prometheus-stack   kube-prometheus-stack-zenith-credential   Ready   zovdsnnesww2hiw074mvufvcfgczfbd2yhmuhsf3p59xa.apps.example.org   4d19h
 
 
 $ kubectl get deploy,po -A -l app.kubernetes.io/managed-by=zenith-operator
-NAMESPACE              NAME                                                          READY   UP-TO-DATE   AVAILABLE   AGE
-kubeapps               deployment.apps/kubeapps-zenith-client                        1/1     1            1           4d19h
-kubernetes-dashboard   deployment.apps/kubernetes-dashboard-zenith-client            1/1     1            1           4d19h
-monitoring-system      deployment.apps/kube-prometheus-stack-zenith-client           1/1     1            1           4d19h
+NAMESPACE              NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+kubernetes-dashboard   deployment.apps/kubernetes-dashboard-zenith-client    1/1     1            1           4d19h
+monitoring-system      deployment.apps/kube-prometheus-stack-zenith-client   1/1     1            1           4d19h
 
-NAMESPACE              NAME                                                               READY   STATUS                   RESTARTS   AGE
-kubeapps               pod/kubeapps-zenith-client-85c8c7ffb-fx5b4                         2/2     Running                  0          4d19h
-kubernetes-dashboard   pod/kubernetes-dashboard-zenith-client-86c5fd9bd-2jfdb             2/2     Running                  0          4d19h
-monitoring-system      pod/kube-prometheus-stack-zenith-client-b9986579d-qgp82            2/2     Running                  0          9h
+NAMESPACE              NAME                                                      READY   STATUS    RESTARTS   AGE
+kubernetes-dashboard   pod/kubernetes-dashboard-zenith-client-86c5fd9bd-2jfdb    2/2     Running   0          4d19h
+monitoring-system      pod/kube-prometheus-stack-zenith-client-b9986579d-qgp82   2/2     Running   0          9h
 ```
 
 !!! tip
