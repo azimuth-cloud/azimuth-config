@@ -10,6 +10,8 @@ builds are uploaded
 [here](https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/)
 for consumption by Azimuth deployments.
 
+Similarly, images for the Slurm cluster appliance are built using Packer from definitions in the [slurm-image-builder respository](https://github.com/stackhpc/slurm_image_builder), with builds uploaded [here](https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_3a06571936a0424bb40bc5c672c4ccb1/openhpc-images/).
+
 For Kubernetes, we use the [OSISM builds](https://minio.services.osism.tech/openstack-k8s-capi-images)
 of the Cluster API images from the
 [Kubernetes image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
