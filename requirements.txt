@@ -1,4 +1,4 @@
-ansible-core=>2.12 # require undef filter
+ansible-core>=2.12 # require undef filter
 jmespath
 python-openstackclient
 python-octaviaclient
