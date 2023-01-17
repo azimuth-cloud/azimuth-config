@@ -41,9 +41,15 @@ jobs:
       - name: Ensure venv
         run: ./bin/ensure-venv
         shell: bash
+
       - name: Ansible requirements
-        run: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
-        shell: bash
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 10
+          shell: bash
+          command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
+          
       - name: Deploy Azimuth
         run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
         shell: bash
