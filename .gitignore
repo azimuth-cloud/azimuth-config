@@ -4,3 +4,4 @@
 .work
 .python-version
 /clouds.yaml*
+environments/demo/inventory/group_vars/secrets.yml
