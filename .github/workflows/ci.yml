@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+env:
+  OS_CLOUD: openstack
+  OS_CLIENT_CONFIG_FILE: ${{ GITHUB_WORKSPACE }}/clouds.yml
+
 jobs:
   TestDeployment:
     runs-on: ubuntu-latest
@@ -20,9 +24,6 @@ jobs:
         shell: bash
         env:
           CLOUD: ${{ secrets.CLOUD }}
-      - name: Set OS env vars
-        run: export OS_CLOUD=openstack && OS_CLIENT_CONFIG_FILE=${GITHUB_WORKSPACE}/clouds.yml
-        shell: bash
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
@@ -30,15 +31,11 @@ jobs:
       - name: Ensure venv
         run: ./bin/ensure-venv
         shell: bash
-      - name: Setup demo env
-        #persist venv
-        run: source ./bin/activate demo && echo PATH=$PATH >> $GITHUB_ENV 
-        shell: bash
       - name: Ansible requirements
-        run: ansible-galaxy install -f -r requirements.yml
+        run: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
         shell: bash
       - name: Deploy Azimuth
-        run: ansible-playbook stackhpc.azimuth_ops.provision
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
         shell: bash
       
       # debug
@@ -47,4 +44,4 @@ jobs:
 
       - name: Destroy Azimuth
         if: ${{ always() }}
-        run: ansible-playbook stackhpc.azimuth_ops.destroy
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy
