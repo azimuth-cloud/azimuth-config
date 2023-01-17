@@ -21,7 +21,7 @@ jobs:
         env:
           CLOUD: ${{ secrets.CLOUD }}
       - name: Set OS env vars
-        run: export OS_CLOUD=openstack && OS_CLIENT_CONFIG_FILE=${{ GITHUB_WORKSPACE }}/clouds.yml
+        run: export OS_CLOUD=openstack && OS_CLIENT_CONFIG_FILE=${GITHUB_WORKSPACE}/clouds.yml
         shell: bash
       - uses: actions/setup-python@v4
         with:
