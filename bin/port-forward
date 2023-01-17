@@ -44,6 +44,18 @@ case "$1" in
     service="consul-ui"
     remote_port="80"
     ;;
+  prometheus)
+    name="Prometheus"
+    namespace="monitoring-system"
+    service="kube-prometheus-stack-prometheus"
+    remote_port="9090"
+    ;;
+  alertmanager)
+    name="AlertManager"
+    namespace="monitoring-system"
+    service="kube-prometheus-stack-alertmanager"
+    remote_port="9093"
+    ;;
   monitoring)
     name="Grafana"
     namespace="monitoring-system"
