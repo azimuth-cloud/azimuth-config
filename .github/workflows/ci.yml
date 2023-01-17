@@ -31,7 +31,8 @@ jobs:
         run: ./bin/ensure-venv
         shell: bash
       - name: Setup demo env
-        run: source ./bin/activate demo
+        #persist venv
+        run: source ./bin/activate demo && echo PATH=$PATH >> $GITHUB_ENV 
         shell: bash
       - name: Ansible requirements
         run: ansible-galaxy install -f -r requirements.yml
