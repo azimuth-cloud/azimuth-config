@@ -1,6 +1,6 @@
 name: CI
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
   push:
@@ -12,13 +12,22 @@ env:
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
 
 jobs:
+  approve: # First step
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Approve
+      run: echo For security reasons, all pull requests need to be approved first before running any automated CI.
+
   TestDeployment:
+    environment:
+      name: Test Azimuth
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Copy cloud creds to file
         run: 'echo "$CLOUD" > clouds.yml'
         shell: bash
