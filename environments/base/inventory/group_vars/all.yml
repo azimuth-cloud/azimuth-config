@@ -27,8 +27,9 @@ terraform_project_path: "{{ (work_directory, 'terraform') | path_join }}"
 # Get the Terraform backend type from the environment variables
 terraform_backend_type: "{{ lookup('env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') | default('local', True) }}"
 
-# Use the configured work directory for prepping Cluster API and AWX manifests
+# Use the configured work directory for prepping manifests
 clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_join }}"
+keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 
 # Enable cert-manager by default
@@ -69,6 +70,10 @@ ingress_harbor_core_subdomain: registry
 ingress_harbor_notary_subdomain: notary
 # The subdomain that should be used for the Grafana for cloud metrics
 ingress_cloud_metrics_grafana_subdomain: metrics
+# The subdomain that should be used for Keycloak
+ingress_keycloak_subdomain: identity
+# The subdomain that should be used for Dex
+ingress_dex_subdomain: authproxy
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
@@ -76,6 +81,7 @@ ingress_annotations:
   nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
   nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
   nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
 
 # A pre-existing wildcard certificate and key for the base domain
 # These should be dropped in to the environment as {environment}/tls/tls.{crt,key}
