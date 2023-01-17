@@ -74,14 +74,11 @@ zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGH
 azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
 
 # Leafcloud doesn't use the default nova AZ - set explicitly for k8s worker nodes and Cinder CSI
-azimuth_capi_operator_capi_helm_worker_failure_domain: europe-nl-ams1
-azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-ams1
+# azimuth_capi_operator_capi_helm_worker_failure_domain: europe-nl-ams1
+# azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-ams1
 
 # Use arm64 terraform since since my seed vm is hosted on MacOS
-terraform_architecture: arm64
-
-# Old chart version 11.1.3 seems to have been removed from bitnami postgresql repo
-awx_postgresql_chart_version: 11.6.3
+# terraform_architecture: arm64
 
 # Enable kube-prometheus-stack integration for ingress-nginx service
 ingress_nginx_release_overrides:
