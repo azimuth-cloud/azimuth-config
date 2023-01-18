@@ -62,10 +62,10 @@ jobs:
           timeout_minutes: 5
           max_attempts: 10
           shell: bash
-          command: source ./bin/activate example && ansible-galaxy install -f -r requirements.yml
+          command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
           
       - name: Deploy Azimuth
-        run: source ./bin/activate example && ansible-playbook stackhpc.azimuth_ops.provision
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
         shell: bash
       
       # debug
@@ -74,4 +74,4 @@ jobs:
 
       - name: Destroy Azimuth
         if: ${{ always() }}
-        run: source ./bin/activate example && ansible-playbook stackhpc.azimuth_ops.destroy
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy
