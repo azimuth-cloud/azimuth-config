@@ -37,7 +37,7 @@ jobs:
       
       #make environment
       - name: Make environment variables
-        run: echo $VARIABLES > environments/demo/inventory/group_vars/all/variables.yml
+        run: echo $VARIABLES > environments/demo/inventory/group_vars/all.yml
         shell: bash
         env:
           VARIABLES: ${{ secrets.VARIABLES }}
