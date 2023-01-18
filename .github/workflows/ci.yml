@@ -34,6 +34,20 @@ jobs:
         shell: bash
         env:
           CLOUD: ${{ secrets.CLOUD }}
+      
+      #make environment
+      - name: Make environment ansible.cfg
+        run: echo $ANSIBLECFG > environments/example/ansible.cfg 
+        shell: bash
+        env:
+          ANSIBLECFG: ${{ secrets.ANSIBLECFG }}
+
+      - name: make environment variables
+        run: echo $VARIABLES > environments/example/inventory/group_vars/all/variables.yml
+        shell: bash
+        env:
+          VARIABLES: ${{ secrets.VARIABLES }}
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
@@ -48,10 +62,10 @@ jobs:
           timeout_minutes: 5
           max_attempts: 10
           shell: bash
-          command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
+          command: source ./bin/activate example && ansible-galaxy install -f -r requirements.yml
           
       - name: Deploy Azimuth
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
+        run: source ./bin/activate example && ansible-playbook stackhpc.azimuth_ops.provision
         shell: bash
       
       # debug
@@ -60,4 +74,4 @@ jobs:
 
       - name: Destroy Azimuth
         if: ${{ always() }}
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy
+        run: source ./bin/activate example && ansible-playbook stackhpc.azimuth_ops.destroy
