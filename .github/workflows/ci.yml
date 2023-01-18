@@ -36,11 +36,11 @@ jobs:
           CLOUD: ${{ secrets.CLOUD }}
       
       #make environment
-      - name: Make environment variables
-        run: echo $VARIABLES > environments/demo/inventory/group_vars/all.yml
-        shell: bash
-        env:
-          VARIABLES: ${{ secrets.VARIABLES }}
+      # - name: Make environment variables
+      #   run: echo $VARIABLES > environments/demo/inventory/group_vars/all.yml
+      #   shell: bash
+      #   env:
+      #     VARIABLES: ${{ secrets.VARIABLES }}
       
       - name: cat stuff
         run: cat environments/demo/inventory/group_vars/all.yml
