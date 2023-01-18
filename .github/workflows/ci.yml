@@ -36,14 +36,8 @@ jobs:
           CLOUD: ${{ secrets.CLOUD }}
       
       #make environment
-      - name: Make environment ansible.cfg
-        run: echo $ANSIBLECFG > environments/example/ansible.cfg 
-        shell: bash
-        env:
-          ANSIBLECFG: ${{ secrets.ANSIBLECFG }}
-
-      - name: make environment variables
-        run: echo $VARIABLES > environments/example/inventory/group_vars/all/variables.yml
+      - name: Make environment variables
+        run: echo $VARIABLES > environments/demo/inventory/group_vars/all/variables.yml
         shell: bash
         env:
           VARIABLES: ${{ secrets.VARIABLES }}
