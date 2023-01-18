@@ -13,7 +13,7 @@ infra_external_network_id: >-
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
 infra_flavor_id: dcad12ab-aed9-4adc-93a7-e135bf19053d
 
-infra_image_id: 5eae91aa-0c96-472e-ba8c-edd6162281f7
+infra_image_id: 48c078a5-fd89-4f61-9d6a-c4f48745c0ae
 
 # Upload images as private
 # CaaS/Kubernetes will only work within the tenancy in which Azimuth is deployed
