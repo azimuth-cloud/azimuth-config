@@ -42,6 +42,9 @@ jobs:
         env:
           VARIABLES: ${{ secrets.VARIABLES }}
       
+      - name: cat stuff
+        run: cat environments/demo/inventory/group_vars/all.yml
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
