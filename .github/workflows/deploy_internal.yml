@@ -47,7 +47,7 @@ jobs:
           
       - name: Deploy Azimuth
         timeout-minutes: 40
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision -vvvvv
         shell: bash
       
       # debug
@@ -56,4 +56,4 @@ jobs:
 
       - name: Destroy Azimuth
         if: ${{ always() }}
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy -vvvvv
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
