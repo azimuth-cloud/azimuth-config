@@ -1,0 +1,68 @@
+name: Deploy External
+on: workflow_call
+
+env:
+  OS_CLOUD: openstack
+  OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
+
+jobs:
+  approve: # First step
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Approve
+      run: echo For security reasons, all pull requests need to be approved first before running any automated CI.
+
+  TestDeployment:
+    environment:
+      name: Test Azimuth
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Copy cloud creds to file
+        run: 'echo "$CLOUD" > clouds.yml'
+        shell: bash
+        env:
+          CLOUD: ${{ secrets.CLOUD }}
+      
+      #make environment
+      # - name: Make environment variables
+      #   run: echo $VARIABLES > environments/demo/inventory/group_vars/all.yml
+      #   shell: bash
+      #   env:
+      #     VARIABLES: ${{ secrets.VARIABLES }}
+      
+      - name: cat stuff
+        run: cat environments/demo/inventory/group_vars/all.yml
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          check-latest: true
+      - name: Ensure venv
+        run: ./bin/ensure-venv
+        shell: bash
+
+      - name: Ansible requirements
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 10
+          shell: bash
+          command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
+          
+      - name: Deploy Azimuth
+        timeout-minutes: 40
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
+        shell: bash
+      
+      # debug
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
+      - name: Destroy Azimuth
+        if: ${{ always() }}
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy
