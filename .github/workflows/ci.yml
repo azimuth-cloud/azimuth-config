@@ -62,6 +62,7 @@ jobs:
           command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
           
       - name: Deploy Azimuth
+        timeout-minutes: 40
         run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
         shell: bash
       
