@@ -6,13 +6,6 @@ env:
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
 
 jobs:
-  approve: # First step
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Approve
-      run: echo For security reasons, all pull requests need to be approved first before running any automated CI.
-
   TestDeployment:
     runs-on: ubuntu-latest
     steps:
