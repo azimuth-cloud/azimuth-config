@@ -15,9 +15,9 @@ jobs:
   deploy_internal:
       uses: ./.github/workflows/deploy_internal.yaml
       secrets: inherit
-      if: github.repository == 'stackhpc/capi-helm-charts'
+      if: github.repository == 'stackhpc/azimuth-config'
 
   deploy_external:
       uses: ./.github/workflows/deploy_external.yaml
       secrets: inherit
-      if: github.repository != 'stackhpc/capi-helm-charts'
+      if: github.repository != 'stackhpc/azimuth-config'
