@@ -10,12 +10,6 @@ infra_external_network_id: >-
       json_query('ID')
   }}
 
-# Hard-code network id instead
-# infra_external_network_id: ee54f79e-d33a-4866-8df0-4a4576d70243
-
-# Need extra var since leafcloud has multiple networks of type 'external'
-# azimuth_capi_operator_external_network_id: ee54f79e-d33a-4866-8df0-4a4576d70243
-
 # Pick suitable flavors from the available flavors
 #   Only consider flavors with at least 2 CPUs and 20GB disk
 __os_flavors: >-
@@ -25,6 +19,7 @@ __os_flavors: >-
       selectattr('Disk', '>=', 20) |
       selectattr('VCPUs', '>=', 2)
   }}
+
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
 infra_flavor_id: >-
   {{-
@@ -73,13 +68,6 @@ awx_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
 azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
 
-# Leafcloud doesn't use the default nova AZ - set explicitly for k8s worker nodes and Cinder CSI
-# azimuth_capi_operator_capi_helm_worker_failure_domain: europe-nl-ams1
-# azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-ams1
-
-# Use arm64 terraform since since my seed vm is hosted on MacOS
-# terraform_architecture: arm64
-
 # Enable kube-prometheus-stack integration for ingress-nginx service
 ingress_nginx_release_overrides:
   controller:
@@ -92,6 +80,7 @@ ingress_nginx_release_overrides:
           release: kube-prometheus-stack
 
 kube_prometheus_release_overrides:
+
   alertmanager:
     enabled: true
     config:
@@ -106,13 +95,47 @@ kube_prometheus_release_overrides:
         slack_configs:
         - channel: '#general'
           send_resolved: true
+
   prometheus:
     prometheusSpec:
       storageSpec:
         volumeClaimTemplate:
           spec:
-            storageClassName: local-path
+            # Leave storageClassName blank to use cluster's default storage class
+            # storageClassName: local-path
             accessModes: ["ReadWriteOnce"]
             resources:
               requests:
-                storage: 2Gi
+                storage: 10Gi
+
+  grafana:
+    sidecar:
+      dashboards:
+        searchNamespace:
+        - monitoring-system
+        - azimuth
+
+harbor_release_overrides:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+      # interval: "30s"
+
+azimuth_release_overrides:
+  api:
+    monitoring:
+      enabled: true
+
+# Does this enable consul monitoring?
+# See https://developer.hashicorp.com/consul/docs/k8s/connect/observability/metrics
+# and https://developer.hashicorp.com/consul/docs/k8s/helm#v-global-metrics
+# consul_release_values:
+#   global:
+#     metrics:
+#       enabled: true
+#       enableAgentMetrics: true
+#       enableGatewayMetrics: true
+
