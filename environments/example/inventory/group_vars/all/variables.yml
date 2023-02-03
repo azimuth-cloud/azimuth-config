@@ -53,6 +53,28 @@ capi_cluster_worker_count: 3
 # The fixed floating IP to associate with the load balancer for the ingress controller
 # This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
 capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
+# Helm values for capi-helm-chart installation (with example monitoring config)
+capi_cluster_release_overrides:
+  addons:
+    monitoring:
+      enabled: true
+      kubePrometheusStack:
+        release:
+          values:
+            alertmanager:
+              enabled: true
+              config:
+                global:
+                  slack_api_url: "{{ kube_prometheus_stack_alertmanager_slack_url }}" # Variable is defined in secrets.yml
+                route:
+                  receiver: 'slack-notifications'
+                  group_by: ['namespace']
+                receivers:
+                - name: 'null' # Null receiver required for 'Watchdog' alert
+                - name: 'slack-notifications'
+                  slack_configs:
+                  - channel: '#<channel-name>'
+                    send_resolved: true
 
 #####
 # Ingress configuration
