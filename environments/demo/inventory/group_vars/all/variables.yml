@@ -68,66 +68,65 @@ awx_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
 azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
 
-# Enable kube-prometheus-stack integration for ingress-nginx service
-ingress_nginx_release_overrides:
-  controller:
-    metrics:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-        namespace: monitoring-system
-        additionalLabels:
-          release: kube-prometheus-stack
+# # Enable kube-prometheus-stack integration for ingress-nginx service
+# ingress_nginx_release_overrides:
+#   controller:
+#     metrics:
+#       enabled: true
+#       serviceMonitor:
+#         enabled: true
+#         namespace: monitoring-system
+#         additionalLabels:
+#           release: kube-prometheus-stack
 
-kube_prometheus_release_overrides:
+# kube_prometheus_release_overrides:
 
-  alertmanager:
-    enabled: true
-    config:
-      global:
-        slack_api_url: "{{ kube_prometheus_stack_alertmanager_slack_url }}" # Variable is defined in git-ignored ./secrets.yml
-      route:
-        receiver: 'slack-notifications'
-        group_by: ['namespace']
-      receivers:
-      - name: 'null'
-      - name: 'slack-notifications'
-        slack_configs:
-        - channel: '#general'
-          send_resolved: true
+#   alertmanager:
+#     enabled: true
+#     config:
+#       global:
+#         slack_api_url: "{{ kube_prometheus_stack_alertmanager_slack_url }}" # Variable is defined in git-ignored ./secrets.yml
+#       route:
+#         receiver: 'slack-notifications'
+#         group_by: ['namespace']
+#       receivers:
+#       - name: 'null'
+#       - name: 'slack-notifications'
+#         slack_configs:
+#         - channel: '#general'
+#           send_resolved: true
 
-  prometheus:
-    prometheusSpec:
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            # Leave storageClassName blank to use cluster's default storage class
-            # storageClassName: local-path
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 10Gi
+#   prometheus:
+#     prometheusSpec:
+#       storageSpec:
+#         volumeClaimTemplate:
+#           spec:
+#             # Leave storageClassName blank to use cluster's default storage class
+#             # storageClassName: local-path
+#             accessModes: ["ReadWriteOnce"]
+#             resources:
+#               requests:
+#                 storage: 10Gi
 
-  grafana:
-    sidecar:
-      dashboards:
-        searchNamespace:
-        - monitoring-system
-        - azimuth
+#   grafana:
+#     sidecar:
+#       dashboards:
+#         searchNamespace:
+#         - monitoring-system
+#         - azimuth
 
-harbor_release_overrides:
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-      additionalLabels:
-        release: kube-prometheus-stack
-      # interval: "30s"
+# harbor_release_overrides:
+#   metrics:
+#     enabled: true
+#     serviceMonitor:
+#       enabled: true
+#       additionalLabels:
+#         release: kube-prometheus-stack
 
-azimuth_release_overrides:
-  api:
-    monitoring:
-      enabled: true
+# azimuth_release_overrides:
+#   api:
+#     monitoring:
+#       enabled: true
 
 # Does this enable consul monitoring?
 # See https://developer.hashicorp.com/consul/docs/k8s/connect/observability/metrics
