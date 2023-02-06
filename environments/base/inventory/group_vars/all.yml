@@ -213,7 +213,7 @@ kube_prometheus_release_overrides:
           send_resolved: true
   prometheus:
     prometheusSpec:
-      retentionSize: 9Gi #Should be less than storage volume size below
+      retentionSize: 9.9GB #Should be less than storage volume size below
       storageSpec:
         volumeClaimTemplate:
           spec:
