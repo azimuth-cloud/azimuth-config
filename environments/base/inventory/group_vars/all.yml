@@ -47,6 +47,13 @@ harbor_proxy_cache_default_projects:
 harbor_proxy_cache_extra_projects: {}
 harbor_proxy_cache_projects: >-
   {{ harbor_proxy_cache_default_projects | combine(harbor_proxy_cache_extra_projects) }}
+harbor_release_overrides:
+  metrics:
+    enabled: "{{ azimuth_management_cluster_monitoring_enabled }}"
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
 
 # Indicates whether to install a Grafana to show cloud metrics
 cloud_metrics_enabled: no
@@ -55,6 +62,15 @@ cloud_metrics_enabled: no
 azimuth_apps_enabled: yes
 azimuth_kubernetes_enabled: yes
 azimuth_clusters_enabled: yes
+# Whether to install kube-prometheus-stack on the management cluster 
+# and enabled monitoring of various cluster components
+azimuth_management_cluster_monitoring_enabled: yes
+
+# Chart values for azimuth Helm release
+azimuth_release_overrides:
+  api:
+    monitoring:
+      enabled: "{{ azimuth_management_cluster_monitoring_enabled }}"
 
 # The base domain for Azimuth ingress resources
 # This should be set by the concrete environment
@@ -167,3 +183,55 @@ azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
     if __os_loadbalancer_providers | length == 1
     else undef(hint = 'Unable to determine load balancer provider')
   }}
+
+# Enable kube-prometheus-stack integration for ingress-nginx service
+ingress_nginx_release_overrides:
+  controller:
+    metrics:
+      enabled: "{{ azimuth_management_cluster_monitoring_enabled }}"
+      serviceMonitor:
+        enabled: true
+        namespace: monitoring-system
+        additionalLabels:
+          release: kube-prometheus-stack
+
+kube_prometheus_release_overrides:
+  alertmanager:
+    enabled: "{{ azimuth_management_cluster_monitoring_enabled }}"
+    config:
+      global:
+        # Variable should be defined in secrets file elsewhere
+        slack_api_url: "{{ kube_prometheus_stack_alertmanager_slack_url }}"
+      route:
+        receiver: 'slack-notifications'
+        group_by: ['namespace']
+      receivers:
+      - name: 'null'
+      - name: 'slack-notifications'
+        slack_configs:
+        - channel: '#general'
+          send_resolved: true
+  prometheus:
+    prometheusSpec:
+      retentionSize: 9Gi #Should be less than storage volume size below
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            # Leave storageClassName blank to use cluster's default storage class
+            # storageClassName: <name>
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+  grafana:
+    sidecar:
+      dashboards:
+        # List of namespaces in which to look for ConfigMaps with the label
+        # `grafana_dashboard: "1"` which signifies that the map contains
+        # additional dashboards to be imported into Grafana
+        searchNamespace:
+        - monitoring-system
+        - azimuth
+
+# TODO: Make sure this doesn't affect tenant clusters
+capi_cluster_addons_monitoring: "{{ azimuth_management_cluster_monitoring_enabled }}"
