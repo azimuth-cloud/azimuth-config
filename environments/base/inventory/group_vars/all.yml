@@ -235,3 +235,6 @@ kube_prometheus_release_overrides:
 
 # TODO: Make sure this doesn't affect tenant clusters
 capi_cluster_addons_monitoring: "{{ azimuth_management_cluster_monitoring_enabled }}"
+
+# Remove me once https://github.com/stackhpc/azimuth/pull/32 is merged
+azimuth_chart_version: 0.1.0-dev.0.feature-gunicorn-monitoring.713
