@@ -32,6 +32,12 @@ fi
 
 # Get the parameters for the specified service
 case "$1" in
+  argocd)
+    name="Argo CD"
+    namespace="argocd"
+    service="argocd-server"
+    remote_port="80"
+    ;;
   awx)
     name="AWX"
     namespace="azimuth"
