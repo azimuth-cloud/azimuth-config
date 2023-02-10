@@ -172,5 +172,3 @@ azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
     else undef(hint = 'Unable to determine load balancer provider')
   }}
 
-# Remove me once https://github.com/stackhpc/azimuth/pull/32 is merged
-azimuth_chart_version: 0.1.0-dev.0.feature-gunicorn-monitoring.713
