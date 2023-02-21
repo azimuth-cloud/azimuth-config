@@ -72,8 +72,6 @@ ingress_harbor_notary_subdomain: notary
 ingress_cloud_metrics_grafana_subdomain: metrics
 # The subdomain that should be used for Keycloak
 ingress_keycloak_subdomain: identity
-# The subdomain that should be used for Dex
-ingress_dex_subdomain: authproxy
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
