@@ -29,6 +29,7 @@ terraform_backend_type: "{{ lookup('env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') | de
 
 # Use the configured work directory for prepping manifests
 clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_join }}"
+pgo_kustomization_directory: "{{ (work_directory, 'postgres-operator') | path_join }}"
 keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 
