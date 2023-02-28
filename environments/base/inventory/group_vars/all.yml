@@ -8,10 +8,6 @@ azimuth_config_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ROOT') }}"
 azimuth_config_environment: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT') }}"
 azimuth_config_environment_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ENVIRONMENT_ROOT') }}"
 
-# Whether to install kube-prometheus-stack on the management cluster 
-# and enabled monitoring of various cluster components
-azimuth_management_cluster_monitoring_enabled: true
-
 # If the task is running locally, use local work and bin directories
 # Otherwise, use directories on the host
 local_bin_directory: "{{ (azimuth_config_root, '.bin') | path_join }}"
@@ -75,7 +71,11 @@ ingress_harbor_notary_subdomain: notary
 ingress_cloud_metrics_grafana_subdomain: metrics
 
 # Annotations for Azimuth ingress resources
-ingress_annotations: {}
+ingress_annotations:
+  # Use longer timeouts by default to try to prevent gateway timeouts for CaaS operations
+  nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+  nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+  nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
 
 # A pre-existing wildcard certificate and key for the base domain
 # These should be dropped in to the environment as {environment}/tls/tls.{crt,key}
