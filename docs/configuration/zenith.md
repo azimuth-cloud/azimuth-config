@@ -3,7 +3,7 @@
 The Zenith application proxy is enabled by default in the reference configuration. To disable
 it, just set:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_apps_enabled: no
 ```
 
@@ -11,7 +11,7 @@ The only piece of configuration that is required for Zenith is a secret key that
 to sign and verify the single-use tokens issued by the registrar (see the Zenith architecture
 document for details):
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
 zenith_registrar_subdomain_token_signing_key: "<some secret key>"
 ```
 
@@ -33,6 +33,6 @@ deployment and port `2222` on the pre-allocated floating IP for a single node de
 
 This can be changed using the following variable, if required:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 zenith_sshd_service_port: 22222
 ```
