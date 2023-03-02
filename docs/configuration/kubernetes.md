@@ -53,7 +53,7 @@ passed to Helm.
 Kubernetes support is enabled by default in the reference configuration. To disable it, just
 set:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_kubernetes_enabled: no
 ```
 
@@ -62,7 +62,7 @@ azimuth_kubernetes_enabled: no
 In the case where multiple external networks are available to tenants, you must tell Azimuth
 which one to use for floating IPs for Kubernetes services in tenant clusters:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_external_network_id: "<network id>"
 ```
 
@@ -93,7 +93,7 @@ the availability zones that are used for Kubernetes nodes. The possible options 
 
 The relevant variables are:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Indicates whether to omit the failure domain (AZ) from control plane nodes
 azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
 
@@ -124,21 +124,27 @@ network for the project in which the cluster is being deployed.
 
 To disable the default templates, just set the following:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_cluster_templates_default: {}
 ```
 
 ### Custom cluster templates
 
 If you want to include custom cluster templates in addition to the default templates,
-e.g. for advanced networking configurations, you can specify them using the following:
+e.g. for advanced networking configurations, you can specify them using the variable
+`azimuth_capi_operator_cluster_templates_extra`.
 
-```yaml
+For example, the following demonstrates how to configure a template where the cluster
+worker nodes have two networks attached - the control plane nodes and workers are all
+attached to the Azimuth internal network but the workers are attached to an additional
+SR-IOV capable network:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_cluster_templates_extra:
   # The index in the dict is the template name
-  kube-1-24-2-sriov:
+  kube-1-24-2-multinet:
     # A human-readable label for the template
-    label: v1.24.2 / SR-IOV
+    label: v1.24.2 / multinet
     # A brief description of the template
     description: >-
       Kubernetes 1.24.2 with HA control plane and high-performance networking.
@@ -148,31 +154,20 @@ azimuth_capi_operator_cluster_templates_extra:
       # These are the only required values
       kubernetesVersion: 1.24.2
       machineImageId: "{{ community_images_image_ids.kube_1_24_2 }}"
-      # Use the network tagged for SR-IOV
+      # Use the portal-internal network as the main cluster network
       clusterNetworking:
         internalNetwork:
           networkFilter:
-            tags: sriov-vlan
-      # Use direct ports for the control plane and workers
-      controlPlane:
-        machineNetworking:
-          ports:
-            - vnicType: direct
+            tags: portal-internal
+      # Configure an extra SR-IOV port on worker nodes using an SR-IOV capable network
       nodeGroupDefaults:
         machineNetworking:
           ports:
-            - vnicType: direct
-      # Because SR-IOV ports don't have any port security, we can tell
-      # Calico that it only needs to apply the VXLAN at the cluster boundary
-      # to avoid double-encapsulation
-      addons:
-        cni:
-          calico:
-            installation:
-              calicoNetwork:
-                ipPools:
-                  - cidr: __KUBEADM_POD_CIDR__
-                    encapsulation: VXLANCrossSubnet
+            - {}
+            - network:
+                tags: sriov-vlan
+              securityGroups: []
+              vnicType: direct
 ```
 
 ## Harbor registry
@@ -188,7 +183,7 @@ registries that have a proxy cache defined.
 
 Harbor is enabled by default, and requires two secrets to be set:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
 # The admin password for Harbor
 harbor_admin_password: "<secure password>"
 
@@ -206,7 +201,7 @@ harbor_secret_key: "<secure secret key>"
 
 The Harbor registry can be disabled entirely:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 harbor_enabled: no
 ```
 
@@ -222,7 +217,7 @@ to get around the [rate limit](https://docs.docker.com/docker-hub/download-rate-
 
 You can also define additional proxy caches for other registries:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 harbor_proxy_cache_extra_projects:
   quay.io:
     # The name of the project in Harbor

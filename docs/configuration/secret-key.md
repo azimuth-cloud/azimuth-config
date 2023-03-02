@@ -2,7 +2,7 @@
 
 Azimuth requires a secret key that is used primarily for signing cookies:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
 azimuth_secret_key: "<some secret key>"
 ```
 
