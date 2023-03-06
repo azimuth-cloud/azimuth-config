@@ -33,10 +33,6 @@ pgo_kustomization_directory: "{{ (work_directory, 'postgres-operator') | path_jo
 keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 
-# Indicates whether the Slack webhook should be enabled
-# By default, it is enabled when a webhook is defined
-alertmanager_config_slack_webhook_enabled: "{{ alertmanager_config_slack_webhook_url is defined }}"
-
 # Enable cert-manager by default
 # By default, a cluster issuer will be created that uses Let's Encrypt to issue certificates
 certmanager_enabled: yes
