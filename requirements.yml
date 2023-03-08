@@ -3,4 +3,4 @@
 collections:
   - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
     type: git
-    version: d24565f30ff5c1272de2d2483f2f6711642f0549
+    version: 0c3eb63438629ff8b9d88d1a279d5199558634e5 # Bump slurm image for slurm app v1.126 to support containerised workloads
