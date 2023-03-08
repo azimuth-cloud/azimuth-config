@@ -27,7 +27,7 @@ inventory = ../base/inventory,../singlenode/inventory,./inventory
 
 The following variables must be set to define the properties of the K3S node:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # The ID of the external network
 infra_external_network_id: "<network id>"
 
@@ -62,7 +62,7 @@ inventory = ../base/inventory,../ha/inventory,./inventory
 The following variables must be set to define the properties of the K3S node and the
 Cluster API managed nodes:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # The ID of the external network
 infra_external_network_id: "<network id>"
 
@@ -119,7 +119,7 @@ available.
 
 To specify the availability zones for Kubernetes nodes, the following variables can be used:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # A list of failure domains that should be considered for control plane nodes
@@ -141,7 +141,7 @@ for Kubernetes nodes. This allows other placement constraints such as
 and [host aggregate](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
 be used, and a suitable AZ to be selected by OpenStack.
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # Indicate that the failure domain should be omitted for control plane nodes

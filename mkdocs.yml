@@ -23,6 +23,7 @@ nav:
       - configuration/kubernetes.md
       - configuration/kubernetes-apps.md
       - configuration/caas.md
+      - configuration/monitoring.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md

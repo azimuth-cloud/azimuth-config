@@ -71,7 +71,11 @@ ingress_harbor_notary_subdomain: notary
 ingress_cloud_metrics_grafana_subdomain: metrics
 
 # Annotations for Azimuth ingress resources
-ingress_annotations: {}
+ingress_annotations:
+  # Use longer timeouts by default to try to prevent gateway timeouts for CaaS operations
+  nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+  nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+  nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
 
 # A pre-existing wildcard certificate and key for the base domain
 # These should be dropped in to the environment as {environment}/tls/tls.{crt,key}
@@ -167,3 +171,4 @@ azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
     if __os_loadbalancer_providers | length == 1
     else undef(hint = 'Unable to determine load balancer provider')
   }}
+

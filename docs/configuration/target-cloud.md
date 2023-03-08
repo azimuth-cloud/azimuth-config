@@ -8,7 +8,7 @@ Azimuth uses the
 to discover the endpoints for OpenStack services, so only needs to be told where to find the
 Keystone v3 endpoint:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_auth_url: https://openstack.example-cloud.org:5000/v3
 ```
 
@@ -20,14 +20,14 @@ Azimuth does not currently have support for specifying a custom CA for verifying
 target cloud uses a TLS certificate that is not verifiable using the operating-system default
 trustroots, TLS verification must be disabled:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_verify_ssl: false
 ```
 
 If you use a domain other than `default`, you will also need to tell Azimuth the name of the
 domain to use when authenticating:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_domain: my-domain
 ```
 
@@ -36,7 +36,7 @@ azimuth_openstack_domain: my-domain
 Azimuth presents the name of the current cloud in various places in the interface. To configure
 this, set the following variables:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # The machine-readable cloud name
 azimuth_current_cloud_name: my-cloud
 
@@ -55,10 +55,17 @@ then Azimuth can be configured to obtain an OpenStack token from Keystone using 
 as Horizon. To enable this, additional configuration is required for both Azimuth and Keystone
 on the target cloud.
 
+First, the Keystone configuration of the target cloud must be modified to add Azimuth as a
+[trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
+otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
+trusted dashboard, you must specify the URL that will receive token data - for an Azimuth deployment,
+this URL is `https://[portal domain]/auth/federated/complete/`, where the portal domain depends on
+the ingress configuration as described elsewhere in this documentation.
+
 In your Azimuth configuration, enable the federated authenticator and tell it the provider and
 protocol to use:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_authenticator_federated_enabled: yes
 azimuth_authenticator_federated_provider: "<provider>"
 azimuth_authenticator_federated_protocol: "<protocol>"
@@ -72,24 +79,17 @@ This will result in Azimuth using URLs of the following form for the federated a
 
 The provider and protocol will depend on the Keystone configuration of the target OpenStack cloud.
 
-The Keystone configuration of the target cloud must also be modified to add Azimuth as a
-[trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
-otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
-trusted dashboard, you must specify the URL that will receive token data - for an Azimuth deployment,
-this URL is `https://[portal domain]/auth/federated/complete/`, where the portal domain depends on
-the ingress configuration as described elsewhere in this document.
-
 To also disable the password authenticator - so that federation is the only supported login - set
 the following variable:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_authenticator_password_enabled: no
 ```
 
 To change the human-readable names for the authenticators, which are presented in the authentication
 method selection form, use the following variables:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_authenticator_password_label: "Username + Password"
 azimuth_authenticator_federated_label: "Federated"
 ```
@@ -110,7 +110,7 @@ The discovery and auto-creation process is described in detail in
 
 To disable the auto-creation of internal networks, use the following:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_create_internal_net: false
 ```
 
@@ -118,7 +118,7 @@ The CIDR of the auto-created subnet can also be changed, although it is the same
 For example, you may need to do this if the default CIDR conflicts with resources elsewhere
 on your network that machines provisioned by Azimuth need to access:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Defaults to 192.168.3.0/24
 azimuth_openstack_internal_net_cidr: 10.0.3.0/24
 ```

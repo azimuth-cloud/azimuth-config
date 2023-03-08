@@ -19,6 +19,7 @@ __os_flavors: >-
       selectattr('Disk', '>=', 20) |
       selectattr('VCPUs', '>=', 2)
   }}
+
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
 infra_flavor_id: >-
   {{-
