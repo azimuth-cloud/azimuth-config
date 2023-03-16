@@ -42,6 +42,11 @@ capi_cluster_addons_monitoring_loki_retention: 744h
 capi_cluster_addons_monitoring_loki_volume_size: 10Gi
 ```
 
+!!! danger
+
+    Volumes can only be **increased** in size. Any attempt to reduce the size of a volume
+    will be rejected.
+
 ## Slack alerts
 
 If your organisation uses [Slack](https://slack.com/), Alertmanager can be configured to send
