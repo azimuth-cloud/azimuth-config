@@ -2,13 +2,14 @@
 
 In Azimuth, there are two kinds of users:
 
-  * **Platform Users** who are able to access one or more platforms deployed by Azimuth.
+  * **Platform Users** who are able to access one or more platforms deployed by Azimuth, but
+    are not necessarily able to sign into Azimuth.
   * **Platform Admins** who are able to sign in to Azimuth, manage the deployed
     platforms in a tenancy and administer access to those platforms.
 
 Only Platform Admins need to have an OpenStack account. Each Azimuth tenancy has an
 associated **Identity Realm** that provides the Platform Users for that tenancy and is
-administered by the Platform Admins for the tenancy. This allow access to platforms to be
+administered by the Platform Admins for the tenancy. This allows access to platforms to be
 granted for users that do not have an OpenStack account.
 
 This separation of Platform Users from OpenStack accounts opens up a wide range of use cases
@@ -21,7 +22,7 @@ workshop using Jupyter notebooks for teaching. In this case, they definitely don
 to grant every workshop attendee access to OpenStack, as these users may not be trusted.
 
 Using Azimuth, a trusted project member can deploy a JupyterHub in Azimuth (i.e. as a
-Platform Admin) and create users in their Identity Realm for the workshop attendees.
+Platform Admin) and create users in their Identity Realm for each of the workshop attendees.
 These users can be granted access to JupyterHub for the duration of the workshop, and
 at the end of the workshop their access can be revoked.
 
@@ -56,17 +57,10 @@ groups described above.
 
 !!! note
 
-    This means that all users that can access the Azimuth tenancy by signing in with an
-    OpenStack account (i.e. Platform Admins) automatically get access to all the platforms
-    in the tenancy. This matches the behaviour of the previous shared cookie authentication,
-    so existing Azimuth users will still be able to use their existing workflows.
+    All users that can access the Azimuth tenancy by signing in with an OpenStack account
+    (i.e. Platform Admins) automatically get access to all the platforms in the tenancy.
 
-    However the new approach uses an industry standard protocol designed specifically for
-    federated identity in an untrusted environment, and as such eliminates a potential
-    security flaw in the previous shared cookie approach that could leak unscoped OpenStack
-    tokens to a malicious application exposed via Zenith.
-
-When a platform is deployed in an Azimuth tenancy a group is created in the corresponding
+When a platform is deployed in an Azimuth tenancy, a group is created in the corresponding
 identity realm, and access to the platform is controlled by membership of this group. Each
 Zenith service for the platform has a child group under the platform group that can be
 used to grant access to a single service within a platform.
