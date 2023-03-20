@@ -1,4 +1,4 @@
-# Kubernetes apps
+# Kubernetes apps
 
 Azimuth allows operators to provide a catalog of applications (apps) that users are able to
 install onto their Kubernetes clusters via the Azimuth user interface. Multiple apps can
