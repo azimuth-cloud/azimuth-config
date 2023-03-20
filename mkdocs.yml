@@ -1,4 +1,4 @@
-site_name: Azimuth Deployment Documentation
+site_name: Azimuth Operator Documentation
 repo_url: https://github.com/stackhpc/azimuth-config
 copyright: Copyright &copy; StackHPC 2022
 edit_uri: ''
@@ -13,17 +13,18 @@ nav:
       - repository/terraform.md
   - Configuration:
       - configuration/index.md
-      - configuration/prerequisites.md
-      - configuration/deployment-method.md
-      - configuration/target-cloud.md
-      - configuration/secret-key.md
-      - configuration/ingress.md
-      - configuration/zenith.md
-      - configuration/community-images.md
-      - configuration/kubernetes.md
-      - configuration/kubernetes-apps.md
-      - configuration/caas.md
-      - configuration/monitoring.md
+      - configuration/01-prerequisites.md
+      - configuration/02-deployment-method.md
+      - configuration/03-target-cloud.md
+      - configuration/04-secret-key.md
+      - configuration/05-ingress.md
+      - configuration/06-platform-identity.md
+      - configuration/07-zenith.md
+      - configuration/08-community-images.md
+      - configuration/09-kubernetes.md
+      - configuration/10-kubernetes-apps.md
+      - configuration/11-caas.md
+      - configuration/12-monitoring.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md
