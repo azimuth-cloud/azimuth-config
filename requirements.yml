@@ -3,4 +3,4 @@
 collections:
   - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
     type: git
-    version: 35f5eaf30236552df7f7cb81da1e065ba7ac0111
+    version: 007fccec462d692b9ca9707d9f7130ce4301b332

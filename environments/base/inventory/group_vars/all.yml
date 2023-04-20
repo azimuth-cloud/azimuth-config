@@ -69,8 +69,6 @@ ingress_zenith_registrar_subdomain: registrar
 ingress_harbor_core_subdomain: registry
 # The subdomain that should be used for the Harbor notary
 ingress_harbor_notary_subdomain: notary
-# The subdomain that should be used for the Grafana for cloud metrics
-ingress_cloud_metrics_grafana_subdomain: metrics
 # The subdomain that should be used for Keycloak
 ingress_keycloak_subdomain: identity
 
