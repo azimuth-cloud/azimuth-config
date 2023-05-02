@@ -42,6 +42,9 @@ jobs:
       # debug
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
+        with:
+          # limit ssh access and add the ssh public keys of the listed GitHub users
+          limit-access-to-users: sd109
 
       # - name: Destroy Azimuth
       #   if: ${{ always() }}
