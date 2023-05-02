@@ -49,7 +49,7 @@ jobs:
         #timeout-minutes: 40
         run: |
           source ./bin/activate demo \
-          ansible-galaxy install -fr requirements.yml \
+          && ansible-galaxy install -fr requirements.yml \
           && ansible-playbook stackhpc.azimuth_ops.provision \
           -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
         shell: bash
