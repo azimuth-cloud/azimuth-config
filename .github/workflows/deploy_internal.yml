@@ -13,39 +13,42 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      
       - name: Copy cloud creds to file
         run: 'echo "$CLOUD" > clouds.yml'
         shell: bash
         env:
           CLOUD: ${{ secrets.CLOUD }}
       
-      # - name: Print inventory vars
-      #   run: cat environments/demo/inventory/group_vars/all/variables.yml
+      - name: Print inventory vars
+        run: cat environments/demo/inventory/group_vars/all/variables.yml
       
-      # - uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.9'
-      #     check-latest: true
-      # - name: Ensure venv
-      #   run: ./bin/ensure-venv
-      #   shell: bash
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          check-latest: true
+      - name: Ensure venv
+        run: ./bin/ensure-venv
+        shell: bash
           
-      # - name: Deploy Azimuth
-      #   #timeout-minutes: 40
-      #   run: |
-      #     source ./bin/activate demo \
-      #     && ansible-galaxy install -fr requirements.yml \
-      #     && ansible-playbook stackhpc.azimuth_ops.provision \
-      #     -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
-      #   shell: bash
+      - name: Deploy Azimuth
+        id: deploy-demo-instance
+        #timeout-minutes: 40
+        run: |
+          source ./bin/activate demo \
+          && ansible-galaxy install -fr requirements.yml \
+          && ansible-playbook stackhpc.azimuth_ops.provision \
+          -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
+        shell: bash
       
-      # debug
+      # For debugging failed deployment
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
-        with:
-          # limit ssh access and add the ssh public keys of the listed GitHub users
-          limit-access-to-users: sd109
+        if: failure()
+        # with:
+          # limit debug access to certain Github ssh keys
+          # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
 
-      # - name: Destroy Azimuth
-      #   if: ${{ always() }}
-      #   run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
+      - name: Destroy Azimuth
+        if: success()
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
