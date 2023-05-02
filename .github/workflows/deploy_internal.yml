@@ -37,17 +37,21 @@ jobs:
         run: ./bin/ensure-venv
         shell: bash
 
-      - name: Ansible requirements
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 5
-          max_attempts: 10
-          shell: bash
-          command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
+      # - name: Ansible requirements
+      #   uses: nick-fields/retry@v2
+      #   with:
+      #     timeout_minutes: 5
+      #     max_attempts: 10
+      #     shell: bash
+      #     command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
           
       - name: Deploy Azimuth
         #timeout-minutes: 40
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.provision
+        run: |
+          source ./bin/activate demo \
+          ansible-galaxy install -fr requirements.yml \
+          && ansible-playbook stackhpc.azimuth_ops.provision \
+          -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
         shell: bash
       
       # debug
