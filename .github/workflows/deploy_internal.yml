@@ -31,24 +31,38 @@ jobs:
         run: ./bin/ensure-venv
         shell: bash
           
-      - name: Deploy Azimuth
+      # - name: Deploy Azimuth
+      #   id: deploy-demo-instance
+      #   #timeout-minutes: 40
+      #   run: |
+      #     source ./bin/activate demo \
+      #     && ansible-galaxy install -fr requirements.yml \
+      #     && ansible-playbook stackhpc.azimuth_ops.provision \
+      #     -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
+      #   shell: bash
+
+      - name: Ansible requirements
         id: deploy-demo-instance
-        #timeout-minutes: 40
-        run: |
-          source ./bin/activate demo \
-          && ansible-galaxy install -fr requirements.yml \
-          && ansible-playbook stackhpc.azimuth_ops.provision \
-          -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
-        shell: bash
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 45
+          max_attempts: 2
+          shell: bash
+          retry_on: error
+          command: |
+            source ./bin/activate demo \
+            && ansible-galaxy install -fr requirements.yml \
+            && ansible-playbook stackhpc.azimuth_ops.provision \
+            -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
       
       # For debugging failed deployment
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
-        if: failure()
+        if: ${{ failure() && steps.deploy-demo-instance.conclusion == 'failure' }}
         # with:
           # limit debug access to certain Github ssh keys
           # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
 
       - name: Destroy Azimuth
-        if: success()
+        if: ${{ always() }}
         run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
