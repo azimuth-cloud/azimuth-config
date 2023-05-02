@@ -19,45 +19,30 @@ jobs:
         env:
           CLOUD: ${{ secrets.CLOUD }}
       
-      #make environment
-      # - name: Make environment variables
-      #   run: echo $VARIABLES > environments/demo/inventory/group_vars/all.yml
-      #   shell: bash
-      #   env:
-      #     VARIABLES: ${{ secrets.VARIABLES }}
+      # - name: Print inventory vars
+      #   run: cat environments/demo/inventory/group_vars/all/variables.yml
       
-      - name: Print inventory vars
-        run: cat environments/demo/inventory/group_vars/all/variables.yml
-      
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          check-latest: true
-      - name: Ensure venv
-        run: ./bin/ensure-venv
-        shell: bash
-
-      # - name: Ansible requirements
-      #   uses: nick-fields/retry@v2
+      # - uses: actions/setup-python@v4
       #   with:
-      #     timeout_minutes: 5
-      #     max_attempts: 10
-      #     shell: bash
-      #     command: source ./bin/activate demo && ansible-galaxy install -f -r requirements.yml
+      #     python-version: '3.9'
+      #     check-latest: true
+      # - name: Ensure venv
+      #   run: ./bin/ensure-venv
+      #   shell: bash
           
-      - name: Deploy Azimuth
-        #timeout-minutes: 40
-        run: |
-          source ./bin/activate demo \
-          && ansible-galaxy install -fr requirements.yml \
-          && ansible-playbook stackhpc.azimuth_ops.provision \
-          -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
-        shell: bash
+      # - name: Deploy Azimuth
+      #   #timeout-minutes: 40
+      #   run: |
+      #     source ./bin/activate demo \
+      #     && ansible-galaxy install -fr requirements.yml \
+      #     && ansible-playbook stackhpc.azimuth_ops.provision \
+      #     -e infra_flavor_id=c8b72062-5d52-4590-9d7a-68a670b44442
+      #   shell: bash
       
       # debug
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
 
-      - name: Destroy Azimuth
-        if: ${{ always() }}
-        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
+      # - name: Destroy Azimuth
+      #   if: ${{ always() }}
+      #   run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
