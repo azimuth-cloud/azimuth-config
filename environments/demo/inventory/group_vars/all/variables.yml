@@ -19,6 +19,7 @@ __os_flavors: >-
       selectattr('Disk', '>=', 20) |
       selectattr('VCPUs', '>=', 2)
   }}
+
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
 infra_flavor_id: dcad12ab-aed9-4adc-93a7-e135bf19053d
 
@@ -55,5 +56,6 @@ azimuth_current_cloud_name: demo
 harbor_admin_password: admin
 harbor_secret_key: abcdefghijklmnop
 awx_admin_password: admin
+keycloak_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
 azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00

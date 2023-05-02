@@ -1,4 +1,4 @@
-# Azimuth Deployment Documentation
+# Azimuth Operator Documentation
 
 This documentation describes how to manage deployments of
 [Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.

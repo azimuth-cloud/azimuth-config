@@ -3,7 +3,7 @@
 Cluster-as-a-Service (CaaS) is enabled by default in the reference documentation. To disable it,
 just set:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_clusters_enabled: no
 ```
 
@@ -23,7 +23,7 @@ It is entirely possible to configure the available appliances using only the AWX
 
 The only required configuration for CaaS is to set the admin password for AWX:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
 awx_admin_password: "<secure password>"
 ```
 
@@ -48,13 +48,13 @@ Zenith.
 
 To disable the Slurm appliance, use the following:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_stackhpc_slurm_appliance_enabled: no
 ```
 
 The Slurm appliance requires the following configuration:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # The name of a flavor to use for Slurm login nodes
 #   A flavor with at least 2 CPUs and 4GB RAM should be used
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
@@ -73,7 +73,7 @@ stack is also available, exposed via Zenith.
 
 To disable the Linux Workstation appliance, use the following:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_stackhpc_workstation_enabled: no
 ```
 
@@ -85,7 +85,7 @@ compliant repository. A simple monitoring stack is also available, exposed via Z
 
 To disable the repo2docker appliance, use the following:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_stackhpc_repo2docker_enabled: no
 ```
 
@@ -97,7 +97,7 @@ For more information on building a CaaS-compatible appliance, please see the
 
 Custom appliances can be specified with the following configuration:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_awx_extra_projects:
   - # The name of the appliance project in AWX
     name: StackHPC Sample Appliance

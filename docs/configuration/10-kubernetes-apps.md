@@ -1,4 +1,4 @@
-# Kubernetes apps
+# Kubernetes apps
 
 Azimuth allows operators to provide a catalog of applications (apps) that users are able to
 install onto their Kubernetes clusters via the Azimuth user interface. Multiple apps can
@@ -58,7 +58,7 @@ Azimuth comes with two app templates enabled by default:
 
 These can be disabled by setting the following variables:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_jupyterhub_enabled: false
 azimuth_capi_operator_app_templates_daskhub_enabled: false
 ```
@@ -67,7 +67,7 @@ azimuth_capi_operator_app_templates_daskhub_enabled: false
 
 If you have Helm charts that you want to make available as apps, you can define them as follows:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_extra:
   # The key is the name of the app template
   my-custom-app:
@@ -85,7 +85,7 @@ from the [Chart.yaml file](https://helm.sh/docs/topics/charts/#the-chartyaml-fil
 to build the user interface. A chart annotation is also supported to define the human-readable
 label:
 
-```yaml  title="Chart.yaml"
+```yaml  title="my-chart/Chart.yaml"
 annotations:
   azimuth.stackhpc.com/label: My Custom App
 ```
@@ -166,7 +166,7 @@ annotations:
   azimuth.stackhpc.com/service-icon-url: https://my.company.org/images/my-fancy-service-icon.png
 ```
 
-It is possible to add Zenith integration to an existing chart by creating new parent chart
+It is possible to add Zenith integration to an existing chart by creating a new parent chart
 with the existing chart as a [dependency](https://helm.sh/docs/chart_best_practices/dependencies/).
 You can define templates for the Zenith resources in the parent chart, pointing at services
 created by the child chart.

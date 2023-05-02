@@ -6,7 +6,7 @@ IP using a wildcard DNS entry.
 
 To tell `azimuth-ops` what domain it should use, simply set the following variable:
 
-```yaml
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 ingress_base_domain: apps.example.org
 ```
 
@@ -83,7 +83,7 @@ for Azimuth and Zenith services with no further configuration. The default ACME 
 [Let's Encrypt](https://letsencrypt.org/), which issues certificates that are trusted by
 all major operating systems and browsers.
 
-!!! danger
+!!! danger  "Let's Encrypt rate limits"
 
     Let's Encrypt imposes [rate limits](https://letsencrypt.org/docs/rate-limits/) to ensure
     fair usage. At the time of writing, **the number of new certificates that can be issued
