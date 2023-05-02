@@ -21,7 +21,16 @@ __os_flavors: >-
   }}
 
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
-infra_flavor_id: dcad12ab-aed9-4adc-93a7-e135bf19053d
+infra_flavor_id: >-
+  {{-
+    __os_flavors |
+      selectattr('RAM', '>=', 8192) |
+      selectattr('RAM', '<=', 16384) |
+      sort(attribute = 'RAM', reverse = True) |
+      first |
+      default(undef(hint = 'Unable to determine a suitable infra_flavor_id')) |
+      json_query('ID')
+  }}
 
 # For Slurm, we need at least 4GB RAM
 # Use the same flavor for login and control nodes
