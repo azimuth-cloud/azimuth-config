@@ -27,25 +27,32 @@ jobs:
         with:
           python-version: '3.9'
           check-latest: true
-          
+
       - name: Ensure venv
         run: ./bin/ensure-venv
         shell: bash
 
       - name: Deploy demo instance
         id: deploy-demo-instance
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 45
-          max_attempts: 3
-          shell: bash
-          retry_on: error
-          command: |
-            source ./bin/activate demo \
-            && ansible-galaxy install -fr requirements.yml \
-            && ansible-playbook stackhpc.azimuth_ops.provision \
-            -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-      
+        # uses: nick-fields/retry@v2
+        # with:
+        #   timeout_minutes: 45
+        #   max_attempts: 3
+        #   shell: bash
+        #   retry_on: error
+        #   command: |
+        #     source ./bin/activate demo \
+        #     && ansible-galaxy install -fr requirements.yml \
+        #     && ansible-playbook stackhpc.azimuth_ops.provision \
+        #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
+        run: |
+          source ./bin/activate demo \
+          && ansible-galaxy install -fr requirements.yml \
+          && ansible-playbook stackhpc.azimuth_ops.provision \
+          -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
+
+
+
       # For debugging failed deployment
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
