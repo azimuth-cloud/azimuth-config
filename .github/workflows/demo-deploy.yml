@@ -6,7 +6,7 @@ env:
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
 
 jobs:
-  TestDeployment:
+  test_deployment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
