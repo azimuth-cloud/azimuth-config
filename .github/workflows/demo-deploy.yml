@@ -27,11 +27,12 @@ jobs:
         with:
           python-version: '3.9'
           check-latest: true
+          
       - name: Ensure venv
         run: ./bin/ensure-venv
         shell: bash
 
-      - name: Ansible requirements
+      - name: Deploy demo instance
         id: deploy-demo-instance
         uses: nick-fields/retry@v2
         with:
