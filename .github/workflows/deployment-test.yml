@@ -22,5 +22,5 @@ jobs:
       if: github.repository == 'stackhpc/azimuth-config'
 
   deploy_demo_env:
-      uses: ./.github/workflows/deploy.yml
+      uses: ./.github/workflows/demo-deploy.yml
       secrets: inherit
