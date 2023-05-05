@@ -1,0 +1,9 @@
+name: Demo env deployment test
+on:
+  workflow_dispatch:
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check firefox exists
+        run: /usr/bin/firefox
