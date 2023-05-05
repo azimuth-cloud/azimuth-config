@@ -5,5 +5,15 @@ jobs:
   test_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Check firefox exists
-        run: /usr/bin/firefox
+
+      # - name: Check firefox exists
+      #   run: /usr/bin/firefox
+
+      - name: Download gecko driver
+        run: wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+      - name: Unpack gecko driver
+        run: tar -xzf geckodriver-v0.33.0-linux64.tar.gz
+
+      - name: Check gecko driver is executable
+        run: ./geckodriver -h
