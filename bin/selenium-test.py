@@ -9,7 +9,7 @@ try:
     # Set maximum wait time (in seconds) for finding elements
     driver.implicitly_wait(5)
 
-    driver.get("http://localhost:8080")
+    driver.get("http://google.com")
 
 # Clean up properly on error
 except Exception as e:
