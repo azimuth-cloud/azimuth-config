@@ -6,9 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # - name: Check firefox exists
-      #   run: /usr/bin/firefox
-
       - name: Download gecko driver
         run: wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
@@ -17,3 +14,19 @@ jobs:
 
       - name: Check gecko driver is executable
         run: ./geckodriver -h
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          check-latest: true
+        
+      - name: Create python venv
+        run: |
+          python3 -m venv venv \
+          && source ./venv/bin/activate \
+          && pip install -U pip \
+          && pip install selenium
+
+      - name: Run selenium test script
+        run: source ./venv/bin/activate && python ./bin/selenium-test.py
