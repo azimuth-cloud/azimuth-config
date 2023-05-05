@@ -1,67 +1,67 @@
-# name: Deploy External
-# on: workflow_call
+name: Deploy External
+on: workflow_call
 
-# env:
-#   OS_CLOUD: openstack
-#   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
+env:
+  OS_CLOUD: openstack
+  OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
 
-# jobs:
-#   test_deployment:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#         with:
-#           ref: ${{ github.event.pull_request.head.sha }}
+jobs:
+  test_deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       
-#       - name: Copy cloud creds to file
-#         run: 'echo "$CLOUD" > clouds.yml'
-#         shell: bash
-#         env:
-#           CLOUD: ${{ secrets.CLOUD }}
+      - name: Copy cloud creds to file
+        run: 'echo "$CLOUD" > clouds.yml'
+        shell: bash
+        env:
+          CLOUD: ${{ secrets.CLOUD }}
       
-#       - name: Print inventory vars
-#         run: cat environments/demo/inventory/group_vars/all/variables.yml
+      - name: Print inventory vars
+        run: cat environments/demo/inventory/group_vars/all/variables.yml
       
-#       - uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.9'
-#           check-latest: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          check-latest: true
 
-#       - name: Ensure venv
-#         run: ./bin/ensure-venv
-#         shell: bash
+      - name: Ensure venv
+        run: ./bin/ensure-venv
+        shell: bash
 
-#       - name: Deploy demo instance
-#         id: deploy-demo-instance
-#         # uses: nick-fields/retry@v2
-#         # with:
-#         #   timeout_minutes: 45
-#         #   max_attempts: 3
-#         #   shell: bash
-#         #   retry_on: error
-#         #   command: |
-#         #     source ./bin/activate demo \
-#         #     && ansible-galaxy install -fr requirements.yml \
-#         #     && ansible-playbook stackhpc.azimuth_ops.provision \
-#         #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-#         run: |
-#           source ./bin/activate demo \
-#           && ansible-galaxy install -fr requirements.yml \
-#           && ansible-playbook stackhpc.azimuth_ops.provision \
-#           -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
+      - name: Deploy demo instance
+        id: deploy-demo-instance
+        # uses: nick-fields/retry@v2
+        # with:
+        #   timeout_minutes: 45
+        #   max_attempts: 3
+        #   shell: bash
+        #   retry_on: error
+        #   command: |
+        #     source ./bin/activate demo \
+        #     && ansible-galaxy install -fr requirements.yml \
+        #     && ansible-playbook stackhpc.azimuth_ops.provision \
+        #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
+        run: |
+          source ./bin/activate demo \
+          && ansible-galaxy install -fr requirements.yml \
+          && ansible-playbook stackhpc.azimuth_ops.provision \
+          -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
 
-#       - name: Check expected alerts are pending or firing
-#         run: ./bin/check-alerts
+      - name: Check expected alerts are pending or firing
+        run: ./bin/check-alerts
 
-#       # For debugging failed deployment
-#       - name: Setup upterm session
-#         uses: lhotari/action-upterm@v1
-#         if: ${{ failure() && steps.deploy-demo-instance.conclusion == 'failure' }}
-#         # with:
-#           # limit debug access to certain Github ssh keys
-#           # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
+      # For debugging failed deployment
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ failure() && steps.deploy-demo-instance.conclusion == 'failure' }}
+        # with:
+          # limit debug access to certain Github ssh keys
+          # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
 
-#       - name: Destroy Azimuth
-#         if: ${{ always() }}
-#         run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
+      - name: Destroy Azimuth
+        if: ${{ always() }}
+        run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
