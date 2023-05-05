@@ -3,7 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 try:
-    driver = webdriver.Firefox()
+    opts = webdriver.FirefoxOptions()
+    opts.add_argument('--headless')
+    driver = webdriver.Firefox(options=opts)
     # Set maximum wait time (in seconds) for finding elements
     driver.implicitly_wait(5)
 
