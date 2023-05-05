@@ -1,5 +1,7 @@
 # azimuth-config <!-- omit in toc -->
 
+**TEST EDIT TO CHECK WORKFLOW APPROVAL**
+
 This repository contains utilities and reference configuration for deployments of
 [Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.
 
