@@ -1,6 +1,6 @@
 name: Demo env deployment test
 on:
-  workflow_dispatch:
+  push:
 jobs:
   test_job:
     runs-on: ubuntu-latest
