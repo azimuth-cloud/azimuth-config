@@ -51,7 +51,8 @@ jobs:
           && ansible-playbook stackhpc.azimuth_ops.provision \
           -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
 
-
+      - name: Check expected alerts are pending or firing
+        run: ./bin/check-alerts
 
       # For debugging failed deployment
       - name: Setup upterm session
