@@ -17,8 +17,8 @@ jobs:
       - name: Unpack gecko driver
         run: tar -xzf geckodriver-v0.33.0-linux64.tar.gz
 
-      - name: Check gecko driver is executable
-        run: ./geckodriver -h
+      - name: Add gecko driver to path
+        run: echo PATH=$PATH:/home/ubuntu/geckodriver >> .bashrc
 
       - name: Setup python
         uses: actions/setup-python@v4
