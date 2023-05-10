@@ -4,7 +4,14 @@
 
 # Check python version
 # NOTE: Python 3.8 or newer is required for ansible 2.12 which is in turn required for the 'undef' ansible keyword
-python3 -c "import sys; sys.exit(1) if (sys.version_info[0] < 3 or sys.version_info[1] < 8) else print('Python version requirement satisfied')" || exit 1
+PY_MAJOR=3
+PY_MINOR=8
+VERSION_CHECK_CMD="import sys; sys.exit(1) if (sys.version_info[0] < $PY_MAJOR or sys.version_info[1] < $PY_MINOR) else print('Python version requirement satisfied')"
+if [[ ! $(python3 -c "$VERSION_CHECK_CMD") ]]; then
+  echo "Minimum required python version is $PY_MAJOR.$PY_MINOR"
+  echo "Please install a supported version then try again"
+  exit 1
+fi
 
 AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
 
