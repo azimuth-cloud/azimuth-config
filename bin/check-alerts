@@ -18,7 +18,7 @@ ALERT_COUNT=$(curl -s localhost:3000/api/v1/alerts | jq | grep \"state\":\ \"'fi
 echo "Found $ALERT_COUNT pending or firing alerts."
 # Demo deployment should have 4 pending alerts:
 # watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
-# since k3s doesn't have distince pods for these services
+# since k3s doesn't have distinct pods for these services
 if [[ $ALERT_COUNT == 4 ]]; then
     exit
 else

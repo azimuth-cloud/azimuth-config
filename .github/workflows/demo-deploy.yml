@@ -34,6 +34,12 @@ jobs:
 
       - name: Deploy demo instance
         id: deploy-demo-instance
+        run: |
+          source ./bin/activate demo \
+          && ansible-galaxy install -fr requirements.yml \
+          && ansible-playbook stackhpc.azimuth_ops.provision \
+          -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
+
         # uses: nick-fields/retry@v2
         # with:
         #   timeout_minutes: 45
@@ -45,11 +51,6 @@ jobs:
         #     && ansible-galaxy install -fr requirements.yml \
         #     && ansible-playbook stackhpc.azimuth_ops.provision \
         #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-        run: |
-          source ./bin/activate demo \
-          && ansible-galaxy install -fr requirements.yml \
-          && ansible-playbook stackhpc.azimuth_ops.provision \
-          -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
 
       - name: Check expected alerts are pending or firing
         run: ./bin/check-alerts

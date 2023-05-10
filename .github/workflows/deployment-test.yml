@@ -12,7 +12,7 @@ on:
     branches:
       - main
 jobs:
-  # TODO: Test this manual approval process somehow
+  # TODO: Test this manual approval process
   # Require manual approval for PRs from external forks before provisioning any cloud infra
   # According to these docs: https://docs.github.com/en/actions/managing-workflow-runs/approving-workflow-runs-from-public-forks
   # first-time external contributors will always require approval for workflows triggered by PRs from repo forks apart from 

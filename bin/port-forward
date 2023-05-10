@@ -76,12 +76,6 @@ esac
 
 echo "Starting port-forward to $name on port $2..."
 # Use the seed-ssh command
-# exec "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" \
-#   -L "$2:localhost:${3:-"$2"}" -tt \
-#   $kubeconfig \
-#   kubectl port-forward -n "$namespace" "svc/$service" "${3:-"$2"}:$remote_port"
-
-# Use the seed-ssh command
 exec "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" \
   -L "$2:localhost:$2" -tt $3 \
   $kubeconfig \
