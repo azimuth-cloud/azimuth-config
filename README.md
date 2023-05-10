@@ -1,5 +1,7 @@
 # azimuth-config <!-- omit in toc -->
 
+**THIS IS A DUMMY CHANGE TO CHECK IF WORKFLOWS ARE TRIGGERED FROM EXTERNAL FORKS**
+
 This repository contains utilities and reference configuration for deployments of
 [Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.
 
