@@ -7,7 +7,7 @@
 # NOTE: Python 3.8 or newer is required for ansible 2.12 
 # which is in turn required for the 'undef' ansible keyword
 PY_MAJOR=3
-PY_MINOR=10
+PY_MINOR=8
 version_check() {
 cat << EOF | python3
 import sys
