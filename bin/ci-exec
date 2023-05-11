@@ -19,8 +19,8 @@ esac
 
 if [ -n "$GIT_CRYPT_KEY_B64" ]; then
   # Unlock the repository
-  apt update
-  apt install -y git-crypt
+  sudo apt update
+  sudo apt install -y git-crypt
   echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
 fi
 
@@ -40,8 +40,8 @@ if [ -z "$AZIMUTH_ENVIRONMENT" ]; then
   AZIMUTH_ENVIRONMENT="${CI_ENVIRONMENT_SLUG:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
 fi
 
-apt update
-apt install -y qemu-utils
+sudo apt update
+sudo apt install -y qemu-utils
 pip install -U pip
 pip install -r requirements.txt
 
