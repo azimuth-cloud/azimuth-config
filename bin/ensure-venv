@@ -2,12 +2,21 @@
 # This script creates a virtualenv and installs the required dependencies
 #####
 
+
 # Check python version
-# NOTE: Python 3.8 or newer is required for ansible 2.12 which is in turn required for the 'undef' ansible keyword
+# NOTE: Python 3.8 or newer is required for ansible 2.12 
+# which is in turn required for the 'undef' ansible keyword
 PY_MAJOR=3
 PY_MINOR=8
-VERSION_CHECK_CMD="import sys; sys.exit(1) if (sys.version_info[0] < $PY_MAJOR or sys.version_info[1] < $PY_MINOR) else print('Python version requirement satisfied')"
-if [[ ! $(python3 -c "$VERSION_CHECK_CMD") ]]; then
+version_check() {
+cat << EOF | python3
+import sys
+if sys.version_info[0] < $PY_MAJOR or sys.version_info[1] < $PY_MINOR:
+  sys.exit(1)
+EOF
+}
+
+if ! version_check; then
   echo "Minimum required python version is $PY_MAJOR.$PY_MINOR"
   echo "Please install a supported version then try again"
   exit 1
