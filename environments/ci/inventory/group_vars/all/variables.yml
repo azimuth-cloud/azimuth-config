@@ -1,0 +1,11 @@
+
+infra_name: ci-azimuth
+
+# Arcus-specific tweaks
+
+# NOTE (sd109 2023-05-11): 
+# Currently need larger vm.ska.cpu.general.eighth arcus flavor
+# since Harbor deployment fails on 4GB RAM VM due to insufficient
+# memory. Can probably reduce this requirement in future if we 
+# disable Harbor or refine pod resource quotas.
+infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c

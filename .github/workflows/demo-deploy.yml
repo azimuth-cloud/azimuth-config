@@ -4,7 +4,7 @@ on: workflow_call
 env:
   OS_CLOUD: openstack
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
-  AZIMUTH_CONFIG_ENVIRONMENT: demo
+  AZIMUTH_CONFIG_ENVIRONMENT: ci
 
 jobs:
   test_deployment:
@@ -62,9 +62,9 @@ jobs:
         run: ./bin/check-alerts
 
       # For debugging failed deployment
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        if: ${{ failure() && steps.deploy.conclusion == 'failure' }}
+      # - name: Setup upterm session
+      #   uses: lhotari/action-upterm@v1
+      #   if: ${{ failure() && steps.deploy.conclusion == 'failure' }}
         # with:
           # limit debug access to certain Github ssh keys
           # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
