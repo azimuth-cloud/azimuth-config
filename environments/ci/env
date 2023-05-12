@@ -5,7 +5,8 @@ AZIMUTH_TERRAFORM_BACKEND_TYPE=s3
 AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET=azimuth-ci-terraform-state
 
 # State "key" or filename
-AZIMUTH_TERRAFORM_BACKEND_S3_KEY=azimuth.tfstate
+# NOTE: Set this as workflow env var instead
+# AZIMUTH_TERRAFORM_BACKEND_S3_KEY=azimuth.tfstate
 
 # This must be specified for all S3 backends, but its value is often
 # arbitrary when using Ceph Object Gateway

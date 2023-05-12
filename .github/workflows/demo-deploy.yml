@@ -6,6 +6,7 @@ env:
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
   AZIMUTH_CONFIG_ENVIRONMENT: ci
   AZIMUTH_ENVIRONMENT: ci-${{ github.run_id }}
+  AZIMUTH_TERRAFORM_BACKEND_S3_KEY: azimuth-ci-${{ github.run_id }}.tfstate
 
 jobs:
   test_deployment:
