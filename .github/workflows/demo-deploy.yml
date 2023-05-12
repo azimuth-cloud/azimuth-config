@@ -5,6 +5,7 @@ env:
   OS_CLOUD: openstack
   OS_CLIENT_CONFIG_FILE: ${{ github.workspace }}/clouds.yml
   AZIMUTH_CONFIG_ENVIRONMENT: ci
+  AZIMUTH_ENVIRONMENT: ci-${{ github.run_id }}
 
 jobs:
   test_deployment:
@@ -20,27 +21,11 @@ jobs:
         shell: bash
         env:
           CLOUD: ${{ secrets.CLOUD }}
-      
-      - name: Print inventory vars
-        run: cat environments/demo/inventory/group_vars/all/variables.yml
-      
+            
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
           check-latest: true
-
-      # - name: Ensure venv
-      #   run: ./bin/ensure-venv
-      #   shell: bash
-
-      # - name: Deploy demo instance
-      #   id: deploy
-      #   run: |
-      #     source ./bin/activate demo \
-      #     && ansible-galaxy install -fr requirements.yml \
-      #     && ansible-playbook stackhpc.azimuth_ops.provision \
-      #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-
 
       - name: Deploy Azimuth
         id: deploy
@@ -72,4 +57,3 @@ jobs:
       - name: Destroy Azimuth
         if: ${{ always() }}
         run: ./bin/ci-exec destroy
-        # run: source ./bin/activate demo && ansible-playbook stackhpc.azimuth_ops.destroy 
