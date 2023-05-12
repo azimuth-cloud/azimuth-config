@@ -10,7 +10,10 @@ PID="$!"
 # Make sure port-forward is killed on exit
 trap 'kill $PID' EXIT
 
-sleep 5 # Wait for port-forward to be established
+# Wait for port-forward to be established
+# (default to 30s wait since fetching terraform state
+# from s3 remote backends can be slow)
+sleep ${1:-30}
 # Query prometheus API -> format using `jq` -> count number of lines containing alert state firing or pending -> trim whitespace
 ALERT_COUNT=$(curl -s localhost:3000/api/v1/alerts | jq | grep \"state\":\ \"'firing\|pending'\" | wc -l | xargs)
 
