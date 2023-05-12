@@ -35,18 +35,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
 
-        # uses: nick-fields/retry@v2
-        # with:
-        #   timeout_minutes: 45
-        #   max_attempts: 3
-        #   shell: bash
-        #   retry_on: error
-        #   command: |
-        #     source ./bin/activate demo \
-        #     && ansible-galaxy install -fr requirements.yml \
-        #     && ansible-playbook stackhpc.azimuth_ops.provision \
-        #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-
       - name: Check expected alerts are pending or firing
         run: |
           source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT \
@@ -54,18 +42,29 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
-          
-      # For debugging failed deployment
-      # - name: Setup upterm session
-      #   uses: lhotari/action-upterm@v1
-      #   if: ${{ failure() && steps.deploy.conclusion == 'failure' }}
-        # with:
-          # limit debug access to certain Github ssh keys
-          # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
 
       - name: Destroy Azimuth
-        if: ${{ always() }}
+        if: ${{ success() || cancelled() }}
         run: ./bin/ci-exec destroy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
+
+      - name: Install and configure s3cmd
+        if: ${{ success() || cancelled() }}
+        run: |
+          sudo apt install s3cmd \
+          && source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT \
+          && echo "[default]'' > ~/.s3cfg \
+          && echo "host_base = $AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT" >> ~/.s3cfg \
+          && echo "host_bucket = $AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT" >> ~/.s3cfg
+
+      - name: Clean up terraform state file
+        if: ${{ success() || cancelled() }}
+        run: |
+          source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT \
+          && s3cmd rm s3://$AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET/$AZIMUTH_TERRAFORM_BACKEND_S3_KEY
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
+  
