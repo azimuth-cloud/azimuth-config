@@ -5,7 +5,6 @@
 # to check that the expected number of alerts are firing after deployment
 #####
 
-source ./bin/activate demo
 ./bin/port-forward prometheus 3000 "-o StrictHostKeyChecking=no" &
 PID="$!"
 # Make sure port-forward is killed on exit
