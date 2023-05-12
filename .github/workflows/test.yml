@@ -1,6 +1,8 @@
 name: Demo env deployment test
 on:
   push:
+env:
+  TEST_VAR: abc123
 
 jobs:
   build:
