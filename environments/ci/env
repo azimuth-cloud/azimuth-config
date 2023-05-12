@@ -12,7 +12,7 @@ AZIMUTH_TERRAFORM_BACKEND_S3_KEY=azimuth.tfstate
 AZIMUTH_TERRAFORM_BACKEND_S3_REGION=not-used-but-required-for-s3-backed
 
 # S3 endpoint (no "http(s)://" required)
-AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT=object.arcus.openstack.hpc.cam.ac.uk/swift/
+AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT=object.arcus.openstack.hpc.cam.ac.uk/swift/v1/
 
 # Skip credentials validation via the STS API as this doesn't exist for
 # Ceph Object Gateway
