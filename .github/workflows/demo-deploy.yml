@@ -30,6 +30,9 @@ jobs:
       - name: Deploy Azimuth
         id: deploy
         run: ./bin/ci-exec provision
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
 
         # uses: nick-fields/retry@v2
         # with:
@@ -59,3 +62,6 @@ jobs:
       - name: Destroy Azimuth
         if: ${{ always() }}
         run: ./bin/ci-exec destroy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}

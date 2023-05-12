@@ -12,7 +12,7 @@ AZIMUTH_TERRAFORM_BACKEND_S3_KEY=azimuth.tfstate
 AZIMUTH_TERRAFORM_BACKEND_S3_REGION=not-used-but-required-for-s3-backed
 
 # S3 endpoint (no "http(s)://" required)
-AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT=object.arcus.openstack.hpc.cam.ac.uk/
+AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT=object.arcus.openstack.hpc.cam.ac.uk
 
 # Skip credentials validation via the STS API as this doesn't exist for
 # Ceph Object Gateway
@@ -24,7 +24,3 @@ AZIMUTH_TERRAFORM_BACKEND_S3_FORCE_PATH_STYLE="true"
 
 # Skip validation of provided region name.
 AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_REGION_VALIDATION="true"
-
-# NOTE: Use fake access/secret keys for now to check where failure occurs
-AWS_ACCESS_KEY_ID=fake_secret_key
-AWS_SECRET_ACCESS_KEY=fake_access_key
