@@ -31,18 +31,6 @@ jobs:
         id: deploy
         run: ./bin/ci-exec provision
 
-        # uses: nick-fields/retry@v2
-        # with:
-        #   timeout_minutes: 45
-        #   max_attempts: 3
-        #   shell: bash
-        #   retry_on: error
-        #   command: |
-        #     source ./bin/activate demo \
-        #     && ansible-galaxy install -fr requirements.yml \
-        #     && ansible-playbook stackhpc.azimuth_ops.provision \
-        #     -e infra_flavor_id=5f9def81-c93f-4c1f-a521-3b810061ff6c
-
       - name: Check expected alerts are pending or firing
         run: |
           source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT \
@@ -52,9 +40,8 @@ jobs:
       # - name: Setup upterm session
       #   uses: lhotari/action-upterm@v1
       #   if: ${{ failure() && steps.deploy.conclusion == 'failure' }}
-        # with:
-          # limit debug access to certain Github ssh keys
-          # limit-access-to-users: sd109 # Doesn't seem to work, still accessible with any ssh key
+      #   with:
+      #     limit-access-to-actor: true
 
       - name: Destroy Azimuth
         if: ${{ always() }}
