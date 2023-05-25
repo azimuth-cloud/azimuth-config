@@ -1,22 +1,13 @@
 name: Demo env deployment test
 on:
-  pull_request_target:
-    types: [opened,synchronize,edited]
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+    # NOTE: Avoid running on draft PRs to save on resources
+    types: [review_requested, ready_for_review]
 jobs:
   deploy_demo_env:
     uses: ./.github/workflows/demo-deploy.yml
     secrets: inherit
-    # TODO: Remove `if` field to include PRs from external forks once we've
-    # verified that these PRs require manual approval from a stackhpc github
-    # member before starting the workflow. Github docs claim that this should be
-    # the case, but need to test this
+    # NOTE: Github docs claim that workflows should automatically await approval on PRs from external
+    # forks but haven't tested this explicitly so keep this conditionally to make certain
     # (https://docs.github.com/en/actions/managing-workflow-runs/approving-workflow-runs-from-public-forks)
     if: github.repository == 'stackhpc/azimuth-config'
