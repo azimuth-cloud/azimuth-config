@@ -5,7 +5,7 @@
 # to check that the expected number of alerts are firing after deployment
 #####
 
-./bin/port-forward prometheus 3000 "-o StrictHostKeyChecking=no" &
+./bin/port-forward prometheus 3000 &
 PID="$!"
 # Make sure port-forward is killed on exit
 trap 'kill $PID' EXIT
