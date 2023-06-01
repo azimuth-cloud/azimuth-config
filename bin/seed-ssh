@@ -22,9 +22,15 @@ ansible_variable() {
 }
 
 
-# Add the Terraform binary directory to the PATH, so we can use it if it exists
+# Add the Terraform binary directory to the PATH, so we can use it if it was
+# downloaded as part of a provision
+# If not, we need Terraform to be available
 terraform_binary_directory="$(ansible_variable terraform_binary_directory)"
 export PATH="$PATH:$terraform_binary_directory"
+
+# Make a working directory for seed-ssh related stuff
+work_dir="$(ansible_variable work_directory)/seed-ssh"
+mkdir -p "$work_dir"
 
 # Initialise the Terraform backend
 terraform_backend_type="$(ansible_variable terraform_backend_type)"
@@ -35,8 +41,7 @@ if [ "$terraform_backend_type" = "local" ]; then
 else
     # If the Terraform backend type is something other than local, make a terraform
     # directory containing a backend configuration that specifies the type and config
-    terraform_dir="$(ansible_variable work_directory)/seed-ssh"
-    mkdir -p "$terraform_dir"
+    terraform_dir="$work_dir"
     cat <<EOF > "$terraform_dir/backend.tf"
 terraform {
   backend "${terraform_backend_type}" {}
@@ -52,12 +57,17 @@ EOF
 fi
 
 # Read the required variables from the Terraform state
-tfstate_file="$(mktemp)"
+tfstate_file="$work_dir/tfstate"
 terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
-node_ip="$(jq -r '.outputs.cluster_gateway_ip.value' "$tfstate_file")"
-# Write the SSH key to a temporary file
-deploy_key="$(mktemp)"
-jq -r '.outputs.cluster_ssh_private_key.value' "$tfstate_file" > "$deploy_key"
+node_ip="$(jq -r '.outputs.cluster_gateway_ip.value // ""' "$tfstate_file")"
+deploy_key="$work_dir/deploy-key"
+jq -r '.outputs.cluster_ssh_private_key.value // ""' "$tfstate_file" > "$deploy_key"
+
+if [ -z "$node_ip" ]; then
+    echo ""
+    echo "[ERROR] Unable to find node details in Terraform state" >&2
+    exit 1
+fi
 
 # Run the SSH command
 exec \
