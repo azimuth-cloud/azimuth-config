@@ -1,6 +1,6 @@
 # Debugging Kubernetes
 
-As described in [Configuring Kubernetes](../configuration/kubernetes.md), Azimuth uses
+As described in [Configuring Kubernetes](../configuration/09-kubernetes.md), Azimuth uses
 [Cluster API](https://cluster-api.sigs.k8s.io/) to manage tenant Kubernetes clusters.
 
 Cluster API resources are managed by releases of the
