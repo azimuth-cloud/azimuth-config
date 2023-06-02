@@ -62,6 +62,7 @@ terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
 node_ip="$(jq -r '.outputs.cluster_gateway_ip.value // ""' "$tfstate_file")"
 deploy_key="$work_dir/deploy-key"
 jq -r '.outputs.cluster_ssh_private_key.value // ""' "$tfstate_file" > "$deploy_key"
+chmod 600 "$deploy_key"
 
 if [ -z "$node_ip" ]; then
     echo ""
