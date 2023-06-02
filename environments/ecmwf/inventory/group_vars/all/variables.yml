@@ -3,23 +3,23 @@
 #####
 
 # The ID of an existing network to create the node on
-infra_network_id: "<internal network id>"
+#infra_network_id: "<internal network id>"
 # OR
 # The CIDR of the subnet that should be created
-infra_network_cidr: 192.168.100.0/24
+infra_network_cidr: "192.168.0.0/24"
 # The ID of the external network to connect to via a router
-infra_external_network_id: "<external network id>"
+infra_external_network_id: 917acd55-4844-4218-8948-427cc6e770dc
 
 # The fixed floating IP to associate with the machine
 # This IP must be pre-allocated to the project
 # For a single node deployment, this IP should have the wildcard ingress domain assigned to it
-infra_fixed_floatingip: "<pre-allocated floating ip>"
+infra_fixed_floatingip: "136.156.131.3"
 # OR
 # The name of the floating IP pool to allocate a floating IP from
-infra_floatingip_pool: "<floating ip pool>"
+#infra_floatingip_pool: "<floating ip pool>"
 # OR
 # The ID of a provisioning network that will be used to access the seed node
-infra_provisioning_network_id: "<provisioning network id>"
+#infra_provisioning_network_id: a323e69c-d58d-4ca6-84e6-2ef9c965e865
 
 # The image id of an Ubuntu 20.04 image to use for the node
 #   N.B. This is populated automatically using community images by default
@@ -28,11 +28,11 @@ infra_provisioning_network_id: "<provisioning network id>"
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
 # For a single node deployment, >= 16GB RAM is recommended
-infra_flavor_id: "<flavor id>"
+infra_flavor_id: ba668cb2-33cc-41d4-a4f6-6e9025182eba
 
 # The size in GB for the data volume
 # This will hold all cluster data, including Kubernetes resources, and also PVC data
-infra_data_volume_size: 100
+infra_data_volume_size: 30
 
 #####
 # Configuration for the HA cluster
@@ -45,20 +45,22 @@ infra_data_volume_size: 100
 #   N.B. This is populated automatically using community images by default
 # capi_cluster_machine_image_id: "<image id>"
 # The name of the flavor to use for control plane nodes
-capi_cluster_control_plane_flavor: "<flavor name>"
+capi_cluster_control_plane_flavor: 5c433e64-c92c-420f-8f49-85f1fb15065d
 # The name of the flavor to use for worker nodes
-capi_cluster_worker_flavor: "<flavor name>"
+capi_cluster_worker_flavor: 93814a6d-cffc-4e26-ae00-af8ea2623cfd
 # The number of worker nodes
 capi_cluster_worker_count: 3
 # The fixed floating IP to associate with the load balancer for the ingress controller
 # This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
-capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
+capi_cluster_addons_ingress_load_balancer_ip: "136.156.131.33"
+
+capi_cluster_root_volume_size: 50
 
 #####
 # Ingress configuration
 #####
 # The base domain to use for ingress resources
-ingress_base_domain: "<base domain>"
+ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
 
 # Indicates if cert-manager should be enabled
 # Currently, TLS is enabled for ingress iff cert-manager is enabled
@@ -67,9 +69,15 @@ certmanager_enabled: yes
 # Indicates if Harbor should be enabled to provide pull-through caches
 harbor_enabled: no
 
+azimuth_apps_enabled: no
+#zenith_sshd_service_load_balancer_ip: "136.156.131.163"
+
 #####
 # Azimuth configuration
 #####
+
+azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
+
 # Indicates if the Zenith app proxy should be enabled
 azimuth_apps_enabled: yes
 # Indicates if Kubernetes support should be enabled
@@ -78,11 +86,11 @@ azimuth_kubernetes_enabled: yes
 azimuth_clusters_enabled: yes
 
 # The name of the current cloud
-azimuth_current_cloud_name: example
+azimuth_current_cloud_name: ecmwf
 # The label for the current cloud
-azimuth_current_cloud_label: Example
+azimuth_current_cloud_label: ECMWF
 # The auth URL for the target OpenStack cloud
-azimuth_openstack_auth_url: https://cloud.example.com:5000/v3
+azimuth_openstack_auth_url: https://auth.os-api.cci1.ecmwf.int:443
 
 #####
 # Configuration of authenticators / authentication methods
@@ -108,14 +116,15 @@ azimuth_authenticator_federated_provider: oidc
 #####
 # Configuration for CaaS appliances
 #####
+azimuth_clusters_enabled: no
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # is the id of a Rocky 8 image that will be used for Slurm clusters
 #   N.B. This is populated automatically using community images by default
 # azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
 # The name of the flavor to use for login nodes
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
+#azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
 # The name of the flavor to use for control nodes
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
+#azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
 
 # The ID of the desktop or webconsole image to use for the workstation appliance
 # See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
