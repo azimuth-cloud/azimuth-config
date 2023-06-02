@@ -185,6 +185,7 @@ terraform_s3_region: not-used-but-required
 terraform_s3_skip_region_validation: "true"
 
 # The bucket to put Terraform states in
+# NOTE: This bucket must already exist - it will not be created by Terraform
 terraform_s3_bucket: azimuth-terraform-states
 
 # The key to use for the state for the environment
