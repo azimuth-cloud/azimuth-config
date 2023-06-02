@@ -17,10 +17,21 @@ case "$1" in
     ;;
 esac
 
+# Runs apt with sudo only if required
+# Required for environments where sudo is not present
+function run_apt {
+  if [ "$(id -u)" -eq 0 ]; then
+    apt "$@"
+  else
+    sudo apt "$@"
+  fi
+}
+
+
 if [ -n "$GIT_CRYPT_KEY_B64" ]; then
   # Unlock the repository
-  sudo apt update
-  sudo apt install -y git-crypt
+  run_apt update
+  run_apt install -y git-crypt
   echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
 fi
 
@@ -40,8 +51,8 @@ if [ -z "$AZIMUTH_ENVIRONMENT" ]; then
   AZIMUTH_ENVIRONMENT="${CI_ENVIRONMENT_SLUG:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
 fi
 
-sudo apt update
-sudo apt install -y qemu-utils
+run_apt update
+run_apt install -y qemu-utils
 pip install -U pip
 pip install -r requirements.txt
 
