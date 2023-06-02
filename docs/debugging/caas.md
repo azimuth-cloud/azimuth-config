@@ -12,7 +12,7 @@ access it, use the following command:
 The AWX UI will then be available at <http://localhost:8052>.
 
 Sign in to AWX as the `admin` user with the password that you set in
-[Configuring CaaS](../configuration/caas.md#awx-admin-password).
+[Configuring CaaS](../configuration/11-caas.md#awx-admin-password).
 
 Once inside, you can look at the details of the recently executed jobs, check that
 the inventories look correct and check the permissions assigned to teams.

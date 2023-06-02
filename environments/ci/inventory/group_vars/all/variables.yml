@@ -1,15 +1,16 @@
 
 # Config for storing terraform state in S3
-terraform_backend_type: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') }}"
+terraform_backend_type: s3
 
 terraform_backend_config:
-  bucket: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_BUCKET') }}"
-  region: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_REGION') }}"
-  key: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_KEY') }}"
-  endpoint: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_ENDPOINT') }}"
-  skip_credentials_validation: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_CREDENTIALS_VALIDATION') }}"
-  force_path_style: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_FORCE_PATH_STYLE') }}"
-  skip_region_validation: "{{ lookup('ansible.builtin.env', 'AZIMUTH_TERRAFORM_BACKEND_S3_SKIP_REGION_VALIDATION') }}"
+  endpoint: object.arcus.openstack.hpc.cam.ac.uk
+  # Arcus S3 doesn't respect region but Terraform requires it
+  region: not-used-but-required
+  bucket: azimuth-ci-terraform-state
+  key: "{{ azimuth_environment }}.tfstate"
+  skip_credentials_validation: "true"
+  force_path_style: "true"
+  skip_region_validation: "true"
 
 # Arcus-specific tweaks
 
