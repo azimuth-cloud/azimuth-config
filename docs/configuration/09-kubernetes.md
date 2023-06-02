@@ -74,7 +74,7 @@ accessible to the target project, that has the correct version of
 [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) available.
 
 `azimuth-ops` is able to upload suitable images using the
-[Community images functionality](./community-images.md). If you would prefer to manage the
+[Community images functionality](./08-community-images.md). If you would prefer to manage the
 images using another mechanism, suitable images can be built using the
 [Kubernetes image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
 
@@ -89,7 +89,7 @@ called `nova` - this is the default set up and common for small-to-medium sized 
 
 If this is not the case for your target cloud, you can set some variables to determine
 the availability zones that are used for Kubernetes nodes. The possible options are discussed in
-[Availability Zones for Kubernetes nodes](./deployment-method.md#availability-zones-for-kubernetes-nodes).
+[Availability Zones for Kubernetes nodes](./02-deployment-method.md#availability-zones-for-kubernetes-nodes).
 
 The relevant variables are:
 

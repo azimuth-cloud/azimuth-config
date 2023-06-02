@@ -5,7 +5,8 @@
 ## node for the environment
 #####
 
-set -e
+set -eo pipefail
+
 
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
     echo "Please activate an environment" >&2

@@ -63,14 +63,14 @@ The demo deployment has a number of limitations in order to give it the best
 chance of running on any given cloud:
 
   * It uses the
-    [single node deployment method](./configuration/deployment-method.md#single-node).
-  * [Community images](./configuration/community-images.md) are uploaded
+    [single node deployment method](./configuration/02-deployment-method.md#single-node).
+  * [Community images](./configuration/08-community-images.md) are uploaded
     as private images, so Azimuth will only be able to provision Kubernetes
     clusters and Cluster-as-a-Service appliances in the same project as it
     is deployed in.
   * [sslip.io](https://sslip.io) is used to provide DNS. This avoids the need
     for a DNS entry to be provisioned in advance.
-  * TLS is disabled for [ingress](./configuration/ingress.md), allowing the
+  * TLS is disabled for [ingress](./configuration/05-ingress.md), allowing the
     Azimuth to work even when the deployment is not reachable from the
     internet (*outbound* internet connectivity is still required).
   * Verification of SSL certificates for the OpenStack API is disabled,

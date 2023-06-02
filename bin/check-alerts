@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+#####
+# This script is designed to be run as part of the deployment CI workflow
+# to check that the expected number of alerts are firing after deployment
+#####
+
+./bin/port-forward prometheus 3000 &
+PID="$!"
+# Make sure port-forward is killed on exit
+trap 'kill $PID' EXIT
+
+# Wait for port-forward to be established
+# (default to 30s wait since fetching terraform state
+# from s3 remote backends can be slow)
+sleep ${1:-30}
+# Query prometheus API -> format using `jq` -> count number of lines containing alert state firing or pending -> trim whitespace
+ALERT_COUNT=$(curl -s localhost:3000/api/v1/alerts | jq | grep \"state\":\ \"'firing\|pending'\" | wc -l | xargs)
+
+echo "Found $ALERT_COUNT pending or firing alerts."
+# Demo deployment should have 4 pending alerts:
+# watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
+# since k3s doesn't have distinct pods for these services
+if [[ $ALERT_COUNT == 4 ]]; then
+    exit
+else
+    exit 1
+fi

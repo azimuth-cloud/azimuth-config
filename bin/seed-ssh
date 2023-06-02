@@ -5,48 +5,77 @@
 ## connection details
 #####
 
-set -e
+set -eo pipefail
+
 
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
     echo "Please activate an environment" >&2
     exit 1
 fi
 
-WORK_DIRECTORY="${AZIMUTH_CONFIG_ROOT}/.work/${AZIMUTH_ENVIRONMENT}"
 
-AZIMUTH_TERRAFORM_BACKEND_TYPE="${AZIMUTH_TERRAFORM_BACKEND_TYPE:-local}"
-if [ "$AZIMUTH_TERRAFORM_BACKEND_TYPE" = "local" ]; then
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+# Add the Terraform binary directory to the PATH, so we can use it if it was
+# downloaded as part of a provision
+# If not, we need Terraform to be available
+terraform_binary_directory="$(ansible_variable terraform_binary_directory)"
+export PATH="$PATH:$terraform_binary_directory"
+
+# Make a working directory for seed-ssh related stuff
+work_dir="$(ansible_variable work_directory)/seed-ssh"
+mkdir -p "$work_dir"
+
+# Initialise the Terraform backend
+terraform_backend_type="$(ansible_variable terraform_backend_type)"
+if [ "$terraform_backend_type" = "local" ]; then
     # If the Terraform backend is local, that means the provisioning is run on the current host
     # Hence there should be a pre-existing Terraform project directory we can point at
-    terraform_dir="${AZIMUTH_TERRAFORM_LOCAL_PATH:-"${WORK_DIRECTORY}/terraform"}"
+    terraform_dir="$(ansible_variable terraform_project_path)"
 else
     # If the Terraform backend type is something other than local, make a terraform
-    # directory containing a backend configuration that specifies the type
-    # We support some special cases where additional environment variables are respected
-    # In other cases, the backend configuration should come from environment variables
-    terraform_dir="${WORK_DIRECTORY}/seed-ssh"
-    mkdir -p "$terraform_dir"
-    echo "terraform {" > "$terraform_dir/backend.tf"
-    echo "  backend \"${AZIMUTH_TERRAFORM_BACKEND_TYPE}\" {" >> "$terraform_dir/backend.tf"
-    if [ "$AZIMUTH_TERRAFORM_BACKEND_TYPE" = "swift" ]; then
-        if [ -z "$AZIMUTH_TERRAFORM_BACKEND_SWIFT_CONTAINER" ]; then
-            echo "AZIMUTH_TERRAFORM_BACKEND_SWIFT_CONTAINER is required for the Swift backend" >&2
-            exit 1
-        fi
-        echo "    container = \"${AZIMUTH_TERRAFORM_BACKEND_SWIFT_CONTAINER}\"" >> "$terraform_dir/backend.tf"
-    fi
-    echo "  }" >> "$terraform_dir/backend.tf"
-    echo "}" >> "$terraform_dir/backend.tf"
-    PATH="${AZIMUTH_CONFIG_ROOT}/.bin:$PATH" terraform -chdir="$terraform_dir" init
+    # directory containing a backend configuration that specifies the type and config
+    terraform_dir="$work_dir"
+    cat <<EOF > "$terraform_dir/backend.tf"
+terraform {
+  backend "${terraform_backend_type}" {}
+}
+EOF
+    ansible_variable terraform_backend_config > "$terraform_dir/backend_config.json"
+    terraform \
+      -chdir="$terraform_dir" \
+      init \
+      -input=false \
+      -reconfigure \
+      -backend-config=$terraform_dir/backend_config.json
 fi
 
 # Read the required variables from the Terraform state
-tfstate_file="$(mktemp)"
-PATH="${AZIMUTH_CONFIG_ROOT}/.bin:$PATH" terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
-node_ip="$(jq -r '.outputs.cluster_gateway_ip.value' "$tfstate_file")"
-# Write the SSH key to a temporary file
-deploy_key="$(mktemp)"
-jq -r '.outputs.cluster_ssh_private_key.value' "$tfstate_file" > "$deploy_key"
+tfstate_file="$work_dir/tfstate"
+terraform -chdir="$terraform_dir" state pull > "$tfstate_file"
+node_ip="$(jq -r '.outputs.cluster_gateway_ip.value // ""' "$tfstate_file")"
+deploy_key="$work_dir/deploy-key"
+jq -r '.outputs.cluster_ssh_private_key.value // ""' "$tfstate_file" > "$deploy_key"
+chmod 600 "$deploy_key"
+
+if [ -z "$node_ip" ]; then
+    echo ""
+    echo "[ERROR] Unable to find node details in Terraform state" >&2
+    exit 1
+fi
 
 # Run the SSH command
-exec ssh -o UserKnownHostsFile=/dev/null -A -i $deploy_key ubuntu@$node_ip "$@"
+exec \
+  ssh \
+    -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -A \
+    -i $deploy_key \
+    ubuntu@$node_ip \
+    "$@"

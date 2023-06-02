@@ -1,0 +1,25 @@
+
+# Config for storing terraform state in S3
+terraform_backend_type: s3
+
+terraform_backend_config:
+  endpoint: object.arcus.openstack.hpc.cam.ac.uk
+  # Arcus S3 doesn't respect region but Terraform requires it
+  region: not-used-but-required
+  bucket: azimuth-ci-terraform-state
+  key: "{{ azimuth_environment }}.tfstate"
+  skip_credentials_validation: "true"
+  force_path_style: "true"
+  skip_region_validation: "true"
+
+# Arcus-specific tweaks
+
+# NOTE (sd109 2023-05-11): 
+# Currently need larger vm.ska.cpu.general.eighth arcus flavor
+# since Harbor deployment fails on 4GB RAM VM due to insufficient
+# memory. Can probably reduce this requirement in future if we 
+# disable Harbor or refine pod resource quotas.
+infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
+
+# Disable Harbor in CI for now, as it is really slow and likely to be removed soon
+harbor_enabled: no

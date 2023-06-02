@@ -45,7 +45,7 @@ Azimuth comes with two app templates enabled by default:
 : Allows the user to deploy [JupyterHub](https://jupyter.org/hub) on their clusters. JupyterHub
   provides a multi-user environment for using [Jupyter notebooks](https://jupyter.org/) where
   each user gets their own dynamically-provisioned notebook server and storage. The Jupyter
-  notebook interface is exposed using [Zenith](./zenith.md).
+  notebook interface is exposed using [Zenith](./07-zenith.md).
 
 `daskhub`
 : A JupyterHub instance with [Dask](https://www.dask.org/) integration. Dask is a library that aims
@@ -138,7 +138,7 @@ This behaviour can be customised for each app template using the following optio
 
 ## Zenith integration
 
-When [Zenith is enabled](./zenith.md), every Kubernetes cluster created by Azimuth has an
+When [Zenith is enabled](./07-zenith.md), every Kubernetes cluster created by Azimuth has an
 instance of the [Zenith operator](https://github.com/stackhpc/zenith/tree/main/operator) watching
 it. This operator makes two Kubernetes custom resources available that can be used to expose a
 [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to users
