@@ -20,3 +20,6 @@ terraform_backend_config:
 # memory. Can probably reduce this requirement in future if we 
 # disable Harbor or refine pod resource quotas.
 infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
+
+# Disable Harbor in CI for now, as it is really slow and likely to be removed soon
+harbor_enabled: no
