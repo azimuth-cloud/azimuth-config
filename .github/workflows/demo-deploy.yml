@@ -43,6 +43,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ARCUS_S3_SECRET_KEY }}
 
       - name: Destroy Azimuth
+        # NOTE: This step won't teardown the demo deployment if the CI fails,
+        # which allows us to then access the failed partial deployment to debug.
+        # Assuming you have Arcus cloud access, the seed node for a given CI run
+        # can be accessed by activating the CI environment locally and setting 
+        # the AZIMUTH_ENVIRONMENT env var manually to ci-<github-workflow-run-id> 
+        # then running the seed-ssh script as normal.
         if: ${{ success() || cancelled() }}
         run: ./bin/ci-exec destroy
         env:
