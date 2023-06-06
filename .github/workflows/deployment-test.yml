@@ -2,7 +2,7 @@ name: Demo env deployment test
 on:
   pull_request:
     # NOTE: Avoid running on draft PRs to save on resources
-    types: [review_requested, ready_for_review]
+    types: ready_for_review
     branches:
       - main
 jobs:
