@@ -103,7 +103,7 @@ terraform_http_address: "{{ gitlab_project_url }}/terraform/state/{{ azimuth_env
 # The state-locking and unlocking endpoints for the environment
 terraform_http_lock_address: "{{ terraform_http_address }}/lock"
 terraform_http_lock_method: POST
-terraform_http_unlock_address: "{{ terraform_http_lock_address }}"
+terraform_http_unlock_address: "{{ terraform_http_lock_address }}/lock"
 terraform_http_unlock_method: DELETE
 
 terraform_backend_config:
