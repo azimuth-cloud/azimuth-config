@@ -5,6 +5,9 @@ on:
     types: ready_for_review
     branches:
       - main
+concurrency: 
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
 jobs:
   deploy_demo_env:
     uses: ./.github/workflows/demo-deploy.yml
