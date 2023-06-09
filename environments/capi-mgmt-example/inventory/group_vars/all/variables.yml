@@ -6,7 +6,7 @@
 # infra_network_cidr: 192.168.100.0/24
 
 # The ID of the external network to connect to via a router
-# By default, the first available network will be used
+# By default, if there is exactly one external network then it will be used
 # infra_external_network_id: "<external network id>"
 
 # The image id of an Ubuntu 20.04 image to use for the node
