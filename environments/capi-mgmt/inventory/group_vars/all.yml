@@ -3,16 +3,6 @@ infra_name: "capi-mgmt-{{ azimuth_environment }}{{ '-seed' if install_mode == 'h
 # Give the HA cluster a name corresponding to the environment
 capi_cluster_release_name: "capi-mgmt-{{ azimuth_environment }}"
 
-# Use the first available external network by default
-infra_external_network_id: >-
-  {{
-    lookup('pipe', 'openstack network list --external -f json') |
-      from_json |
-      first |
-      default(undef(hint = 'Unable to find external network')) |
-      json_query('ID')
-  }}
-
 # The size in GB for the data volume
 # This will hold all cluster data, including Kubernetes resources
 infra_data_volume_size: 50
