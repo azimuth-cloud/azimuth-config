@@ -1,0 +1,67 @@
+# Give the seed node a name corresponding to the environment
+infra_name: "capi-mgmt-{{ azimuth_environment }}{{ '-seed' if install_mode == 'ha' else '' }}"
+# Give the HA cluster a name corresponding to the environment
+capi_cluster_release_name: "capi-mgmt-{{ azimuth_environment }}"
+
+# The size in GB for the data volume
+# This will hold all cluster data, including Kubernetes resources
+infra_data_volume_size: 50
+
+# Pick suitable flavors from the available flavors
+#   Only consider flavors with at least 2 CPUs and 20GB disk
+__os_flavors: >-
+  {{
+    lookup('pipe', 'openstack flavor list -f json') |
+      from_json |
+      selectattr('Disk', '>=', 20) |
+      selectattr('VCPUs', '>=', 2)
+  }}
+
+# Pick a flavor with at least 20GB disk, 2 CPUs and 8GB RAM
+__infra_flavor: >-
+  {{-
+    lookup('pipe', 'openstack flavor list -f json') |
+      from_json |
+      selectattr('Disk', '>=', 20) |
+      selectattr('VCPUs', '>=', 2) |
+      selectattr('RAM', '>=', 8192) |
+      sort(attribute = 'RAM') |
+      first |
+      default(undef(hint = 'Unable to determine a suitable flavor'))
+  }}
+infra_flavor_id: "{{ __infra_flavor | json_query('ID') }}"
+
+# Use community images to upload the single Kubernetes image we need for the
+# HA cluster as a private image
+community_images:
+  kube_1_26_5:
+    name: ubuntu-focal-kube-v1.26.5-230602-1757
+    source_url: "{{ community_images_base_url }}/ubuntu-focal-kube-v1.26.5-230602-1757.qcow2"
+    source_disk_format: qcow2
+    container_format: bare
+community_images_default_visibility: private
+community_images_update_existing_visibility: false
+
+capi_cluster_kubernetes_version: "1.26.5"
+capi_cluster_machine_image_id: "{{ community_images_image_ids.kube_1_26_5 }}"
+
+# Flavors for the HA cluster
+capi_cluster_control_plane_flavor: "{{ __infra_flavor | json_query('Name') }}"
+capi_cluster_worker_flavor: "{{ __infra_flavor | json_query('Name') }}"
+
+# By default, provision the cluster with a FIP on the API server load-balancer
+# so that the Kubernetes API can be reached from outside
+capi_cluster_apiserver_floating_ip: true
+
+# By default, don't worry about failure domains
+capi_cluster_control_plane_omit_failure_domain: true
+capi_cluster_worker_failure_domain: ~
+
+# We don't need the ingress controller for a CAPI mgmt cluster
+ingress_controller_enabled: no
+
+# cert-manager is always required
+certmanager_enabled: yes
+
+# Harbor is never required
+harbor_enabled: no
