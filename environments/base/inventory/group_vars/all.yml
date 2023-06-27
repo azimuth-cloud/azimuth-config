@@ -162,13 +162,7 @@ __os_loadbalancer_providers: >-
       map(attribute = 'name') |
       reject('equalto', 'octavia')
   }}
-capi_cluster_addons_openstack_loadbalancer_provider: >-
-  {{-
-    __os_loadbalancer_providers[0]
-    if __os_loadbalancer_providers | length == 1
-    else undef(hint = 'Unable to determine load balancer provider')
-  }}
-azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
+capi_openstack_loadbalancer_provider: >-
   {{-
     __os_loadbalancer_providers[0]
     if __os_loadbalancer_providers | length == 1
