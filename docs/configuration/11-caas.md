@@ -1,36 +1,37 @@
 # Cluster-as-a-Service (CaaS)
 
-Cluster-as-a-Service (CaaS) is enabled by default in the reference documentation. To disable it,
-just set:
+Cluster-as-a-Service (CaaS) in Azimuth allows self-service platforms to be provided to
+users that are deployed and configured using a combination of [Ansible](https://www.ansible.com/),
+[Terraform](https://www.terraform.io/) and [Packer](https://www.packer.io/), stored in
+a [git](https://git-scm.com/) repository.
+
+CaaS support in Azimuth is implemented by the
+[Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator).
+The operator executes Ansible playbooks using
+[ansible-runner](https://ansible.readthedocs.io/projects/runner/en/stable/) in response
+to Azimuth creating and modifying instances of the
+[custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+that it exposes:
+
+`clustertypes.caas.azimuth.stackhpc.com`
+: A cluster type represents an available appliance, e.g. "workstation" or "Slurm cluster".
+  This CRD defines the git repository, version and playbook that will be used to deploy
+  clusters of the specified type, along with metadata for generating the UI and any
+  global variable such as image UUIDs.
+
+`clusters.caas.azimuth.stackhpc.com`
+: A cluster represents the combination of a cluster type with values collected from the user.
+  The CaaS operator tracks the status of the `ansible-runner` executions for the cluster and
+  reports it on the CRD for Azimuth to consume.
+
+## Disabling CaaS
+
+CaaS support is enabled by default in the reference configuration. To disable it, just
+set:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_clusters_enabled: no
 ```
-
-As discussed in the Azimuth architecture document, the appliances exposed to users via the
-Azimuth UI are determined by
-[projects](https://docs.ansible.com/ansible-tower/latest/html/userguide/projects.html) and
-[job templates](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html)
-in [AWX](https://github.com/ansible/awx).
-
-As used by CaaS, a project is essentially a Git repository containing Ansible playbooks, and
-the job templates correspond to individual playbooks within those projects.
-
-It is entirely possible to configure the available appliances using only the AWX UI. However
-`azimuth-ops` allows you to define the available appliances using Ansible variables.
-
-## AWX admin password
-
-The only required configuration for CaaS is to set the admin password for AWX:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
-awx_admin_password: "<secure password>"
-```
-
-!!! danger
-
-    This password should be kept secret. If you want to keep the password in Git - which is
-    recommended - then it [must be encrypted](../repository/secrets.md).
 
 ## StackHPC Appliances
 
@@ -95,28 +96,23 @@ It is possible to make custom appliances available in the Azimuth interface for 
 For more information on building a CaaS-compatible appliance, please see the
 [sample appliance](https://github.com/stackhpc/azimuth-sample-appliance).
 
-Custom appliances can be specified with the following configuration:
+Custom appliances can be easily specified in your Azimuth configuration. For example,
+the following will configure the sample appliance as an available cluster type:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_caas_awx_extra_projects:
-  - # The name of the appliance project in AWX
-    name: StackHPC Sample Appliance
+azimuth_caas_cluster_templates_overrides:
+  sample-appliance:
     # The git URL of the appliance
     gitUrl: https://github.com/stackhpc/azimuth-sample-appliance.git
     # The branch, tag or commit id to use
     # For production, it is recommended to use a fixed tag or commit ID
     gitVersion: master
-    # The base URL for cluster metadata files
-    metadataRoot: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/{gitVersion}/ui-meta
-    # List of playbooks that correspond to appliances
-    playbooks: [sample-appliance.yml]
-    # Dict of extra variables for appliances
-    #   The keys are the playbooks
-    #   The values are maps of Ansible extra_vars for those playbooks
-    #   The special key __ALL__ can be used to set common extra_vars for
-    #     all playbooks in a project
+    # The name of the playbook to use
+    playbook: sample-appliance.yml
+    # The URL of the metadata file
+    uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/master/ui-meta/sample-appliance.yaml
+    # Dict of extra variables for the appliance
     extraVars:
-      __ALL__:
-        # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
-        cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
+      # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
+      cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
 ```
