@@ -1,18 +1,37 @@
 name: Demo env deployment test
+
 on:
   pull_request:
-    # NOTE: Avoid running on draft PRs to save on resources
-    types: ready_for_review
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
     branches:
       - main
+
 concurrency: 
   group: ${{ github.head_ref }}
   cancel-in-progress: true
+
 jobs:
+  # This job exists so that draft PRs see the check as failed
+  fail_on_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR must be marked as ready for review before tests will run
+        run: exit 1
+    if: ${{ github.event.pull_request.draft }}
+
+
   deploy_demo_env:
     uses: ./.github/workflows/demo-deploy.yml
     secrets: inherit
     # NOTE: Github docs claim that workflows should automatically await approval on PRs from external
     # forks but haven't tested this explicitly so keep this conditional just in case
     # (https://docs.github.com/en/actions/managing-workflow-runs/approving-workflow-runs-from-public-forks)
-    if: github.repository == 'stackhpc/azimuth-config'
+    if: >-
+      ${{
+        github.repository == 'stackhpc/azimuth-config' &&
+        !github.event.pull_request.draft
+      }}

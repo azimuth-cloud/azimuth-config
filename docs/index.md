@@ -14,12 +14,10 @@ shared but overridden where required using composition of environments.
 
 ## Structure of an Azimuth deployment
 
-A fully-featured Azimuth deployment consists of many components - see
-[Azimuth Architecture](https://github.com/stackhpc/azimuth/blob/master/docs/architecture.md)
-for details - and several of these components, including
-[Zenith](https://github.com/stackhpc/zenith), [AWX](https://github.com/ansible/awx) and
-[Cluster API](https://cluster-api.sigs.k8s.io/), require a [Kubernetes](https://kubernetes.io/)
-cluster to run.
+A fully-featured Azimuth deployment consists of many components, such as
+[Zenith](https://github.com/stackhpc/zenith), [Cluster API](https://cluster-api.sigs.k8s.io/)
+and the [CaaS operator](https://github.com/stackhpc/azimuth-caas-operator), which
+require a [Kubernetes](https://kubernetes.io/) cluster to run.
 
 However when you consider an Azimuth deployment as a whole, the only _real_ dependency is
 an [OpenStack](https://www.openstack.org/) cloud to target - we can create a Kubernetes

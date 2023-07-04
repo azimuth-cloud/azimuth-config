@@ -64,7 +64,6 @@ azimuth_current_cloud_name: demo
 # Use secrets that are not really secret for ease
 harbor_admin_password: admin
 harbor_secret_key: abcdefghijklmnop
-awx_admin_password: admin
 keycloak_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
 azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
