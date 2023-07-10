@@ -1,6 +1,7 @@
 #####
 # Configuration for the seed node (HA) or single node
 #####
+clusterapi_openstack_version: v0.7.3
 
 # The ID of an existing network to create the node on
 #infra_network_id: "<internal network id>"
@@ -28,7 +29,7 @@ infra_fixed_floatingip: "136.156.131.3"
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
 # For a single node deployment, >= 16GB RAM is recommended
-infra_flavor_id: ba668cb2-33cc-41d4-a4f6-6e9025182eba
+infra_flavor_id: 5c433e64-c92c-420f-8f49-85f1fb15065d
 
 # The size in GB for the data volume
 # This will hold all cluster data, including Kubernetes resources, and also PVC data
@@ -45,16 +46,18 @@ infra_data_volume_size: 30
 #   N.B. This is populated automatically using community images by default
 # capi_cluster_machine_image_id: "<image id>"
 # The name of the flavor to use for control plane nodes
-capi_cluster_control_plane_flavor: 5c433e64-c92c-420f-8f49-85f1fb15065d
+capi_cluster_control_plane_flavor: 8cpu-8gbmem-30gbdisk
 # The name of the flavor to use for worker nodes
-capi_cluster_worker_flavor: 93814a6d-cffc-4e26-ae00-af8ea2623cfd
+capi_cluster_worker_flavor: 16cpu-16gbmem-30gbdisk
+capi_cluster_control_plane_count: 1
 # The number of worker nodes
 capi_cluster_worker_count: 3
 # The fixed floating IP to associate with the load balancer for the ingress controller
 # This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
 capi_cluster_addons_ingress_load_balancer_ip: "136.156.131.33"
-
 capi_cluster_root_volume_size: 50
+capi_cluster_root_volume_type: "1dd92f95-bad0-4043-af51-e06b2c799442"
+capi_cluster_apiserver_floating_ip: true
 
 #####
 # Ingress configuration
@@ -69,8 +72,8 @@ certmanager_enabled: yes
 # Indicates if Harbor should be enabled to provide pull-through caches
 harbor_enabled: no
 
-azimuth_apps_enabled: no
-#zenith_sshd_service_load_balancer_ip: "136.156.131.163"
+#azimuth_apps_enabled: no
+zenith_sshd_service_load_balancer_ip: "136.156.131.209"
 
 #####
 # Azimuth configuration
@@ -83,7 +86,7 @@ azimuth_apps_enabled: yes
 # Indicates if Kubernetes support should be enabled
 azimuth_kubernetes_enabled: yes
 # Indicates if Cluster-as-a-Service (CaaS) should be enabled
-azimuth_clusters_enabled: yes
+#azimuth_clusters_enabled: yes
 
 # The name of the current cloud
 azimuth_current_cloud_name: ecmwf
@@ -92,6 +95,9 @@ azimuth_current_cloud_label: ECMWF
 # The auth URL for the target OpenStack cloud
 azimuth_openstack_auth_url: https://auth.os-api.cci1.ecmwf.int:443
 
+
+azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: amphora
+capi_cluster_addons_openstack_loadbalancer_provider: amphora
 #####
 # Configuration of authenticators / authentication methods
 #####
