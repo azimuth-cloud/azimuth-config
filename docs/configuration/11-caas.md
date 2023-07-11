@@ -33,6 +33,19 @@ set:
 azimuth_clusters_enabled: no
 ```
 
+## Removing legacy AWX components
+
+If you are migrating from an installation using the previous AWX implementation then
+Azimuth itself will be reconfigured to use the CaaS CRD, but by default the AWX
+installation will be left untouched in order to allow any legacy apps to be cleaned up.
+
+To remove AWX components, an additional variable must be set when the `provision` playbook
+is executed:
+
+```sh
+ansible-playbook stackhpc.azimuth_ops.provision -e awx_purge=yes
+```
+
 ## StackHPC Appliances
 
 By default, three appliances maintained by StackHPC are made available - the

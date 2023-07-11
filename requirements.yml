@@ -1,9 +1,15 @@
 ---
 
 collections:
+<<<<<<< Updated upstream
   - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
     type: git
     version: 7e7e01b3db002a0fea59baa52f61bf66ef207afa
+=======
+  # - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
+  #   type: git
+  #   version: efe276bf7d6712cd95b151f06a13bd5c8a663861
+>>>>>>> Stashed changes
   # For local development
-  # - type: dir
-  #   source: ../ansible-collection-azimuth-ops
+  - type: dir
+    source: ../ansible-collection-azimuth-ops
