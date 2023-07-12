@@ -162,10 +162,20 @@ __os_loadbalancer_providers: >-
       map(attribute = 'name') |
       reject('equalto', 'octavia')
   }}
-capi_openstack_loadbalancer_provider: >-
+openstack_loadbalancer_provider: >-
   {{-
     __os_loadbalancer_providers[0]
     if __os_loadbalancer_providers | length == 1
     else undef(hint = 'Unable to determine load balancer provider')
   }}
-
+# Only set this variable if the selected provider is not amphora, otherwise we break existing deployments
+capi_cluster_apiserver_loadbalancer_provider: >-
+  {{-
+    openstack_loadbalancer_provider
+    if openstack_loadbalancer_provider != "amphora"
+    else None
+  }}
+capi_cluster_addons_openstack_loadbalancer_provider: >-
+  {{- openstack_loadbalancer_provider }}
+azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
+  {{- openstack_loadbalancer_provider }}
