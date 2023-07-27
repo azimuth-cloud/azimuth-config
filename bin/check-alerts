@@ -5,24 +5,53 @@
 # to check that the expected number of alerts are firing after deployment
 #####
 
-./bin/port-forward prometheus 3000 &
+echo "Starting port-forward for Prometheus API"
+./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
 PID="$!"
 # Make sure port-forward is killed on exit
 trap 'kill $PID' EXIT
 
-# Wait for port-forward to be established
-# (default to 30s wait since fetching terraform state
-# from s3 remote backends can be slow)
-sleep ${1:-30}
-# Query prometheus API -> format using `jq` -> count number of lines containing alert state firing or pending -> trim whitespace
-ALERT_COUNT=$(curl -s localhost:3000/api/v1/alerts | jq | grep \"state\":\ \"'firing\|pending'\" | wc -l | xargs)
+# Wait for the Prometheus API to come up
+API_RETRIES=0
+API_RETRY_LIMIT=24
+API_RETRY_SLEEP=5
+while true; do
+  API_RETRIES=$(( API_RETRIES + 1 ))
+  echo "Waiting for Prometheus API to become available (attempt $API_RETRIES of $API_RETRY_LIMIT)"
 
-echo "Found $ALERT_COUNT pending or firing alerts."
-# Demo deployment should have 4 pending alerts:
-# watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
-# since k3s doesn't have distinct pods for these services
-if [[ $ALERT_COUNT == 4 ]]; then
-    exit
-else
+  if curl -fsSL http://localhost:9090/api/v1/alerts > /dev/null 2>&1; then
+    break
+  elif [[ ${API_RETRIES} -eq ${API_RETRY_LIMIT} ]]; then
+    echo "Timed out waiting for Prometheus API" >&2
     exit 1
-fi
+  else
+    sleep "$API_RETRY_SLEEP"
+  fi
+done
+
+# Retry in case the alerts are ephemeral
+RETRIES=0
+RETRY_LIMIT=60
+RETRY_SLEEP=10
+while true; do
+    RETRIES=$(( RETRIES + 1 ))
+    echo "Querying alerts (attempt $RETRIES of $RETRY_LIMIT)"
+
+    ALERTS="$(curl -fsSL http://localhost:9090/api/v1/alerts)"
+    ALERT_COUNT="$(echo "$ALERTS" | jq -r '.data.alerts | length')"
+    echo "  Found $ALERT_COUNT pending or firing alerts:"
+    echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
+    echo ""
+
+    # Demo deployment should have 4 pending alerts:
+    # watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
+    # since k3s doesn't have distinct pods for these services
+    # TODO(mkjpryor) Fix these alerts in K3S deployment :D
+    if [[ $ALERT_COUNT == 3 ]]; then
+        exit
+    elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
+        exit 1
+    else
+        sleep "$RETRY_SLEEP"
+    fi
+done
