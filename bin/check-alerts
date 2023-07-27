@@ -47,7 +47,7 @@ while true; do
     # watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
     # since k3s doesn't have distinct pods for these services
     # TODO(mkjpryor) Fix these alerts in K3S deployment :D
-    if [[ $ALERT_COUNT == 3 ]]; then
+    if [[ $ALERT_COUNT == 4 ]]; then
         exit
     elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
         exit 1
