@@ -49,7 +49,7 @@ jobs:
         # can be accessed by activating the CI environment locally with
         # `source ./bin/activate ci ci-<github-workflow-run-id>`
         # then running the seed-ssh script as normal.
-        if: ${{ success() || cancelled() }}
+        if: ${{ always() }}
         run: ./bin/ci-exec destroy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ARCUS_S3_ACCESS_KEY }}
