@@ -105,18 +105,6 @@ azimuth_authenticator_federated_label: "Federated"
 # This should correspond to the Keystone federation URL, e.g. <auth url>/auth/OS-FEDERATION/websso/<provider>
 azimuth_authenticator_federated_provider: oidc
 
-#####
-# Configuration for CaaS appliances
-#####
-# If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
-# is the id of a Rocky 8 image that will be used for Slurm clusters
-#   N.B. This is populated automatically using community images by default
-# azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
-# The name of the flavor to use for login nodes
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-# The name of the flavor to use for control nodes
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-
 # The ID of the desktop or webconsole image to use for the workstation appliance
 # See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
 #   N.B. This is populated automatically using community images by default

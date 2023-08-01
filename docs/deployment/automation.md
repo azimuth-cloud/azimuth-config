@@ -149,10 +149,6 @@ mixin environments):
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 
-# CaaS configuration
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-
 # Azimuth cloud name
 #   This can use the environment name if desired, e.g.:
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"

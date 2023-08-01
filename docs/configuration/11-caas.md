@@ -66,18 +66,6 @@ To disable the Slurm appliance, use the following:
 azimuth_caas_stackhpc_slurm_appliance_enabled: no
 ```
 
-The Slurm appliance requires the following configuration:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-# The name of a flavor to use for Slurm login nodes
-#   A flavor with at least 2 CPUs and 4GB RAM should be used
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-
-# The name of a flavor to use for Slurm control nodes
-#   A flavor with at least 2 CPUs and 4GB RAM should be used
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-```
-
 ### Linux Workstation appliance
 
 The Linux Workstation appliance allows users to provision a workstation that is accessible
