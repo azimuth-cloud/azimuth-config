@@ -9,6 +9,8 @@ on:
       - reopened
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
 
 concurrency: 
   group: ${{ github.head_ref }}
