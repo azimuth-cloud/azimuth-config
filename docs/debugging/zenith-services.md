@@ -24,6 +24,9 @@ SSHD, then try restarting SSHD:
 kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 ```
 
+Clients not registering correctly with SSHD may also be caused by a Consul outage. Futher
+information for debugging Consul issues is provided in [Debugging Consul](consul.md).
+
 ## Kubernetes resources for the Zenith service have not been created
 
 If the service exists in Consul, it is possible that the process that synchronises Consul
