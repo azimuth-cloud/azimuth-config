@@ -57,7 +57,7 @@ case "$1" in
     service="consul-ui"
     remote_port="80"
     ;;
-  monitoring)
+  grafana)
     name="Grafana"
     namespace="monitoring-system"
     service="kube-prometheus-stack-grafana"
