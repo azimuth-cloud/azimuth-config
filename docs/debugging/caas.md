@@ -1,6 +1,6 @@
 # Debugging Cluster-as-a-Service
 
-As described in [configuring CaaS](../configuration/11-caas.md), Azimuth uses
+As described in [configuring CaaS](../configuration/12-caas.md), Azimuth uses
 the [Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator) to
 manage clusters.
 

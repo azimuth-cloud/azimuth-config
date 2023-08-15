@@ -2,9 +2,30 @@
 
 If a Zenith service does not become available, the most common causes are:
 
-## Client not registering correctly with SSHD
+## Client not connecting to SSHD
 
-To determine if this is the case, it is useful to access the [Consul](https://www.consul.io/)
+The first thing that happens to connect a Zenith service is that the Zenith client
+must connect to the Zenith SSHD. To see if a Zenith client is connecting, check for the
+Zenith subdomain in the logs of the SSHD server:
+
+```sh  title="On the K3S node, targetting the HA cluster if deployed"
+kubectl -n azimuth logs deploy/zenith-server-sshd [-f]
+```
+
+If there are no logs for the target Zenith subdomain, this usually indicates a problem
+with the client. Check the logs for the client and restart it if necessary. If problems
+persist, try restarting the Zenith SSHD:
+
+```sh  title="On the K3S node, targetting the HA cluster if deployed"
+kubectl -n azimuth rollout restart deployment/zenith-server-sshd
+```
+
+## Client not registered in Consul
+
+Once a client has connected to SSHD successfully, it should get registered in
+[Consul](https://www.consul.io/).
+
+To determine if this is the case, it is useful to access the Consul
 UI. Similar to the monitoring, this interface is only accessible inside the cluster. To
 access it, use the following command:
 
@@ -16,16 +37,39 @@ The Consul UI will then be available at <http://localhost:3000>. The default vie
 Consul's view of the services, where you can check if the service is being registered
 correctly.
 
-If the client is not correctly registering with SSHD, the first thing to do is check the
-logs for the client and restart it if necessary. If the client is failing to connect to
-SSHD, then try restarting SSHD:
+Clients not registering correctly in Consul usually indicates an issue with Consul
+itself. Futher information for debugging Consul issues is provided in
+[Debugging Consul](consul.md).
+
+If the issue persists once Consul issues are ruled out, try restarting SSHD:
 
 ```sh  title="On the K3S node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 ```
 
-Clients not registering correctly with SSHD may also be caused by a Consul outage. Futher
-information for debugging Consul issues is provided in [Debugging Consul](consul.md).
+## OIDC credentials not created
+
+Keycloak OIDC credentials for Zenith services for platforms deployed using Azimuth are created
+by the [azimuth-identity-operator](https://github.com/stackhpc/azimuth-identity-operator).
+
+To see if this step has happened, check the status of the `realm` and `platform` resources
+created by the identity operator. They should all be in the `Ready` phase:
+
+```command  title="On the K3S node, targetting the HA cluster if deployed"
+$ kubectl get realm,platform -A
+NAMESPACE   NAME                                          PHASE   TENANCY ID      OIDC ISSUER                                           AGE
+az-demo     realm.identity.azimuth.stackhpc.com/az-demo   Ready   xxxxxxxxxxxxx   https://identity.azimuth.example.org/realms/az-demo   4d2h
+
+NAMESPACE   NAME                                                        PHASE   AGE
+az-demo     platform.identity.azimuth.stackhpc.com/kube-mykubecluster   Ready   114s
+```
+
+If any of these resources stay in an unready state for more than a few minutes, try restarting
+the identity operator:
+
+```sh  title="On the K3S node, targetting the HA cluster if deployed"
+kubectl -n azimuth rollout restart deployment/azimuth-identity-operator
+```
 
 ## Kubernetes resources for the Zenith service have not been created
 
@@ -36,11 +80,11 @@ resources are being created, run the following command and check that the `Ingre
 
 ```command  title="On the K3S node, targetting the HA cluster if deployed"
 $ kubectl -n zenith-services get ingress,service,endpoints
-NAME                                                            CLASS   HOSTS                                                  ADDRESS         PORTS     AGE
-ingress.networking.k8s.io/cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   nginx   cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g.apps.example.org   96.241.100.96   80, 443   2d
-ingress.networking.k8s.io/i03xvflgk1zmtcsdm2x5z5lz9qz05027euw   nginx   i03xvflgk1zmtcsdm2x5z5lz9qz05027euw.apps.example.org   96.241.100.96   80, 443   2d
-ingress.networking.k8s.io/pxmvy7235x2ggfvf2op615gvz2v59wkqglc   nginx   pxmvy7235x2ggfvf2op615gvz2v59wkqglc.apps.example.org   96.241.100.96   80, 443   2d
-ingress.networking.k8s.io/txn3zidfdnru5rg109voh848n51rvicmr1s   nginx   txn3zidfdnru5rg109voh848n51rvicmr1s.apps.example.org   96.241.100.96   80, 443   2d
+NAME                                                            CLASS   HOSTS                                                     ADDRESS         PORTS     AGE
+ingress.networking.k8s.io/cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   nginx   cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g.azimuth.example.org   96.241.100.96   80, 443   2d
+ingress.networking.k8s.io/i03xvflgk1zmtcsdm2x5z5lz9qz05027euw   nginx   i03xvflgk1zmtcsdm2x5z5lz9qz05027euw.azimuth.example.org   96.241.100.96   80, 443   2d
+ingress.networking.k8s.io/pxmvy7235x2ggfvf2op615gvz2v59wkqglc   nginx   pxmvy7235x2ggfvf2op615gvz2v59wkqglc.azimuth.example.org   96.241.100.96   80, 443   2d
+ingress.networking.k8s.io/txn3zidfdnru5rg109voh848n51rvicmr1s   nginx   txn3zidfdnru5rg109voh848n51rvicmr1s.azimuth.example.org   96.241.100.96   80, 443   2d
 
 NAME                                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
 service/cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   ClusterIP   172.27.10.109    <none>        80/TCP    2d

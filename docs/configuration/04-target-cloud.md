@@ -51,16 +51,20 @@ them for an OpenStack token. This requires no additional configuration.
 
 If the target cloud consumes identities from an external provider via
 [Keystone federation](https://docs.openstack.org/keystone/latest/admin/federation/introduction.html),
-then Azimuth can be configured to obtain an OpenStack token from Keystone using the same flow
+then Azimuth should be configured to obtain an OpenStack token from Keystone using the same flow
 as Horizon. To enable this, additional configuration is required for both Azimuth and Keystone
 on the target cloud.
 
 First, the Keystone configuration of the target cloud must be modified to add Azimuth as a
 [trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
 otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
-trusted dashboard, you must specify the URL that will receive token data - for an Azimuth deployment,
-this URL is `https://[portal domain]/auth/federated/complete/`, where the portal domain depends on
-the ingress configuration as described elsewhere in this documentation.
+trusted dashboard, you must specify the URL that will receive token data, where the portal domain
+depends on the [ingress configuration](./06-ingress.md):
+
+```ini  title="Keystone configuration"
+[federation]
+trusted_dashboard = https://portal.azimuth.example.org/auth/federated/complete/
+```
 
 In your Azimuth configuration, enable the federated authenticator and tell it the provider and
 protocol to use:

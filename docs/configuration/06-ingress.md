@@ -1,19 +1,19 @@
 # Ingress
 
 As mentioned in the prerequisites, Azimuth and Zenith expect to be given control of entire
-subdomain, e.g. `*.apps.example.org` and this domain must be assigned to a pre-allocated floating
-IP using a wildcard DNS entry.
+subdomain, e.g. `*.azimuth.example.org`, and this domain must be assigned to a pre-allocated
+floating IP using a wildcard DNS entry.
 
 To tell `azimuth-ops` what domain it should use, simply set the following variable:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-ingress_base_domain: apps.example.org
+ingress_base_domain: azimuth.example.org
 ```
 
-This will result in `azimuth-ops` using `portal.apps.example.org` for Azimuth and
-`registrar.apps.example.org` for the Zenith registrar. If Harbor is enabled,
-`registry.apps.example.org` will be used for the Harbor registry. Zenith will use domains
-of the form `<random subdomain>.apps.example.org` for its services.
+This will result in `azimuth-ops` using `portal.azimuth.example.org` for Azimuth and
+`registrar.azimuth.example.org` for the Zenith registrar. If Harbor is enabled,
+`registry.azimuth.example.org` will be used for the Harbor registry. Zenith will use domains
+of the form `<random subdomain>.azimuth.example.org` for its services.
 
 ## Transport Layer Security (TLS)
 
@@ -26,19 +26,19 @@ you can use this to provide TLS for Azimuth and Zenith services.
 
 !!! tip
 
-    At the time of writing this is the recommended mechanism for production deployments,
-    despite the lack of automation, for two reasons:
+    This is the recommended mechanism for production deployments, despite the lack of
+    automation, for two reasons:
     
       * It is not affected by [rate limits](https://letsencrypt.org/docs/rate-limits/)
       * Zenith services become available faster as it avoids the overhead of obtaining
         a certificate per service
 
-!!! danger
+!!! warning
 
-    It is your responsibility to check for the expiry of the certificate and renew it.
+    It is your responsibility to renew the wildcard certificate before it expires.
 
-    Consider using an external service to notify you when the certificate is approaching
-    its expiry date.
+    The [Azimuth monitoring](./13-monitoring.md) will produce alerts when the certificate
+    is approaching its expiry date.
 
 To configure a pre-existing wildcard certificate for ingress, just create the following
 files in your environment:
@@ -89,8 +89,20 @@ all major operating systems and browsers.
     fair usage. At the time of writing, **the number of new certificates that can be issued
     is 50 per week per registed domain**. The "registered domain" is the part of the domain
     that is purchased from the registrar so, for an Azimuth deployment with an ingress base
-    domain of `*.apps.example.org`, the Let's Encrypt rate limit is imposed on `example.org`.
+    domain of `*.azimuth.example.org`, the Let's Encrypt rate limit is imposed on `example.org`.
 
     If there are a large number of Zenith services and the rate limit is reached, cert-manager
     will not be able to obtain a certificate and Azimuth and Zenith services will never become
     available.
+
+#### Using another ACME provider
+
+It is possible to configure the issuer to use a different ACME server, e.g. if your institution
+has an ACME server that issues trusted certificates:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# The name of the issuer
+certmanager_acmehttp01issuer_name: example-acme
+# The URL of the ACME endpoint
+certmanager_acmehttp01issuer_server: https://acme.example.org
+```
