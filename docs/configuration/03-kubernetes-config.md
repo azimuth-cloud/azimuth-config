@@ -5,7 +5,7 @@ i.e. the HA cluster in a HA deployment and tenant clusters.
 
 The variable names differ slightly for the two cases.
 
-## Images
+## Images
 
 When building a cluster, Cluster API requires that an image exists in the target cloud
 that is accessible to the target project and has the correct version of
