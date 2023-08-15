@@ -125,7 +125,7 @@ If enabled, the Harbor registry will be made available at `registry.<ingress bas
 e.g. `registry.azimuth.example.org` and will be configured for tenant clusters by default.
 
 By default, a single proxy cache is defined for [Docker Hub](https://hub.docker.com/) in order
-to mitigate the [rate limiting](https://docs.docker.com/docker-hub/download-rate-limit/).
+to mitigate [rate limiting](https://docs.docker.com/docker-hub/download-rate-limit/).
 
 !!! tip
 
@@ -161,7 +161,6 @@ The Harbor registry can be disabled entirely:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 harbor_enabled: no
-```    
 
 ### Additional proxy caches
 

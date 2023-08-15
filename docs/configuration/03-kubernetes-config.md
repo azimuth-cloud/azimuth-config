@@ -112,7 +112,7 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
 ## Load-balancer provider
 
 If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
-[OVN Octavia driver](https://docs.openstack.org/ovn-octavia-provider/latest/admin/driver.html)
+[OVN Octavia provider](https://docs.openstack.org/ovn-octavia-provider/latest/admin/driver.html)
 is enabled, then Kubernetes clusters should be configured to use the OVN provider for
 any load-balancers that are created:
 

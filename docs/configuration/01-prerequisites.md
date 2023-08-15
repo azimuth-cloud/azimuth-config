@@ -16,7 +16,7 @@ Currently, Azimuth is able to target OpenStack clouds with the following service
     * Amphora and OVN drivers supported
 
 Azimuth has no specific requirement on the version of OpenStack. It is known to work on
-Train and newer.
+on Train release and newer.
 
 ### Networking
 

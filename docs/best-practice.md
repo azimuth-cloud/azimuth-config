@@ -10,11 +10,11 @@ meets the [prerequisites](./configuration/01-prerequisites.md).
 
 ## OpenStack projects
 
-Azimuth is usually deployed on the cloud that is being targetted for workloads. It is
-recommended to have three OpenStack projects for a production Azimuth deployment:
+Azimuth is usually deployed on the cloud that is being targeted for workloads. It is
+recommended to have three OpenStack projects for a production Azimuth deployment, to contain:
 
-  * One for the highly-available (HA) production deployment, e.g. `azimuth-production`
-  * One for a HA staging deployment, e.g. `azimuth-staging`
+  * A highly-available (HA) production deployment, e.g. `azimuth-production`
+  * A HA staging deployment, e.g. `azimuth-staging`
   * One for all-in-one (AIO) deployments for validating changes, e.g. `azimuth-cicd`
 
 The production and staging projects must have
@@ -40,7 +40,7 @@ the infrastructure.
 A [Terraform remote state store](./repository/terraform.md#remote-state) must be configured
 in order to persist the Terraform state across playbook executions. If GitLab is being
 used for the repository, it is recommended to use
-[GitLab-managed Terraform state](./repository/terraform.md#gitlab) for this. If not,
+[GitLab-managed Terraform state](./repository/terraform.md#gitlab). If not,
 [S3](./repository/terraform.md#s3) is the preferred approach.
 
 ## Environments
@@ -81,7 +81,7 @@ base --> ha --> site --> site-ha --> staging
 base --> ha --> site --> site-ha --> production
 ```
 
-with only necessary changes, e.g. the ingress base domain, between `staging` and `production`.
+with only necessary differences configured in each environment, e.g. the ingress base domain, between `staging` and `production`.
 
 ## Continuous delivery
 
@@ -91,7 +91,7 @@ environments. The `ansible-playbook` command should **never** be executed manual
 
 The recommended approach is to automatically deploy an independent `aio` environment for each
 feature branch, also known as
-[pre-branch dynamic review environments](deployment/automation/#per-branch-dynamic-review-environments).
+[per-branch dynamic review environments](deployment/automation/#per-branch-dynamic-review-environments).
 This allows changes to be validated before they are merged to `main`.
 
 Once a change is merged to `main`, it will be deployed automatically to the `staging` environment.
@@ -107,4 +107,4 @@ is provided that implements this workflow for GitLab-hosted repositories.
 
 You are now ready to begin adding configuration to your environments. When building an environment
 for the first time, it is recommended to follow each documentation page in order, beginning with
-the [Deployment method](http://localhost:8000/configuration/02-deployment-method/).
+the [Deployment method](./configuration/02-deployment-method.md).
