@@ -22,7 +22,7 @@ Train and newer.
 
 OpenStack projects that are used for Azimuth deployments (infra projects) or into which
 Azimuth will deploy platforms on behalf of users (workload projects) require access to a
-network that is tagged as `external` in Neutron, on which floating IPs can be allocated.
+network that is shared as `external` in Neutron, on which floating IPs can be allocated.
 
 This network must provide egress to the internet, but does not need to provide ingress
 from the internet. This network should be given the Neutron tag `portal-external` so that
