@@ -21,7 +21,7 @@ jobs:
   fail_on_remote:
     runs-on: ubuntu-latest
     steps:
-      - name: PR must be from a branch in the azimuth-images repo
+      - name: PR must be from a branch in the azimuth-config repo
         run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
 
   # This job exists so that draft PRs see the check as failed
@@ -35,13 +35,29 @@ jobs:
     needs: [fail_on_remote, fail_on_draft]
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Azimuth environment
-        uses: ./.github/actions/setup
-        with:
-          # Make sure to check out the config version under test
-          config-ref: ${{ github.sha }}
-          os-clouds: ${{ secrets.CLOUD }}
-          environment-prefix: ci
+      # Because the actions are local in this repo, we can't use the setup action here
+      # Instead we must replicate the steps from it
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Write clouds.yaml
+        shell: bash
+        run: cat > ./clouds.yaml <<< "$OS_CLOUDS"
+        env:
+          OS_CLOUDS: ${{ secrets.CLOUD }}
+
+      # This environment file will be sourced before running any other actions
+      - name: Write environment file
+        shell: bash
+        run: cat > ./ci.env <<< "$CI_ENV"
+        env:
+          CI_ENV: |
+            set -a
+            OS_CLOUD="openstack"
+            OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
+            AZIMUTH_CONFIG_ENVIRONMENT=ci
+            AZIMUTH_ENVIRONMENT="ci-${{ github.run_id }}"
+            set +a
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision

@@ -1,10 +1,6 @@
 name: Azimuth CI setup
 description: Sets up an environment for running Azimuth CI.
 inputs:
-  config-ref:
-    description: The ref of the azimuth-config repo to check out.
-    required: true
-    default: feature/ci-external-actions
   os-clouds:
     description: The contents of the clouds.yaml to use.
     required: true
@@ -25,7 +21,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: stackhpc/azimuth-config
-        ref: ${{ inputs.config-ref }}
+        ref: feature/ci-external-actions
 
     - name: Write clouds.yaml
       shell: bash
