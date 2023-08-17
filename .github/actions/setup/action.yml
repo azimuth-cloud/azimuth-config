@@ -21,7 +21,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: stackhpc/azimuth-config
-        ref: feature/ci-external-actions
+        ref: main
 
     - name: Write clouds.yaml
       shell: bash
