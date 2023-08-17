@@ -1,0 +1,47 @@
+name: Azimuth CI setup
+description: Sets up an environment for running Azimuth CI.
+inputs:
+  config-ref:
+    description: The ref of the azimuth-config repo to check out.
+    required: true
+    default: feature/ci-external-actions
+  os-clouds:
+    description: The contents of the clouds.yaml to use.
+    required: true
+  os-cloud-name:
+    description: The name of the cloud within the clouds.yaml to use.
+    required: true
+    default: openstack
+  environment-prefix:
+    description: >
+      The environment prefix to use. The run ID will be appended to this,
+      separated by a hyphen.
+    required: true
+    default: ci
+runs:
+  using: composite
+  steps:
+    - name: Checkout azimuth-config repo
+      uses: actions/checkout@v3
+      with:
+        repository: stackhpc/azimuth-config
+        ref: ${{ inputs.config-ref }}
+
+    - name: Write clouds.yaml
+      shell: bash
+      run: cat > ./clouds.yaml <<< "$OS_CLOUDS"
+      env:
+        OS_CLOUDS: ${{ inputs.os-clouds }}
+
+    # This environment file will be sourced before running any other actions
+    - name: Write environment file
+      shell: bash
+      run: cat > ./ci.env <<< "$CI_ENV"
+      env:
+        CI_ENV: |
+          set -a
+          OS_CLOUD="${{ inputs.os-cloud-name }}"
+          OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
+          AZIMUTH_CONFIG_ENVIRONMENT=ci
+          AZIMUTH_ENVIRONMENT="${{ inputs.environment-prefix }}-${{ github.run_id }}"
+          set +a
