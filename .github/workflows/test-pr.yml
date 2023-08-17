@@ -25,7 +25,7 @@ jobs:
         run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
 
   run_azimuth_tests:
-    needs: [fail_on_remote, fail_on_draft]
+    needs: [fail_on_remote]
     runs-on: ubuntu-latest
     steps:
       # Because the actions are local in this repo, we can't use the setup action here
