@@ -15,7 +15,7 @@ recommended to have three OpenStack projects for a production Azimuth deployment
 
   * A highly-available (HA) production deployment, e.g. `azimuth-production`
   * A HA staging deployment, e.g. `azimuth-staging`
-  * One for all-in-one (AIO) deployments for validating changes, e.g. `azimuth-cicd`
+  * All-in-one (AIO) deployments for validating changes, e.g. `azimuth-cicd`
 
 The production and staging projects must have
 [sufficient quota](./configuration/01-prerequisites.md#prerequisites) for a HA Azimuth

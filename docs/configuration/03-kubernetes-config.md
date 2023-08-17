@@ -109,6 +109,14 @@ azimuth_capi_operator_capi_helm_root_volume_size: 100
 azimuth_capi_operator_capi_helm_root_volume_type: nvme
 ```
 
+!!! tip
+
+    You can see the available volume types using the OpenStack CLI:
+
+    ```sh
+    openstack volume type list
+    ```
+
 ## Load-balancer provider
 
 If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
@@ -130,6 +138,15 @@ capi_cluster_addons_openstack_loadbalancer_provider: ovn
 # This variable applies to load-balancers created for LoadBalancer services
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: ovn
 ```
+```
+
+!!! tip
+
+    You can see the available load-balancer providers using the OpenStack CLI:
+
+    ```sh
+    openstack loadbalancer provider list
+    ```
 
 ## Availability zones
 
