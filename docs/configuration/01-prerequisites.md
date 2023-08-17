@@ -29,6 +29,14 @@ from the internet. This network should be given the Neutron tag `portal-external
 it can be correctly detected by Azimuth, especially in the case where there are multiple
 external networks.
 
+!!! tip
+
+    Adding the Neutron tag can be done using the OpenStack CLI (usually as admin):
+
+    ```sh
+    openstack network set --tag portal-external ${external_network_name}
+    ```
+
 Machines provisioned as part of an Azimuth deployment, or as part of platforms in workload
 projects, will be attached to a private network that is connected to this external network
 using a router. These machines must be able to access the OpenStack API for the cloud in
