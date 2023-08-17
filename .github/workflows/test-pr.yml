@@ -1,0 +1,64 @@
+name: Test Azimuth deployment
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  # This job exists so that PRs from outside the main repo are rejected
+  fail_on_remote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR must be from a branch in the azimuth-config repo
+        run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
+
+  run_azimuth_tests:
+    needs: [fail_on_remote]
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      # Because the actions are local in this repo, we can't use the setup action here
+      # Instead we must replicate the steps from it
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Write clouds.yaml
+        shell: bash
+        run: cat > ./clouds.yaml <<< "$OS_CLOUDS"
+        env:
+          OS_CLOUDS: ${{ secrets.CLOUD }}
+
+      # This environment file will be sourced before running any other actions
+      - name: Write environment file
+        shell: bash
+        run: cat > ./ci.env <<< "$CI_ENV"
+        env:
+          CI_ENV: |
+            set -a
+            OS_CLOUD="openstack"
+            OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
+            AZIMUTH_CONFIG_ENVIRONMENT=ci
+            AZIMUTH_ENVIRONMENT="ci-${{ github.run_id }}"
+            set +a
+
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
+
+      - name: Run Azimuth tests
+        uses: ./.github/actions/test
+
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}

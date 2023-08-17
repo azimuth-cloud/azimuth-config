@@ -17,6 +17,9 @@ case "$1" in
     ;;
 esac
 
+# Now we have processed the operation, drop the argument
+shift
+
 # Runs apt with sudo only if required
 # Required for environments where sudo is not present
 function run_apt {
@@ -60,4 +63,4 @@ source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
 ansible-galaxy install -f -r requirements.yml
 # Force Ansible to print colours for nicer logs
 export ANSIBLE_FORCE_COLOR=true
-exec ansible-playbook "stackhpc.azimuth_ops.${AZIMUTH_OPERATION}"
+exec ansible-playbook "stackhpc.azimuth_ops.${AZIMUTH_OPERATION}" "$@"

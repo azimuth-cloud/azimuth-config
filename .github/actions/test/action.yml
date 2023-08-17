@@ -1,0 +1,14 @@
+name: Azimuth CI tests
+description: Tests an Azimuth environment using the CI config.
+# inputs:
+runs:
+  using: composite
+  steps:
+    - name: Check expected alerts are pending or firing
+      shell: bash
+      # Make sure to source the ci environment before running the tests
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT
+        ./bin/check-alerts
