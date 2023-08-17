@@ -26,6 +26,7 @@ jobs:
 
   run_azimuth_tests:
     needs: [fail_on_remote]
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       # Because the actions are local in this repo, we can't use the setup action here
