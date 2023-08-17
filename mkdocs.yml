@@ -6,6 +6,7 @@ edit_uri: ''
 nav:
   - Home: index.md
   - try.md
+  - best-practice.md
   - environments.md
   - Repository:
       - repository/index.md
@@ -15,16 +16,17 @@ nav:
       - configuration/index.md
       - configuration/01-prerequisites.md
       - configuration/02-deployment-method.md
-      - configuration/03-target-cloud.md
-      - configuration/04-secret-key.md
-      - configuration/05-ingress.md
-      - configuration/06-platform-identity.md
-      - configuration/07-zenith.md
-      - configuration/08-community-images.md
-      - configuration/09-kubernetes.md
-      - configuration/10-kubernetes-apps.md
-      - configuration/11-caas.md
-      - configuration/12-monitoring.md
+      - configuration/03-kubernetes-config.md
+      - configuration/04-target-cloud.md
+      - configuration/05-secret-key.md
+      - configuration/06-ingress.md
+      - configuration/07-platform-identity.md
+      - configuration/08-zenith.md
+      - configuration/09-community-images.md
+      - configuration/10-kubernetes-clusters.md
+      - configuration/11-kubernetes-apps.md
+      - configuration/12-caas.md
+      - configuration/13-monitoring.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md

@@ -45,11 +45,10 @@ the same OpenStack project onto which Azimuth is deployed.
     Option 2 requires that [Octavia](https://docs.openstack.org/octavia/latest/index.html)
     is available on the target cloud to provide load-balancers for Azimuth components.
 
-## Configuring and deploying Azimuth
+## Deploying Azimuth
 
-The rest of this documentation provides details on different aspects of building a
-production-ready Azimuth configuration and using it to deploy Azimuth.
+To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
+to get a simple single-node deployment.
 
-In the first instance it is recommended to follow the pages in order, implementing the
-steps in your Azimuth configuration. Once you have a working configuration, you can
-refer back to specific sections as needed.
+For a production-ready deployment, you should follow the steps in the
+[best practice document](./best-practice.md).

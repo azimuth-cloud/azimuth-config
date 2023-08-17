@@ -17,7 +17,7 @@ stages:
   # This stage owns the scheduled job that checks for upstream changes
   - upstream-merge
   # This stage owns the deploy and teardown jobs for dynamic environments
-  - dynamic
+  - aio
   # This stage owns the deploy job for our staging environment
   - staging
   # This stage owns the deploy job for our production environment
@@ -81,13 +81,13 @@ upstream_merge:
 # (although they do share an OpenStack project)
 #
 # This allows configuration changes to be tested  before being merged to main,
-# subject to the differences between the dynamic and staging/production environments
+# subject to the differences between the aio and staging/production environments
 #
 # It is recommended to use a site mixin for the common configuration to increase the
 # efficacy of this process!
 #####
-deploy_dynamic:
-  stage: dynamic
+deploy_aio:
+  stage: aio
   rules:
     # Do not run for commits to main
     - if: $CI_COMMIT_BRANCH == "main"
@@ -97,25 +97,25 @@ deploy_dynamic:
     # Run when there is a push to a branch that is not main changes one of the relevant files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
       changes:
-        # Files that affect the dynamic environment
+        # Files that affect the aio environment
         - env
         - env.secret
         - requirements.yml
         - environments/base/**/*
         - environments/singlenode/**/*
         - environments/site/**/*
-        - environments/dynamic/**/*
+        - environments/aio/**/*
   artifacts:
     reports:
       dotenv: azimuth.env
   environment:
-    name: dynamic/$CI_COMMIT_REF_SLUG
+    name: aio/$CI_COMMIT_REF_SLUG
     url: $AZIMUTH_URL
-    on_stop: stop_dynamic
+    on_stop: stop_aio
   variables:
     # This is normally taken from the GitLab environment name, but in this case that
     # depends on the branch name so we need to be explicit about the config to use
-    AZIMUTH_CONFIG_ENVIRONMENT: dynamic
+    AZIMUTH_CONFIG_ENVIRONMENT: aio
   script:
     - ./bin/ci-exec provision
 
@@ -125,10 +125,10 @@ deploy_dynamic:
 # We need to work around the fact that the source branch may no longer exist
 # See https://gitlab.com/gitlab-org/gitlab/-/issues/22943
 #####
-stop_dynamic:
-  stage: dynamic
+stop_aio:
+  stage: aio
   rules:
-    # These rules must match deploy_dynamic, but with manual trigger
+    # These rules must match deploy_aio, but with manual trigger
     # Allow the job to fail so it does not block merges
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
@@ -137,21 +137,21 @@ stop_dynamic:
       allow_failure: true
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
       changes:
-        # Files that affect the dynamic environment
+        # Files that affect the aio environment
         - env
         - env.secret
         - requirements.yml
         - environments/base/**/*
         - environments/singlenode/**/*
         - environments/site/**/*
-        - environments/dynamic/**/*
+        - environments/aio/**/*
       when: manual
       allow_failure: true
   environment:
-    name: dynamic/$CI_COMMIT_REF_SLUG
+    name: aio/$CI_COMMIT_REF_SLUG
     action: stop
   variables:
-    AZIMUTH_CONFIG_ENVIRONMENT: dynamic
+    AZIMUTH_CONFIG_ENVIRONMENT: aio
     GIT_STRATEGY: none
   before_script:
     - git clone ${CI_REPOSITORY_URL} ${CI_PROJECT_NAME}
@@ -186,6 +186,7 @@ deploy_staging:
         - environments/base/**/*
         - environments/ha/**/*
         - environments/site/**/*
+        - environments/site-ha/**/*
         - environments/staging/**/*
   artifacts:
     reports:
@@ -223,6 +224,7 @@ deploy_production:
         - environments/base/**/*
         - environments/ha/**/*
         - environments/site/**/*
+        - environments/site-ha/**/*
         - environments/production/**/*
       when: manual
   artifacts:

@@ -3,20 +3,20 @@
 Azimuth requires a number of specialised images to be available on the target cloud for
 Cluster-as-a-Service appliances and Kubernetes clusters.
 
-Images for the workstation and repo2docker appliances are built using
+Images for Kubernetes and CaaS appliances, with the exception of Slurm, are built using
 [Packer](https://www.packer.io/) from the definitions in the
-[azimuth-images repository](https://github.com/stackhpc/azimuth-images). The results of these
-builds are uploaded
-[here](https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/)
-for consumption by Azimuth deployments.
+[azimuth-images repository](https://github.com/stackhpc/azimuth-images). For Kubernetes,
+we make use of the recipes from the upstream
+[Cluster API image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
 
-Similarly, images for the Slurm cluster appliance are built using Packer from definitions in the
+Each [release of azimuth-images](https://github.com/stackhpc/azimuth-images/releases) has
+an associated manifest that describes the images in the release and where to download them
+from, along with some additional metadata. The Azimuth deployment playbooks are able to
+consume these manifests.
+
+Images for the Slurm cluster appliance are built using Packer from definitions in the
 [slurm-image-builder respository](https://github.com/stackhpc/slurm_image_builder), with builds uploaded
 [here](https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_3a06571936a0424bb40bc5c672c4ccb1/openhpc-images/).
-
-For Kubernetes, we use the [OSISM builds](https://minio.services.osism.tech/openstack-k8s-capi-images)
-of the Cluster API images from the
-[Kubernetes image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
 
 `azimuth-ops` is able to download, convert (if required) and then create
 [Glance images](https://docs.openstack.org/glance/latest/) on the target cloud from these sources.
@@ -25,25 +25,27 @@ Images are uploaded as
 meaning they are accessible by all projects in the target cloud, but not included by default
 when listing images in Horizon, the OpenStack CLI or the OpenStack API.
 
-By default, `azimuth-ops` creates a  set of images that are needed to support Azimuth's
+By default, `azimuth-ops` uploads the set of images that are needed to support Azimuth's
 functionality and auto-wires them into the correct places for the K3S node, the HA Kubernetes
 cluster, the default Kubernetes templates and the default Cluster-as-a-Service appliances.
 
-## Referencing uploaded images
+## Image properties
 
-The IDs of the uploaded images are made available in the variable `community_images_image_ids`, which
-can be used to refer to the images elsewhere in your Azimuth configuration, e.g.:
+Properties can be set on the uploaded images, if required. The properties are given as
+strings of the form `key=value` in the following variable:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_caas_stackhpc_workstation_image: "{{ community_images_image_ids.workstation_20220711_2135 }}"
+community_images_custom_properties:
+  - 'prop1=value1'
+  - 'prop2=value2'
 ```
 
 ## Image conversion
 
-`azimuth-ops` is able to convert images from a "source" format to a "target" format for the
-target cloud. The majority of images available for download are in `qcow2` format, and this
-is the format in which images built from `azimuth-images` are distributed. However your cloud
-may require images to be uploaded in a different format, e.g. `raw` or `vmdk`.
+Images can be converted from a "source" format to a "target" format for the target cloud. The
+majority of images available for download are in `qcow2` format, and this is the format in
+which images built from `azimuth-images` are distributed. However your cloud may require
+images to be uploaded in a different format, e.g. `raw` or `vmdk`.
 
 To specify the target format for your cloud, just set the following (the default is `qcow2`):
 
@@ -80,23 +82,27 @@ a custom Cluster-as-a-Service appliance or for older Kubernetes versions, you ca
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images_extra:
-  debian_11_20220711_1073:
+  # Key, used to refer to the image ID
+  debian_11:
+    # The name of the image to create on the target cloud
     name: debian-11-generic-amd64-20220711-1073
+    # The URL of the source image
     source_url: https://cloud.debian.org/images/cloud/bullseye/20220711-1073/debian-11-generic-amd64-20220711-1073.qcow2
+    # The disk format of the source image
     source_disk_format: qcow2
+    # The container format of the source image
     container_format: bare
 ```
 
 The ID of this image can then be referred to elsewhere in your Azimuth configuration using:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-my_custom_caas_appliance_image: "{{ community_images_image_ids.debian_11_20220711_1073 }}"
+my_custom_caas_appliance_image: "{{ community_images_image_ids.debian_11 }}"
 ```
 
 !!! warning
 
-    The image specifications in `community_images_extra` are assumed to be **immutable**, i.e.
-    they will never change. It is also assumed that the names refer to unique images.
+    It is assumed that the `name` in a community image specification refers to a unique image.
     `azimuth-ops` will only download, convert and upload images to the target cloud for names
     that do not already exist.
 
