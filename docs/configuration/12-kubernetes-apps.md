@@ -177,5 +177,5 @@ with the existing chart as a [dependency](https://helm.sh/docs/chart_best_practi
 You can define templates for the Zenith resources in the parent chart, pointing at services
 created by the child chart.
 
-This is the approach taken by the [azimuth-charts](https://github.com/stackhpc/azimuth-charts)
-that provide the default `jupyterhub` and `daskhub` apps.
+This is the approach taken by the [azimuth-charts](https://github.com/stackhpc/azimuth-charts) repository
+which hosts the default Azimuth Kubernetes apps.
