@@ -141,3 +141,44 @@ azimuth_clusters_enabled: no
 # See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
 #   N.B. This is populated automatically using community images by default
 # azimuth_caas_stackhpc_repo2docker_image: "<image id>"
+
+#####
+# Terraform State
+####
+
+terraform_backend_type: s3
+
+# The endpoint of the object store
+terraform_s3_endpoint: https://object-store.os-api.cci1.ecmwf.int/
+
+# The region to use
+# Ceph does not normally use the region, but Terraform requires it
+terraform_s3_region: not-used-but-required
+terraform_s3_skip_region_validation: "true"
+
+# The bucket to put Terraform states in
+# NOTE: This bucket must already exist - it will not be created by Terraform
+terraform_s3_bucket: az-terraform-state
+
+# The key to use for the state for the environment
+#
+# Using the azimuth_environment variable in the key means that the state
+# for each concrete environment is stored in a separate key, even if this
+# configuration is in a shared mixin environment
+terraform_s3_key: "{{ azimuth_environment }}.tfstate"
+
+# The STS API doesn't exist for Ceph
+terraform_s3_skip_credentials_validation: "true"
+
+# Tell Terraform to use path-style URLs, e.g. <host>/<bucket>, instead of
+# subdomain-style URLs, e.g. <bucket>.<host>
+terraform_s3_force_path_style: "true"
+
+terraform_backend_config:
+  endpoint: "{{ terraform_s3_endpoint }}"
+  region: "{{ terraform_s3_region }}"
+  bucket: "{{ terraform_s3_bucket }}"
+  key: "{{ terraform_s3_key }}"
+  skip_credentials_validation: "{{ terraform_s3_skip_credentials_validation }}"
+  force_path_style: "{{ terraform_s3_force_path_style }}"
+  skip_region_validation: "{{ terraform_s3_skip_region_validation }}" 
