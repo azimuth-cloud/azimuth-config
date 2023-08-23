@@ -28,7 +28,7 @@ you can use this to provide TLS for Azimuth and Zenith services.
 
     This is the recommended mechanism for production deployments, despite the lack of
     automation, for two reasons:
-    
+
       * It is not affected by [rate limits](https://letsencrypt.org/docs/rate-limits/)
       * Zenith services become available faster as it avoids the overhead of obtaining
         a certificate per service
@@ -105,4 +105,19 @@ has an ACME server that issues trusted certificates:
 certmanager_acmehttp01issuer_name: example-acme
 # The URL of the ACME endpoint
 certmanager_acmehttp01issuer_server: https://acme.example.org
+```
+
+If ACME server requires External Account Binding (EAB) it needs to be enabled and credentials
+added to encrypted secrets file:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# Indicates whether an External Account Binding (EAB) is required
+certmanager_acmehttp01issuer_eab_required: yes
+```
+
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
+# The key ID of the EAB
+certmanager_acmehttp01issuer_eab_kid: "EXAMPLE_EAB_KID"
+# The HMAC key of the EAB
+certmanager_acmehttp01issuer_eab_key: "EXAMPLE_EAB_KEY"
 ```
