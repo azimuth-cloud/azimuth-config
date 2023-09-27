@@ -32,7 +32,7 @@
 # capi_cluster_machine_image_id: "<image id>"
 
 # The Kubernetes version that will be used for the HA cluster
-# This should match the image and, by default, is the version of the uploaded image
+# This should match the image specified image
 # capi_cluster_kubernetes_version: 1.23.8
 
 # The name of the flavor to use for control plane nodes
