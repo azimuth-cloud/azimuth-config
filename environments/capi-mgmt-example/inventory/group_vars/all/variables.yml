@@ -1,0 +1,50 @@
+#####
+# Configuration for the seed node (HA) or single node
+#####
+
+# The CIDR of the subnet that should be created
+# infra_network_cidr: 192.168.100.0/24
+
+# The ID of the external network to connect to via a router
+# By default, if there is exactly one external network then it will be used
+# infra_external_network_id: "<external network id>"
+
+# The image id of an Ubuntu 20.04 image to use for the node
+# By default, a suitable image is uploaded to the target project
+# infra_image_id: "<image id>"
+
+# The id of the flavor to use for the node
+# For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
+# For a single node deployment, >= 8GB RAM is recommended
+# By default, the first flavor matching these constraints is selected
+# infra_flavor_id: "<flavor id>"
+
+# The size in GB for the data volume
+# This will hold all cluster data, including Kubernetes resources
+# infra_data_volume_size: 50
+
+#####
+# Configuration for the HA cluster
+#####
+
+# The ID of the image that will be used for the nodes of the HA cluster
+# By default, a suitable image is uploaded to the target project
+# capi_cluster_machine_image_id: "<image id>"
+
+# The Kubernetes version that will be used for the HA cluster
+# This should match the image specified image
+# capi_cluster_kubernetes_version: 1.23.8
+
+# The name of the flavor to use for control plane nodes
+# At least 2 CPUs and 8GB RAM is required
+# By default, the first flavor that matches this requirement is used
+# capi_cluster_control_plane_flavor: "<flavor name>"
+
+# The name of the flavor to use for worker nodes
+# At least 2 CPUs and 8GB RAM is required
+# By default, the first flavor that matches this requirement is used
+# capi_cluster_worker_flavor: "<flavor name>"
+
+# The number of worker nodes
+# Defaults to 3
+# capi_cluster_worker_count: 3
