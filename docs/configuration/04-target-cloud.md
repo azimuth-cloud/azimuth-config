@@ -1,4 +1,4 @@
-# Target cloud
+# Target OpenStack cloud
 
 The main piece of site-specific configuration required by Azimuth is the connection information
 for the target OpenStack cloud.
@@ -125,4 +125,34 @@ on your network that machines provisioned by Azimuth need to access:
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Defaults to 192.168.3.0/24
 azimuth_openstack_internal_net_cidr: 10.0.3.0/24
+```
+
+## Monitoring Cloud Capacity
+
+Azimuth is able to federate cloud metrics from a prometheus running within
+your cloud enviroment, such as the one deployed by:
+https://github.com/stackhpc/stackhpc-kayobe-config
+
+Typically we also assume the following exporter is being used to
+query the current capacity of your cloud, mostly using data from
+OpenStack placement:
+https://github.com/stackhpc/os-capacity
+
+First you need to enable the project metrics and cloud metrics
+links within Azimuth by configuring:
+```yaml
+# Defaults to no
+cloud_metrics_enabled: yes
+```
+
+To make sure Azimuth knows how to access the prometheus running
+in your cloud, you need to configure:
+```yaml
+# hostname needed to match TLS certificate name
+cloud_metrics_prometheus_host: "mycloud.example.com"
+# ip that matches the above hostname
+cloud_metrics_prometheus_ip: "<ip prometheus vip>"
+cloud_metrics_prometheus_port: 9091
+cloud_metrics_prometheus_basic_auth_username: "<basic-auth-username>"
+cloud_metrics_prometheus_basic_auth_password: "<basic-auth-password>"
 ```
