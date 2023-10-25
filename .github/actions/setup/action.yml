@@ -18,7 +18,7 @@ inputs:
     description: >
       YAML-formatted extra vars for the deployment, if required.
     required: true
-    default: ""
+    default: "{}"
   os-clouds:
     description: The contents of the clouds.yaml to use.
     required: true
