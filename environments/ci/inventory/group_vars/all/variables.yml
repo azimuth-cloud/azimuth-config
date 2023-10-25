@@ -1,2 +1,5 @@
-# Set an explicit flavor for the AIO VM on Arcus (vm.ska.cpu.general.eighth)
-infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
+# Use a pre-existing network so that we don't need to steal a router
+infra_network_id: 4b6b2722-ee5b-40ec-8e52-a6610e14cc51
+
+# Flavor auto-detection picks the wrong flavors on Arcus, so override
+infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c  # vm.ska.cpu.general.eighth
