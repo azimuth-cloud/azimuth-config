@@ -1,6 +1,5 @@
 name: Azimuth CI tests
 description: Tests an Azimuth environment using the CI config.
-# inputs:
 runs:
   using: composite
   steps:
@@ -12,3 +11,14 @@ runs:
         source ./ci.env
         source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT
         ./bin/check-alerts
+
+    - name: Generate test suite
+      shell: bash
+      # Make sure to source the ci environment before running the provision
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+      env:
+        ANSIBLE_FORCE_COLOR: "true"
