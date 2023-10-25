@@ -48,3 +48,4 @@ runs:
           output.xml
           log.html
           report.html
+      if: ${{ always() }}
