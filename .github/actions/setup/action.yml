@@ -77,7 +77,13 @@ runs:
       env:
         EXTRA_VARS: ${{ inputs.extra-vars }}
 
-    - name: Set up Python environment
+    - name: Ensure Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+        check-latest: true
+
+    - name: Set up Python virtual environment
       shell: bash
       run: ./bin/ensure-venv
 
