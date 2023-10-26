@@ -33,7 +33,7 @@ runs:
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         test_directory="$(ansible -m debug -a "var=$VAR_NAME" all | jq -r ".plays[0].tasks[0].hosts.localhost.$VAR_NAME")"
-        robot --loglevel debug --consolecolors on "$test_directory"
+        robot --loglevel debug --consolecolors on --consolemarkers on "$test_directory"
       env:
         ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
         ANSIBLE_STDOUT_CALLBACK: json
