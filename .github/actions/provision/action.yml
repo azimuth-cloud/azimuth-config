@@ -1,42 +1,13 @@
 name: Azimuth CI provision
 description: Provisions an Azimuth environment using the CI config.
-inputs:
-  azimuth-ops-version:
-    description: >
-      The azimuth-ops version to use. If not given, the default version is used.
-    required: true
-    default: ""
-  extra-vars:
-    description: >
-      YAML-formatted extra vars for the deployment, if required.
-    required: true
-    default: ""
 runs:
   using: composite
   steps:
-    - name: Update azimuth-ops version in requirements.yml
-      shell: bash
-      run: cat > requirements.yml <<< "$REQUIREMENTS_CONTENT"
-      env:
-        REQUIREMENTS_CONTENT: |
-          ---
-          collections:
-            - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
-              type: git
-              version: ${{ inputs.azimuth-ops-version }}
-      if: ${{ inputs.azimuth-ops-version != '' }}
-
-    - name: Write extra-vars file
-      shell: bash
-      run: cat > extra-vars.yml <<< "$EXTRA_VARS"
-      env:
-        EXTRA_VARS: ${{ inputs.extra-vars }}
-      if: ${{ inputs.extra-vars != '' }}
-
     - name: Deploy Azimuth
       shell: bash
       # Make sure to source the ci environment before running the provision
       run: |
         set -e
         source ./ci.env
-        ./bin/ci-exec provision ${{ inputs.extra-vars != '' && '-e @extra-vars.yml' || '' }}
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-playbook stackhpc.azimuth_ops.provision -e @extra-vars.yml

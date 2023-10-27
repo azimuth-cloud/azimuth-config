@@ -1,18 +1,12 @@
 name: Azimuth CI destroy
 description: Destroys an Azimuth CI environment.
-inputs:
-  azimuth-ops-version:
-    description: >
-      The azimuth-ops version to use. If not given, the default version is used.
-    required: true
-    default: ""
 runs:
   using: composite
   steps:
     - name: Destroy Azimuth
       shell: bash
-      # Make sure to source the ci environment before running the destroy
       run: |
         set -e
         source ./ci.env
-        ./bin/ci-exec destroy
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml

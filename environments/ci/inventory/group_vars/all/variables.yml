@@ -1,2 +1,23 @@
-# Set an explicit flavor for the AIO VM on Arcus (vm.ska.cpu.general.eighth)
+# Use a pre-existing network so that we don't need to steal a router
+infra_network_id: 4b6b2722-ee5b-40ec-8e52-a6610e14cc51
+
+# Flavor auto-detection picks the wrong flavors on Arcus, so override them
+#   The flavor to use for the Azimuth AIO VM (vm.ska.cpu.general.eighth)
 infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
+#   The flavors to use for the Slurm login and control nodes
+azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: vm.ska.cpu.general.small
+azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "{{ azimuth_caas_stackhpc_slurm_appliance_login_flavor_name }}"
+#   The flavor to use for the workstation test case (vm.ska.cpu.general.small)
+generate_tests_caas_test_case_workstation_param_cluster_flavor: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the repo2docker test case
+generate_tests_caas_test_case_repo2docker_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the R-Studio test case
+generate_tests_caas_test_case_rstudio_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the compute nodes in the Slurm test case
+generate_tests_caas_test_case_slurm_param_compute_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavors to use for the control plane and workers in Kubernetes test cases
+generate_tests_kubernetes_test_case_control_plane_size: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+generate_tests_kubernetes_test_case_worker_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+#   The flavors to use for the control plane and workers in the Kubernetes apps test cases
+generate_tests_kubernetes_apps_k8s_control_plane_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+generate_tests_kubernetes_apps_k8s_worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"

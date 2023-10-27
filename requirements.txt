@@ -1,5 +1,7 @@
 ansible-core>=2.12 # require undef filter
+azimuth-robotframework
 jmespath
-python-openstackclient
-python-octaviaclient
 munch
+python-octaviaclient
+python-openstackclient
+robotframework

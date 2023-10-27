@@ -20,8 +20,6 @@ community_images_workdir: "{{ (work_directory, 'images') | path_join }}"
 
 # Use the configured bin and work directories for Terraform
 terraform_binary_directory: "{{ bin_directory }}"
-# Use the Terraform binary that was downloaded into the binary directory
-terraform_binary_path: "{{ terraform_binary_directory }}/terraform"
 # Use the local work directory for the Terraform project
 terraform_project_path: "{{ (work_directory, 'terraform') | path_join }}"
 # Get the Terraform backend type from the environment variables
@@ -34,6 +32,8 @@ clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_jo
 pgo_kustomization_directory: "{{ (work_directory, 'postgres-operator') | path_join }}"
 keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
+# Use the configured work directory for the test suite
+generate_tests_suite_directory: "{{ (work_directory, 'test-suite') | path_join }}"
 
 # Enable cert-manager by default
 # By default, a cluster issuer will be created that uses Let's Encrypt to issue certificates

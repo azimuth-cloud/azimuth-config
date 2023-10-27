@@ -29,29 +29,16 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
-      # Because the actions are local in this repo, we can't use the setup action here
-      # Instead we must replicate the steps from it
-      - name: Checkout repo
+      # We need to check out the code under test first in order to use local actions
+      - name: Checkout code under test
         uses: actions/checkout@v3
 
-      - name: Write clouds.yaml
-        shell: bash
-        run: cat > ./clouds.yaml <<< "$OS_CLOUDS"
-        env:
-          OS_CLOUDS: ${{ secrets.CLOUD }}
-
-      # This environment file will be sourced before running any other actions
-      - name: Write environment file
-        shell: bash
-        run: cat > ./ci.env <<< "$CI_ENV"
-        env:
-          CI_ENV: |
-            set -a
-            OS_CLOUD="openstack"
-            OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
-            AZIMUTH_CONFIG_ENVIRONMENT=ci
-            AZIMUTH_ENVIRONMENT="ci-${{ github.run_id }}"
-            set +a
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision

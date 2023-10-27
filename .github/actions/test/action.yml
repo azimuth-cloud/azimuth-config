@@ -1,6 +1,10 @@
 name: Azimuth CI tests
 description: Tests an Azimuth environment using the CI config.
-# inputs:
+inputs:
+  test-report-artifact-name:
+    description: The name to use for the test report artifact.
+    required: true
+    default: test-report
 runs:
   using: composite
   steps:
@@ -10,5 +14,38 @@ runs:
       run: |
         set -e
         source ./ci.env
-        source ./bin/activate $AZIMUTH_CONFIG_ENVIRONMENT $AZIMUTH_ENVIRONMENT
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ./bin/check-alerts
+
+    - name: Generate test suite
+      shell: bash
+      # Make sure to source the ci environment before running the provision
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+
+    - name: Run test suite
+      shell: bash
+      run: |
+        set -eo pipefail
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        test_directory="$(ansible -m debug -a "var=$VAR_NAME" all | jq -r ".plays[0].tasks[0].hosts.localhost.$VAR_NAME")"
+        robot --loglevel debug --consolecolors on "$test_directory"
+      env:
+        ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
+        ANSIBLE_STDOUT_CALLBACK: json
+        MOZ_HEADLESS: "1"
+        VAR_NAME: generate_tests_suite_directory
+
+    - name: Upload test report artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.test-report-artifact-name }}
+        path: |
+          output.xml
+          log.html
+          report.html
+      if: ${{ always() }}
