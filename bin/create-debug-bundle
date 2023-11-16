@@ -62,7 +62,7 @@ fi
 #   * List of installed Cluster API resources
 #   * The last hour of logs from some key components
 echo "[INFO] Collecting debug information"
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" <<EOF >/dev/null 2>&1
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" <<EOF
 set -e
 
 ${additional_commands}
@@ -94,6 +94,6 @@ kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > logs-cap
 tar -czf debug-bundle.tar.gz list-*.txt logs-*.txt seed-*.txt
 EOF
 echo "[INFO] Fetching debug bundle"
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- cat debug-bundle.tar.gz > "$bundle_name.tar.gz" 2>/dev/null
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- cat debug-bundle.tar.gz > "$bundle_name.tar.gz"
 echo "[INFO] Cleaning up interim files"
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- rm list-*.txt logs-*.txt debug-bundle.tar.gz >/dev/null 2>&1
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- rm list-*.txt logs-*.txt seed-*.txt debug-bundle.tar.gz
