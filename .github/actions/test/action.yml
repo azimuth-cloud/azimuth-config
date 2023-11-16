@@ -59,7 +59,7 @@ runs:
       run: |
         set -e
         source ./ci.env
-        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_CONFIG_ENVIRONMENT"
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ./bin/create-debug-bundle
       if: ${{ always() }}
 
