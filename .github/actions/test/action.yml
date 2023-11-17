@@ -5,6 +5,10 @@ inputs:
     description: The name to use for the test report artifact.
     required: true
     default: test-report
+  debug-bundle-artifact-name:
+    description: The name to use for the debug bundle artifact.
+    required: true
+    default: debug-bundle
 runs:
   using: composite
   steps:
@@ -48,4 +52,20 @@ runs:
           output.xml
           log.html
           report.html
+      if: ${{ always() }}
+
+    - name: Create debug bundle
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ./bin/create-debug-bundle
+      if: ${{ always() }}
+
+    - name: Upload debug bundle
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.debug-bundle-artifact-name }}
+        path: debug-bundle.tar.gz
       if: ${{ always() }}
