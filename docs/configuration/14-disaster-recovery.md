@@ -50,6 +50,8 @@ velero --kubeconfig kubeconfig-<ha-cluster-name>.yaml backup create --from-sched
 
 This will begin the backup process in the background. The status of this backup (and others) can be viewed with the above `backup get` command.
 
+NOTE: This backup will have the same time-to-live as the configured schedule backups (default = 7 days). To change this, pass the `--ttl <hours>` option to the `backup create` command.
+
 ### Modifying the backup schedule
 
 The following config options are available for modifying the regular backup schedule:
