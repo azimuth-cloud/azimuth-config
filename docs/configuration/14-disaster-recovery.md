@@ -1,8 +1,8 @@
 # Disaster Recovery
 
-Azimuth provides a mechanism for backup and restore of the state of the management resources (seed node + management cluster) in an HA deployment. The core functionality is provided by [Velero](https://velero.io), which features a plugin system to allow for direct integration with services provided by the host cloud - we make use of the [OpenStack plugin](https://github.com/Lirt/velero-plugin-for-openstack) to interface with OpenStack Swift (to backup Kubernetes resource manifests) and OpenStack Cinder (to backup the management cluster's persistent volumes).
+Azimuth uses [Velero](https://velero.io) as a disaster recovery solution. Velero provides the ability to both back up Kubernetes API resources (i.e. the raw yaml files) to an object store and also a plugin system to enable snapshotting of a cluster's persistent volumes.
 
-TODO: What about off-site backups?
+The Azimuth functionality is provided via an azimuth-ops [role]() <**TODO: Link**> which installs the Velero Helm chart on the HA management cluster and the Velero CLI tool on the seed node. Once configured with the appropriate credentials, the installation process will create a [Schedule](https://velero.io/docs/latest/api-types/schedule/) on the HA cluster, which triggers a backup at <**TODO: Default interval**> and cleans up backups older than <**TODO: TTL**>.
 
 ## Configuration
 
@@ -10,37 +10,22 @@ To enable backup and restore functionality, the following variables should be se
 
 ```yaml
 velero_enabled: true
+velero_s3_url: <object-store-endpoint-url>
 velero_bucket_name: <name-of-an-existing-bucket>
 ```
 
-In order to authenticate with OpenStack, the management cluster's pre-existing CAPO cloud credentials secret is used by default. To provide a separate set of credentials, create a new app cred in OpenStack and then in **secrets.yml** (see [Managing secrets](../repository/secrets.md)) set the following variables:
+and in your git-crypt encrypted `secrets.yml` file:
 
 ```yaml
-velero_openstack_use_existing_secret: false
-velero_openstack_auth_url: 
-velero_openstack_app_cred_id:
-velero_openstack_app_cred_secret:
+velero_aws_access_key_id: <S3-access-key-id>
+velero_aws_secret_access_key: <S3-secret-value>
 ```
-
-The Velero OpenStack plugin defaults to using Cinder's *snapshot* functionality to back up persistent volumes. This can be changed by setting:
-
-```yaml
-velero_cinder_volume_backup_method: <method>
-```
-
-See [plugin docs](https://github.com/Lirt/velero-plugin-for-openstack/blob/master/docs/installation-using-helm.md) for supported alternatives to `snapshot`.
 
 With the above configuration in place, running the `stackhpc.azimuth_ops.provision` playbook will install the required Velero resources on the management infrastructure.
 
-### Performing ad-hoc backups
+## Operations
 
-An ansible playbook is provided within azimuth-ops to perform ad-hoc backups on demand:
-
-```yaml
-ansible-playbook stackhpc.azimuth_ops.backup
-```
-
-For convenience, the Velero installation process also installs the Velero CLI on the Azimuth seed node. To view the configured back up locations, we can use this CLI as so:
+For convenience, the Velero installation process also installs the Velero CLI on the Azimuth seed node. To view the configured back up locations, we can use the CLI as so:
 
 ```sh
 ./bin/seed-ssh
@@ -55,27 +40,23 @@ velero --kubeconfig kubeconfig-<ha-cluster-name>.yaml backup get
 
 See `velero -h` for other useful commands.
 
+### Performing ad-hoc backups
 
-For ad-hoc backups, the following settings can be adjusted as required:
+In order to perform ad-hoc backups using the same config parameters as the installed backup schedule, run the following Velero CLI command from the seed node:
 
-```yaml
-# Name to use for newly created ad-hoc backup (defaults to '<env-name>--<timestamp>')
-velero_backup_name:
+```sh
+velero --kubeconfig kubeconfig-<ha-cluster-name>.yaml backup create --from-schedule default <backup-name>
 ```
 
-If the backup process is particularly slow (e.g. when snapshotting very large cinder volumes), the timeout can be adjusted with
+This will begin the backup process in the background. The status of this backup (and others) can be viewed with the above `backup get` command.
 
-```yaml
-velero_backup_creation_timeout: <seconds>
-```
+### Modifying the backup schedule
 
-### Scheduling backups
-
-In addition to ad-hoc backups, a regular backup schedule may also be configured. The following config variables control this process:
+The following config options are available for modifying the regular backup schedule:
 
 ```yaml
 # Whether or not to create a regular backup schedule
-velero_backup_schedule_enabled: false
+velero_backup_schedule_enabled: true
 
 # Name for backup schedule kubernetes resource
 velero_backup_schedule_name: default
@@ -84,16 +65,18 @@ velero_backup_schedule_name: default
 # See https://en.wikipedia.org/wiki/Cron for format options
 velero_backup_schedule_timings: "0 0 * * *"
 
-# Time-to-live for existing backups (defaults to 2 week)
+# Time-to-live for existing backups (defaults to 1 week)
 # See https://pkg.go.dev/time#ParseDuration for duration format options
-velero_backup_schedule_ttl: "336h"
+velero_backup_schedule_ttl: "168h"
 ```
 
 To install or update the configured backup schedule, re-run the `stackhpc.azimuth_ops.provision` playbook.
 
+NOTE: Setting `velero_backup_schedule_enabled: false` does not prevent the backup schedule from being installed, instead it sets the schedule state to `paused`. This allows for ad-hoc backups to still be run on demand using the configured backup parameters.
+
 ## Restoring from a backup
 
-Similar to the ad-hoc backup process, azimuth-ops provides a playbook to use for restoring the management resources from an existing backup. Before running a restore, the following azimuth-config variables must be set:
+The azimuth-ops role also provides a playbook to use for restoring the management resources from an existing backup. Before running a restore, the following azimuth-config variables must be set:
 
 ```yaml
 # Name of restore object to create
@@ -114,5 +97,6 @@ velero_restore_attempt_timeout: <seconds>
 velero_restore_monitoring_data:
 ```
 
-## Debugging Tips
+## Debugging
 
+The Velero azimuth-ops role uses the AWS velero plugin for S3 support and the CSI plugin for volume snapshots (via the Kubernetes CSI snapshot controller and the implementation of this interface in the Cinder plugin for [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack)).
