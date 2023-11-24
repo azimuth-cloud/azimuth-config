@@ -97,11 +97,18 @@ ansible-playbook stackhpc.azimuth_ops.restore
 In certain scenarios it may be desirable to exclude certain cluster namespaces or resource types from the restore process. This can be confgured with:
 
 ```yaml
-velero_restore_exclude_namespaces: <list>
-velero_restore_exclude_resources: <list>
+velero_restore_exclude_namespaces_extra: <list>
+velero_restore_exclude_resources_extra: <list>
 ```
 
-Since Velero's implementation of the restore process involves a single one-shot dump of the resource back on to the cluster while skipping any resources which already exist, the azimuth-ops restore process iterates this Velero restore process multiple times to handle any issues with ordering of dependent resources during the restore. The following configuration options are availiable:
+If there are specific (custom) resources on the cluster which require their `status` field to be restored to the correct state, these resource types should be listed as
+
+```yaml
+velero_restore_include_resource_status_extra: 
+    - <fully-qualified-resource-name>
+```
+
+Finally, since Velero's implementation of the restore process involves a single one-shot dump of the resource back on to the cluster while skipping any resources which already exist, the azimuth-ops restore process iterates this Velero restore process multiple times to handle any issues with ordering of dependent resources during the restore. The following configuration options are availiable:
 
 ```yaml
 # Maximum number of restore passes to attempt
@@ -112,4 +119,4 @@ velero_restore_attempt_timeout: <seconds> (default=1800)
 
 ## Debugging
 
-The Velero azimuth-ops role uses the AWS Velero plugin for S3 support and the CSI plugin for volume snapshots (via the Kubernetes CSI snapshot controller and the implementation of this interface in the Cinder plugin for [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack)).
+The Velero azimuth-ops role uses the AWS Velero plugin for S3 support and the CSI plugin for volume snapshots (via the Kubernetes CSI snapshot controller and the implementation of this interface in the Cinder plugin for [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack)). 
