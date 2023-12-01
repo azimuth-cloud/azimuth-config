@@ -1,5 +1,5 @@
-# Use a pre-existing network so that we don't need to steal a router
-infra_network_id: 4b6b2722-ee5b-40ec-8e52-a6610e14cc51
+# Use the pre-existing portal-internal network so that we don't need to steal a router
+infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f value -c id') }}"
 
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
 #   The flavor to use for the Azimuth AIO VM (vm.ska.cpu.general.eighth)
