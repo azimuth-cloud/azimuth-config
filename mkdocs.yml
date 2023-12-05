@@ -27,6 +27,7 @@ nav:
       - configuration/11-kubernetes-apps.md
       - configuration/12-caas.md
       - configuration/13-monitoring.md
+      - configuration/14-disaster-recovery.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md

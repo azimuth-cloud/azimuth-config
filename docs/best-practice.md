@@ -103,6 +103,15 @@ A
 [sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/main/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.
 
+## Disaster recovery
+
+Azimuth uses [Velero](https://velero.io/) to backup the data that is required to restore an
+Azimuth instance in the event of a catastrophic failure. This functionality is not enabled by
+default, as it requires credentials for an S3 bucket in which the backups will be stored.
+
+It is recommended that [disaster recovery is enabled](./configuration/14-disaster-recovery.md) for
+a production deployment.
+
 ## Configuration
 
 You are now ready to begin adding configuration to your environments. When building an environment
