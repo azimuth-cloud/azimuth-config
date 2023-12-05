@@ -55,6 +55,9 @@ harbor_proxy_cache_projects: >-
 # Indicates whether to install a Grafana to show cloud metrics
 cloud_metrics_enabled: no
 
+# Indicates whether to enable Velero for backup and restore
+velero_enabled: no
+
 # Azimuth features to enable
 azimuth_apps_enabled: yes
 azimuth_kubernetes_enabled: yes
