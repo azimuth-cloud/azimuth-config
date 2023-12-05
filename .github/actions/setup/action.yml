@@ -9,6 +9,10 @@ inputs:
     description: The ref to use for the Azimuth configuration.
     required: true
     default: main
+  config-environment:
+    description: The config environment to use.
+    required: true
+    default: ci
   azimuth-ops-version:
     description: >
       The azimuth-ops version to use. If not given, the default version is used.
@@ -55,7 +59,7 @@ runs:
         CI_ENV: |
           export OS_CLOUD="${{ inputs.os-cloud-name }}"
           export OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
-          export AZIMUTH_CONFIG_ENVIRONMENT=ci
+          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.config-environment }}
           export AZIMUTH_ENVIRONMENT="${{ inputs.environment-prefix }}-${{ github.run_id }}"
           export ANSIBLE_FORCE_COLOR=true
 

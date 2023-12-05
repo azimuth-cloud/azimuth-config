@@ -1,0 +1,6 @@
+# Flavor auto-detection picks the wrong flavors on Arcus, so override them
+#   The flavor to use for the seed VM (vm.ska.cpu.general.small)
+infra_flavor_id: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the control plane nodes
+capi_cluster_control_plane_flavor: vm.ska.cpu.general.small
+capi_cluster_worker_flavor: vm.ska.cpu.general.eighth
