@@ -9,6 +9,10 @@ inputs:
     description: The name to use for the debug bundle artifact.
     required: true
     default: debug-bundle
+  expected-prometheus-alert-count:
+    description: The number expected firing alerts in the management cluster's prometheus.
+    required: true
+    default: "1" # By default only the watchdog alert should be firing
 runs:
   using: composite
   steps:
@@ -19,7 +23,7 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ./bin/check-alerts
+        ./bin/check-alerts ${{ expected-prometheus-alert-count }}
 
     - name: Generate test suite
       shell: bash
