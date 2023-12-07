@@ -5,6 +5,34 @@
 # to check that the expected number of alerts are firing after deployment
 #####
 
+set -eo pipefail
+
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
+fi
+
+
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+# Get the install_mode that is in use
+install_mode="$(ansible_variable install_mode)"
+
+# For HA installs, there should only be the watchdog
+# Single-node deployments have other expected alerts
+if [ "$install_mode" = "ha" ]; then
+  EXPECTED_ALERT_COUNT=1
+else
+  EXPECTED_ALERT_COUNT=4
+fi
+
 echo "Starting port-forward for Prometheus API"
 ./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
 PID="$!"
@@ -43,11 +71,7 @@ while true; do
     echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
     echo ""
 
-    # Demo deployment should have 4 pending alerts:
-    # watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
-    # since k3s doesn't have distinct pods for these services
-    # TODO(mkjpryor) Fix these alerts in K3S deployment :D
-    if [[ $ALERT_COUNT == 4 ]]; then
+    if [[ ${ALERT_COUNT} -eq ${EXPECTED_ALERT_COUNT} ]]; then
         exit
     elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
         exit 1
