@@ -184,3 +184,6 @@ capi_cluster_addons_openstack_loadbalancer_provider: >-
   {{- openstack_loadbalancer_provider }}
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
   {{- openstack_loadbalancer_provider }}
+
+# Indicates whether the BinderHub CAPI app should use http or https prefix in redirect urls
+azimuth_capi_operator_app_templates_binderhub_use_https_redirects: "{{ ingress_tls_enabled | bool }}"
