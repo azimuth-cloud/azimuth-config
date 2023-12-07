@@ -5,11 +5,33 @@
 # to check that the expected number of alerts are firing after deployment
 #####
 
-if [[ -z $1 ]]; then
-  echo "You must provide an expected alert count as the sole command line arg to this script"
-  exit 1
+set -eo pipefail
+
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
 fi
-EXPECTED_ALERT_COUNT=$1
+
+
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+# Get the install_mode that is in use
+install_mode="$(ansible_variable install_mode)"
+
+# For HA installs, there should only be the watchdog
+# Single-node deployments have other expected alerts
+if [ "$install_mode" = "ha" ]; then
+  EXPECTED_ALERT_COUNT=1
+else
+  EXPECTED_ALERT_COUNT=4
+fi
 
 echo "Starting port-forward for Prometheus API"
 ./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
@@ -49,7 +71,7 @@ while true; do
     echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
     echo ""
 
-    if [[ $ALERT_COUNT == $EXPECTED_ALERT_COUNT ]]; then
+    if [[ ${ALERT_COUNT} -eq ${EXPECTED_ALERT_COUNT} ]]; then
         exit
     elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
         exit 1

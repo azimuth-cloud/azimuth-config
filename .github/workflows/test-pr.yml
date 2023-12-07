@@ -58,12 +58,6 @@ jobs:
 
       - name: Run Azimuth tests
         uses: ./.github/actions/test
-        with:
-          # Demo deployment should have 4 pending alerts:
-          # watchdog + Kube{ControllerManager,Scheduler,Proxy}Down
-          # since k3s doesn't have distinct pods for these services
-          # TODO(mkjpryor) Fix these alerts in K3S deployment :D
-          expected-prometheus-alert-count: 4
 
       - name: Destroy Azimuth
         uses: ./.github/actions/destroy
