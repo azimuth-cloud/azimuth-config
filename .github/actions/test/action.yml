@@ -10,7 +10,7 @@ inputs:
     required: true
     default: debug-bundle
   expected-prometheus-alert-count:
-    description: The number expected firing alerts in the management cluster's prometheus.
+    description: The number of alerts expected to be firing on a healthy management cluster's prometheus.
     required: true
     default: "1" # By default only the watchdog alert should be firing
 runs:
