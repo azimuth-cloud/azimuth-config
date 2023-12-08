@@ -34,11 +34,6 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
           config-environment: ci-ha
-          # Use the configured Docker Hub mirror for the HA cluster for now
-          extra-vars: |
-            capi_cluster_registry_mirrors:
-              docker.io:
-                - "${{ secrets.DOCKER_HUB_MIRROR_URL }}"
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
