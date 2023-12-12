@@ -21,17 +21,8 @@ ansible_variable() {
       jq -r ".plays[0].tasks[0].hosts.localhost.$1"
 }
 
-
-# Get the install_mode that is in use
-install_mode="$(ansible_variable install_mode)"
-
-# For HA installs, there should only be the watchdog
-# Single-node deployments have other expected alerts
-if [ "$install_mode" = "ha" ]; then
-  EXPECTED_ALERT_COUNT=1
-else
-  EXPECTED_ALERT_COUNT=4
-fi
+# Only Watchdog should be firing
+EXPECTED_ALERT_COUNT=1
 
 echo "Starting port-forward for Prometheus API"
 ./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
