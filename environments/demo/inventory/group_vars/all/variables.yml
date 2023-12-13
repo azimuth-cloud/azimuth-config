@@ -32,6 +32,9 @@ infra_flavor_id: >-
       json_query('ID')
   }}
 
+# Use the same external network as we use for the infra
+azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
+
 # For Slurm, we need at least 4GB RAM
 # Use the same flavor for login and control nodes
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: >-
@@ -56,6 +59,11 @@ community_images_update_existing_visibility: false
 # Disable HTTPS and certificate verification everywhere to avoid certificate issues
 ingress_tls_enabled: false
 
+# Use the same external network as the infra for Azimuth auto-created networking
+azimuth_openstack_external_net_template: >-
+  {{-
+    lookup('pipe', 'openstack network show -f value -c name ' ~ infra_external_network_id)
+  }}
 # Disable SSL verification for OpenStack in case it uses a custom CA
 azimuth_openstack_verify_ssl: false
 
