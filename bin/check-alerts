@@ -14,25 +14,6 @@ if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; t
 fi
 
 
-ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
-    ANSIBLE_STDOUT_CALLBACK=json \
-    ansible -m debug -a "var=$1" all | \
-      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
-}
-
-
-# Get the install_mode that is in use
-install_mode="$(ansible_variable install_mode)"
-
-# For HA installs, there should only be the watchdog
-# Single-node deployments have other expected alerts
-if [ "$install_mode" = "ha" ]; then
-  EXPECTED_ALERT_COUNT=1
-else
-  EXPECTED_ALERT_COUNT=4
-fi
-
 echo "Starting port-forward for Prometheus API"
 ./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
 PID="$!"
@@ -71,7 +52,8 @@ while true; do
     echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
     echo ""
 
-    if [[ ${ALERT_COUNT} -eq ${EXPECTED_ALERT_COUNT} ]]; then
+    # Check that only the Watchdog is firing
+    if [[ ${ALERT_COUNT} -eq 1 ]]; then
         exit
     elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
         exit 1
