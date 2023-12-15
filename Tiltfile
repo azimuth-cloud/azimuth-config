@@ -135,6 +135,25 @@ def mirror_image(name, source_image):
     return image
 
 
+def port_forward(name, namespace, kind, port):
+    """
+    Runs a port forward as a local resource.
+
+    Could maybe be changed when https://github.com/tilt-dev/tilt/issues/5944 is addressed.
+    """
+    local_resource(
+        "port-fwd-%s-%s-%s" % (namespace, kind, name),
+        serve_cmd = [
+            "kubectl",
+            "port-forward",
+            "--namespace",
+            namespace,
+            "%s/%s" % (kind, name),
+            port,
+        ]
+    )
+
+
 def load_component(name, spec):
     """
     Loads a component from the spec.
@@ -209,6 +228,21 @@ def load_component(name, spec):
         ],
         image_deps = images
     )
+
+    # Set up any port forwards for the component
+    for pfwd_spec in component_spec.get("port_forwards", []):
+        port_forward(
+            pfwd_spec["name"],
+            spec["release_namespace"],
+            pfwd_spec["kind"],
+            pfwd_spec["port"]
+        )
+
+    # Create any local resources for the component
+    for name, lr_spec in component_spec.get("local_resources", {}).items():
+        lr_spec.setdefault("dir", location)
+        lr_spec.setdefault("serve_dir", location)
+        local_resource(name, **lr_spec)
 
 
 # Load the components defined in the settings
