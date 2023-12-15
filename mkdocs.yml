@@ -40,6 +40,8 @@ nav:
       - debugging/consul.md
       - debugging/kubernetes.md
       - debugging/caas.md
+  - Developing:
+      - developing/index.md
 
 theme:
   name: material
