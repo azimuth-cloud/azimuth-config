@@ -143,14 +143,19 @@ def port_forward(name, namespace, kind, port):
     """
     local_resource(
         "port-fwd-%s-%s-%s" % (namespace, kind, name),
-        serve_cmd = [
-            "kubectl",
-            "port-forward",
-            "--namespace",
-            namespace,
-            "%s/%s" % (kind, name),
-            port,
-        ]
+        serve_cmd = "\n".join([
+            "while true; do",
+            " ".join([
+                "kubectl",
+                "port-forward",
+                "--namespace",
+                namespace,
+                "%s/%s" % (kind, name),
+                port,
+            ]),
+            "sleep 1",
+            "done",
+        ])
     )
 
 
