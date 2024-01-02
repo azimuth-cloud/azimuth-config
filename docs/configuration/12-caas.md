@@ -119,11 +119,11 @@ azimuth_caas_cluster_templates_overrides:
     gitUrl: https://github.com/stackhpc/azimuth-sample-appliance.git
     # The branch, tag or commit id to use
     # For production, it is recommended to use a fixed tag or commit ID
-    gitVersion: master
+    gitVersion: main
     # The name of the playbook to use
     playbook: sample-appliance.yml
     # The URL of the metadata file
-    uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/master/ui-meta/sample-appliance.yaml
+    uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
     # Dict of extra variables for the appliance
     extraVars:
       # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
