@@ -31,10 +31,15 @@ build failures and the logs of the components under development.
 In order to use Tilt to develop Azimuth, the following tools must be available on your
 development machine (in addition to those required to install Azimuth itself):
 
- * The [Tilt CLI](https://docs.tilt.dev/install.html)
- * A `docker` command, e.g. [Docker Desktop](https://docs.docker.com/desktop/)
- * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
- * The [Helm CLI](https://helm.sh/docs/intro/install/)
+  * The [Tilt CLI](https://docs.tilt.dev/install.html)
+  * A `docker` command, e.g. [Docker Desktop](https://docs.docker.com/desktop/)
+  * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
+  * The [Helm CLI](https://helm.sh/docs/intro/install/)
+
+For developing the Azimuth UI, the following are also required:
+
+  * [node.js](https://nodejs.org)
+  * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
 
 ### Deploying a dev instance
 
@@ -165,8 +170,25 @@ your instance.
 
     Press the space bar to launch the [Tilt user interface](https://docs.tilt.dev/tutorial/3-tilt-ui.html).
 
-When the `tilt-up` command is terminated, Tilt will roll back all of the Helm releases for
-the components that were under development to the version that was running before the command
+When the `tilt-up` command is terminated, all of the Helm releases for the components that
+were under development are rolled back to the version that was running before the command
 was started.
 
-**Happy developing!**
+### Local UI development
+
+Because of how the user interface is optimised for production, the container image build for
+the Azimuth UI is very slow even for a minor change. Because of this, the usual Tilt flow of
+build/push/deploy is not suitable for UI development.
+
+To improve the feedback cycle for UI development, the Azimuth Tilt environment also builds
+and runs the Azimuth UI locally using the
+[webpack DevServer](https://webpack.js.org/configuration/dev-server/). The UI communicates
+with the Azimuth API on your Azimuth dev instance using a forwarded port (this is necessary
+in order for the cookie-based authentication to work properly).
+
+The local version of the UI is available at `http://localhost:3000`.
+
+!!! note
+
+    The UI container image is still built, pushed and deployed in the background.
+    However changes made to the JS files will be visible in the local version much faster.
