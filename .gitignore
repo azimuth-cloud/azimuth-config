@@ -4,4 +4,4 @@
 .work
 .python-version
 /clouds.yaml*
-
+tilt-settings.yaml

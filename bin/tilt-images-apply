@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+import contextlib
+import json
+import os
+import pathlib
+import re
+import subprocess
+import sys
+
+import yaml
+
+
+TILT_IMAGE_REGEX = r"^TILT_IMAGE_(\d+)$"
+
+
+def exec_cmd(cmd, **kwargs):
+    # Log the command we are about to execute
+    print("Executing cmd: {}".format(" ".join(cmd)), file = sys.stderr)
+    # By default, redirect stdout to stderr and raise on error
+    kwargs.setdefault("stdout", sys.stderr)
+    kwargs.setdefault("check", True)
+    # Run the command and return the process instance
+    return subprocess.run(cmd, **kwargs)
+
+
+# Before doing anything, check if we need to record the revision
+# This will be used to rollback on tilt down to the last "normal" version
+revision_file = pathlib.Path(os.environ["AZIMUTH_TILT_WORK_DIR"]) / "{}.{}.rev".format(
+    os.environ["TILT_RELEASE_NAME"],
+    os.environ["TILT_RELEASE_NAMESPACE"]
+)
+if not revision_file.exists():
+    revision_file.touch()
+    fh = revision_file.open("w")
+    try:
+        status_result = exec_cmd(
+            [
+                "helm",
+                "status",
+                os.environ["TILT_RELEASE_NAME"],
+                "--namespace",
+                os.environ["TILT_RELEASE_NAMESPACE"],
+                "--output",
+                "json",
+            ],
+            stdout = subprocess.PIPE
+        )
+        revision = json.loads(status_result.stdout)["version"]
+        fh.write(str(revision))
+    except Exception as exc:
+        # If there was an error writing, unlink the file after closing
+        fh.close()
+        revision_file.unlink()
+        raise
+    else:
+        fh.close()
+
+
+# Update the dependencies of the chart
+exec_cmd(["helm", "dependency", "update", os.environ["TILT_CHART_PATH"]])
+
+
+# Build and run the Helm upgrade command
+# We reuse the values from the previous installation, but overwrite any images
+# specified in the Tiltfile
+helm_upgrade_command = [
+    "helm",
+    "upgrade",
+    os.environ["TILT_RELEASE_NAME"],
+    os.environ["TILT_CHART_PATH"],
+    "--namespace",
+    os.environ["TILT_RELEASE_NAMESPACE"],
+    "--reuse-values",
+]
+
+idx = 0
+while True:
+    try:
+        image = os.environ[f"TILT_IMAGE_{idx}"]
+    except KeyError:
+        break
+    else:
+        repository, tag = image.rsplit(":", maxsplit = 1)
+        path = os.environ[f"TILT_IMAGE_PATH_{idx}"]
+        helm_upgrade_command.extend([
+            "--set",
+            f"{path}.repository={repository}",
+            "--set",
+            f"{path}.tag={tag}",
+        ])
+    idx = idx + 1
+
+exec_cmd(helm_upgrade_command)
+
+
+# Finally, print the currently installed manifest so Tilt knows about the resources
+manifest = exec_cmd(
+    [
+        "helm",
+        "get",
+        "manifest",
+        os.environ["TILT_RELEASE_NAME"],
+        "--namespace",
+        os.environ["TILT_RELEASE_NAMESPACE"]
+    ],
+    stdout = subprocess.PIPE
+)
+
+# Tilt wants UIDs, so we have to process the manifest to add the namespace where
+# required before passing through kubectl
+manifest_objs = list(yaml.safe_load_all(manifest.stdout))
+for obj in manifest_objs:
+    obj["metadata"].setdefault("namespace", os.environ["TILT_RELEASE_NAMESPACE"])
+exec_cmd(
+    [
+        "kubectl",
+        "get",
+        "--filename",
+        "-",
+        "--output",
+        "yaml",
+    ],
+    input = yaml.safe_dump_all(manifest_objs).encode(),
+    stdout = None
+)
