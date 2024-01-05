@@ -15,7 +15,7 @@ To view monitoring dashboards in Grafana, use the following command to expose th
 interface on a local port:
 
 ```sh
-./bin/port-forward monitoring 3000
+./bin/port-forward grafana 3000
 ```
 
 This will make the Grafana interface available at <http://localhost:3000>. Log in with the default

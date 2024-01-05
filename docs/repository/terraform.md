@@ -48,30 +48,6 @@ from previous deployments.
     should be kept secret. If you want to keep such variables in Git - which is
     recommended where possible - then they [must be encrypted](../repository/secrets.md).
 
-### HTTP
-
-The [HTTP backend](https://www.terraform.io/language/settings/backends/http) is a simple
-REST client that uses `GET`, `POST` and `DELETE` HTTP requests to manage a Terraform
-state. State locking is optional, but it is recommended to use an implementation that
-supports it.
-
-To use the HTTP backend, you must set *at least* the following variables:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-terraform_backend_type: http
-
-# The state endpoint for the environment
-#
-# Using the azimuth_environment variable in the address means that each
-# concrete environment gets different state URL even if this configuration
-# is in a shared mixin environment
-terraform_backend_config:
-  address: "https://example.org/tfstate/{{ azimuth_environment }}"
-```
-
-For the full set of available config options, see the
-[Terraform docs for the HTTP backend](https://developer.hashicorp.com/terraform/language/settings/backends/http).
-
 ### GitLab
 
 !!! tip

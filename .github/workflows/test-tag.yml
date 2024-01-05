@@ -1,0 +1,46 @@
+name: Test Azimuth deployment
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  # We want jobs to wait in a queue for a slot to run, so as not to overload the test infra
+  # GitHub concurrency _almost_ does this, except the queue length is one :-(
+  # There is a feature request for what we need https://github.com/orgs/community/discussions/12835
+  # Until that is implemented, the only other viable option is a busy wait
+  wait_in_queue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for an available slot
+        uses: stackhpc/github-actions/workflow-concurrency@master
+        with:
+          max-concurrency: 1
+
+  # For tags, we run a full HA test (for now)
+  run_azimuth_tests:
+    needs: [wait_in_queue]
+    runs-on: ubuntu-latest
+    steps:
+      # We need to check out the code under test first in order to use local actions
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          config-environment: ci-ha
+
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
+
+      - name: Run Azimuth tests
+        uses: ./.github/actions/test
+
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}

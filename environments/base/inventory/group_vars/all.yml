@@ -20,18 +20,20 @@ community_images_workdir: "{{ (work_directory, 'images') | path_join }}"
 
 # Use the configured bin and work directories for Terraform
 terraform_binary_directory: "{{ bin_directory }}"
-# Use the Terraform binary that was downloaded into the binary directory
-terraform_binary_path: "{{ terraform_binary_directory }}/terraform"
 # Use the local work directory for the Terraform project
 terraform_project_path: "{{ (work_directory, 'terraform') | path_join }}"
 # Get the Terraform backend type from the environment variables
 terraform_backend_type: "{{ lookup('env', 'AZIMUTH_TERRAFORM_BACKEND_TYPE') | default('local', True) }}"
+# By default, assume all Terraform config comes from environment variables
+terraform_backend_config: {}
 
 # Use the configured work directory for prepping manifests
 clusterapi_kustomization_directory: "{{ (work_directory, 'clusterapi') | path_join }}"
 pgo_kustomization_directory: "{{ (work_directory, 'postgres-operator') | path_join }}"
 keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
+# Use the configured work directory for the test suite
+generate_tests_suite_directory: "{{ (work_directory, 'test-suite') | path_join }}"
 
 # Enable cert-manager by default
 # By default, a cluster issuer will be created that uses Let's Encrypt to issue certificates
@@ -52,6 +54,9 @@ harbor_proxy_cache_projects: >-
 
 # Indicates whether to install a Grafana to show cloud metrics
 cloud_metrics_enabled: no
+
+# Indicates whether to enable Velero for backup and restore
+velero_enabled: no
 
 # Azimuth features to enable
 azimuth_apps_enabled: yes
@@ -162,16 +167,20 @@ __os_loadbalancer_providers: >-
       map(attribute = 'name') |
       reject('equalto', 'octavia')
   }}
+openstack_loadbalancer_provider: >-
+  {{-
+    __os_loadbalancer_providers[0]
+    if __os_loadbalancer_providers | length == 1
+    else undef(hint = 'Unable to determine load balancer provider')
+  }}
+# Only set this variable if the selected provider is not amphora, otherwise we break existing deployments
+capi_cluster_apiserver_loadbalancer_provider: >-
+  {{-
+    openstack_loadbalancer_provider
+    if openstack_loadbalancer_provider != "amphora"
+    else None
+  }}
 capi_cluster_addons_openstack_loadbalancer_provider: >-
-  {{-
-    __os_loadbalancer_providers[0]
-    if __os_loadbalancer_providers | length == 1
-    else undef(hint = 'Unable to determine load balancer provider')
-  }}
+  {{- openstack_loadbalancer_provider }}
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
-  {{-
-    __os_loadbalancer_providers[0]
-    if __os_loadbalancer_providers | length == 1
-    else undef(hint = 'Unable to determine load balancer provider')
-  }}
-
+  {{- openstack_loadbalancer_provider }}

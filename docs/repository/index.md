@@ -58,7 +58,7 @@ git commit -m "Made some changes to my environment"
 git push
 ```
 
-## Making changes to your environment
+## Making changes to your configuration
 
 Once you have an environment deployed, it is recommended to use a
 [feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)

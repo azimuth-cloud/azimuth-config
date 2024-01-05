@@ -1,7 +1,8 @@
 # Debugging Kubernetes
 
-As described in [Configuring Kubernetes](../configuration/09-kubernetes.md), Azimuth uses
-[Cluster API](https://cluster-api.sigs.k8s.io/) to manage tenant Kubernetes clusters.
+As described in [Configuring Kubernetes](../configuration/10-kubernetes-clusters.md),
+Azimuth uses [Cluster API](https://cluster-api.sigs.k8s.io/) to manage tenant Kubernetes
+clusters.
 
 Cluster API resources are managed by releases of the
 [openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster),
@@ -189,9 +190,9 @@ NAMESPACE              NAME                                               PHASE 
 kubernetes-dashboard   client.zenith.stackhpc.com/kubernetes-dashboard    Available   kubernetes-dashboard            true           ServiceAccount   4d19h
 monitoring-system      client.zenith.stackhpc.com/kube-prometheus-stack   Available   kube-prometheus-stack-grafana   true           Basic            4d19h
 
-NAMESPACE              NAME                                                    SECRET                                    PHASE   FQDN                                                             AGE
-kubernetes-dashboard   reservation.zenith.stackhpc.com/kubernetes-dashboard    kubernetes-dashboard-zenith-credential    Ready   mwqgcdrk77nva18uzcct3g7jlo7obi7zlbcgemuhk6nhk.apps.example.org   4d19h
-monitoring-system      reservation.zenith.stackhpc.com/kube-prometheus-stack   kube-prometheus-stack-zenith-credential   Ready   zovdsnnesww2hiw074mvufvcfgczfbd2yhmuhsf3p59xa.apps.example.org   4d19h
+NAMESPACE              NAME                                                    SECRET                                    PHASE   FQDN                                                                AGE
+kubernetes-dashboard   reservation.zenith.stackhpc.com/kubernetes-dashboard    kubernetes-dashboard-zenith-credential    Ready   mwqgcdrk77nva18uzcct3g7jlo7obi7zlbcgemuhk6nhk.azimuth.example.org   4d19h
+monitoring-system      reservation.zenith.stackhpc.com/kube-prometheus-stack   kube-prometheus-stack-zenith-credential   Ready   zovdsnnesww2hiw074mvufvcfgczfbd2yhmuhsf3p59xa.azimuth.example.org   4d19h
 
 
 $ kubectl get deploy,po -A -l app.kubernetes.io/managed-by=zenith-operator

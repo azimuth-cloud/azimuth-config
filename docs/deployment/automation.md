@@ -163,7 +163,6 @@ azimuth_current_cloud_label: "{{ lookup('env', 'CI_ENVIRONMENT_NAME') }}"
 #   risk in using secrets that are not really secret for ease
 harbor_admin_password: admin
 harbor_secret_key: notsecret0123456
-awx_admin_password: admin
 zenith_registrar_subdomain_token_signing_key: notsecret
 azimuth_secret_key: notsecret
 ```
