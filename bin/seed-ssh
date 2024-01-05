@@ -26,7 +26,7 @@ ansible_variable() {
 # downloaded as part of a provision
 # If not, we need Terraform to be available
 terraform_binary_directory="$(ansible_variable terraform_binary_directory)"
-export PATH="$PATH:$terraform_binary_directory"
+export PATH="$terraform_binary_directory:$PATH"
 
 # Make a working directory for seed-ssh related stuff
 work_dir="$(ansible_variable work_directory)/seed-ssh"

@@ -16,12 +16,12 @@ that are not possible when platforms can only be accessed by users with OpenStac
 
 ## Example use case
 
-Imagine that a project with resource on an OpenStack cloud wishes to host an open
+Imagine that a project with quota on an OpenStack cloud wishes to host an open
 workshop using Jupyter notebooks for teaching. In this case, they definitely don't want
 to grant every workshop attendee access to OpenStack, as these users may not be trusted.
 
-Using Azimuth, a trusted project member can deploy a JupyterHub in Azimuth (i.e. as a
-Platform Admin) and create users in their Identity Realm for the workshop attendees.
+Using Azimuth, a trusted project member (i.e. a Project Admin) can deploy a JupyterHub
+in Azimuth and create users in their Identity Realm for the workshop attendees.
 These users can be granted access to JupyterHub for the duration of the workshop, and
 at the end of the workshop their access can be revoked.
 
@@ -54,25 +54,13 @@ the corresponding realm using the Azimuth identity provider. Platform Admins who
 in to a realm via Azimuth are automatically placed in the `admins` and `platform-users`
 groups described above.
 
-!!! note
-
-    This means that all users that can access the Azimuth tenancy by signing in with an
-    OpenStack account (i.e. Platform Admins) automatically get access to all the platforms
-    in the tenancy. This matches the behaviour of the previous shared cookie authentication,
-    so existing Azimuth users will still be able to use their existing workflows.
-
-    However the new approach uses an industry standard protocol designed specifically for
-    federated identity in an untrusted environment, and as such eliminates a potential
-    security flaw in the previous shared cookie approach that could leak unscoped OpenStack
-    tokens to a malicious application exposed via Zenith.
-
 When a platform is deployed in an Azimuth tenancy a group is created in the corresponding
 identity realm, and access to the platform is controlled by membership of this group. Each
 Zenith service for the platform has a child group under the platform group that can be
 used to grant access to a single service within a platform.
 
 For example, the standard Linux Workstation platform (see
-[Cluster-as-a-Service (CaaS)](../configuration/11-caas.md)) exposes two Zenith services -
+[Cluster-as-a-Service (CaaS)](../configuration/12-caas.md)) exposes two Zenith services -
 "Web Console" and "Monitoring". If an instance of this platform is deployed with the name
 `my-workstation`, then access to the "Web Console" service can be granted by either:
 

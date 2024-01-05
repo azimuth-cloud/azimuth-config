@@ -39,13 +39,13 @@ file in the user interface, so this can be used to describe how to consume the a
 
 ## Default app templates
 
-Azimuth comes with two app templates enabled by default:
+Azimuth comes with the following app templates enabled by default:
 
 `jupyterhub`
 : Allows the user to deploy [JupyterHub](https://jupyter.org/hub) on their clusters. JupyterHub
   provides a multi-user environment for using [Jupyter notebooks](https://jupyter.org/) where
   each user gets their own dynamically-provisioned notebook server and storage. The Jupyter
-  notebook interface is exposed using [Zenith](./07-zenith.md).
+  notebook interface is exposed using [Zenith](./08-zenith.md).
 
 `daskhub`
 : A JupyterHub instance with [Dask](https://www.dask.org/) integration. Dask is a library that aims
@@ -56,11 +56,17 @@ Azimuth comes with two app templates enabled by default:
   that scale out by creating pods on the underlying Kubernetes cluster. As with `jupyterhub`
   above, the notebook interface is exposed using Zenith.
 
+`kubeflow`
+: Allows users to deploy the [Kubeflow](https://www.kubeflow.org/) machine learning toolkit
+  on their clusters. Kubeflow provides an interface for easily accessing best-of-breed machine
+  learning systems using Jupyter notebooks and [TensorFlow](https://www.tensorflow.org/).
+
 These can be disabled by setting the following variables:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_jupyterhub_enabled: false
 azimuth_capi_operator_app_templates_daskhub_enabled: false
+azimuth_capi_operator_app_templates_kubeflow_enabled: false
 ```
 
 ## Custom app templates
@@ -138,7 +144,7 @@ This behaviour can be customised for each app template using the following optio
 
 ## Zenith integration
 
-When [Zenith is enabled](./07-zenith.md), every Kubernetes cluster created by Azimuth has an
+When [Zenith is enabled](./08-zenith.md), every Kubernetes cluster created by Azimuth has an
 instance of the [Zenith operator](https://github.com/stackhpc/zenith/tree/main/operator) watching
 it. This operator makes two Kubernetes custom resources available that can be used to expose a
 [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to users

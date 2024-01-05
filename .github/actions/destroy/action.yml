@@ -1,0 +1,12 @@
+name: Azimuth CI destroy
+description: Destroys an Azimuth CI environment.
+runs:
+  using: composite
+  steps:
+    - name: Destroy Azimuth
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml

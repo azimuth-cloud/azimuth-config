@@ -1,0 +1,100 @@
+name: Azimuth CI setup
+description: Sets up an environment for running Azimuth CI.
+inputs:
+  repository:
+    description: The repository to use for the Azimuth configuration.
+    required: true
+    default: stackhpc/azimuth-config
+  ref:
+    description: The ref to use for the Azimuth configuration.
+    required: true
+    default: main
+  config-environment:
+    description: The config environment to use.
+    required: true
+    default: ci
+  azimuth-ops-version:
+    description: >
+      The azimuth-ops version to use. If not given, the default version is used.
+    required: true
+    default: ""
+  extra-vars:
+    description: >
+      YAML-formatted extra vars for the deployment, if required.
+    required: true
+    default: "{}"
+  os-clouds:
+    description: The contents of the clouds.yaml to use.
+    required: true
+  os-cloud-name:
+    description: The name of the cloud within the clouds.yaml to use.
+    required: true
+    default: openstack
+  environment-prefix:
+    description: >
+      The environment prefix to use. The run ID will be appended to this,
+      separated by a hyphen.
+    required: true
+    default: ci
+runs:
+  using: composite
+  steps:
+    - name: Checkout azimuth-config repo
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+
+    - name: Write clouds.yaml
+      shell: bash
+      run: cat > ./clouds.yaml <<< "$OS_CLOUDS"
+      env:
+        OS_CLOUDS: ${{ inputs.os-clouds }}
+
+    # This environment file will be sourced before running any other actions
+    - name: Write environment file
+      shell: bash
+      run: cat > ./ci.env <<< "$CI_ENV"
+      env:
+        CI_ENV: |
+          export OS_CLOUD="${{ inputs.os-cloud-name }}"
+          export OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
+          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.config-environment }}
+          export AZIMUTH_ENVIRONMENT="${{ inputs.environment-prefix }}-${{ github.run_id }}"
+          export ANSIBLE_FORCE_COLOR=true
+
+    - name: Update azimuth-ops version in requirements.yml
+      shell: bash
+      run: cat > requirements.yml <<< "$REQUIREMENTS_CONTENT"
+      env:
+        REQUIREMENTS_CONTENT: |
+          ---
+          collections:
+            - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
+              type: git
+              version: ${{ inputs.azimuth-ops-version }}
+      if: ${{ inputs.azimuth-ops-version != '' }}
+
+    - name: Write extra-vars file
+      shell: bash
+      run: cat > extra-vars.yml <<< "$EXTRA_VARS"
+      env:
+        EXTRA_VARS: ${{ inputs.extra-vars }}
+
+    - name: Ensure Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+        check-latest: true
+
+    - name: Set up Python virtual environment
+      shell: bash
+      run: ./bin/ensure-venv
+
+    - name: Install Ansible dependencies
+      shell: bash
+      run: |
+        set -e
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible-galaxy install -f -r requirements.yml

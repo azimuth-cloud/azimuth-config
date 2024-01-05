@@ -1,25 +1,26 @@
+# Use the external-facing network
+infra_external_network_id: "{{ lookup('pipe', 'openstack network show CUDN-Internet -f value -c id') }}"
 
-# Config for storing terraform state in S3
-terraform_backend_type: s3
+# Use the pre-existing portal-internal network so that we don't need to steal a router
+infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f value -c id') }}"
 
-terraform_backend_config:
-  endpoint: object.arcus.openstack.hpc.cam.ac.uk
-  # Arcus S3 doesn't respect region but Terraform requires it
-  region: not-used-but-required
-  bucket: azimuth-ci-terraform-state
-  key: "{{ azimuth_environment }}.tfstate"
-  skip_credentials_validation: "true"
-  force_path_style: "true"
-  skip_region_validation: "true"
-
-# Arcus-specific tweaks
-
-# NOTE (sd109 2023-05-11): 
-# Currently need larger vm.ska.cpu.general.eighth arcus flavor
-# since Harbor deployment fails on 4GB RAM VM due to insufficient
-# memory. Can probably reduce this requirement in future if we 
-# disable Harbor or refine pod resource quotas.
+# Flavor auto-detection picks the wrong flavors on Arcus, so override them
+#   The flavor to use for the Azimuth AIO VM (vm.ska.cpu.general.eighth)
 infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
-
-# Disable Harbor in CI for now, as it is really slow and likely to be removed soon
-harbor_enabled: no
+#   The flavors to use for the Slurm login and control nodes
+azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: vm.ska.cpu.general.small
+azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "{{ azimuth_caas_stackhpc_slurm_appliance_login_flavor_name }}"
+#   The flavor to use for the workstation test case (vm.ska.cpu.general.small)
+generate_tests_caas_test_case_workstation_param_cluster_flavor: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the repo2docker test case
+generate_tests_caas_test_case_repo2docker_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the R-Studio test case
+generate_tests_caas_test_case_rstudio_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the compute nodes in the Slurm test case
+generate_tests_caas_test_case_slurm_param_compute_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavors to use for the control plane and workers in Kubernetes test cases
+generate_tests_kubernetes_test_case_control_plane_size: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+generate_tests_kubernetes_test_case_worker_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+#   The flavors to use for the control plane and workers in the Kubernetes apps test cases
+generate_tests_kubernetes_apps_k8s_control_plane_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+generate_tests_kubernetes_apps_k8s_worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"

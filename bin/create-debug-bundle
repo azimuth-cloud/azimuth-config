@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+#####
+# This script produces an archive containing useful information for debugging
+#####
+
+set -eo pipefail
+
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
+fi
+
+
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+bundle_name="${1:-debug-bundle}"
+
+
+# Get the install_mode that is in use
+install_mode="$(ansible_variable install_mode)"
+
+# For HA installations, we want to collect some additional information from the seed before
+# collecting the regular information from the HA cluster
+if [ "$install_mode" = "ha" ]; then
+    cluster_name="$(ansible_variable capi_cluster_release_name)"
+    additional_commands="$(
+cat <<EOF
+kubectl get pods --all-namespaces -o wide > debug-bundle/seed-list-pods.txt 2>&1
+kubectl get pvc --all-namespaces -o wide > debug-bundle/seed-list-pvcs.txt 2>&1
+kubectl get cluster-api -o wide > debug-bundle/seed-list-cluster-api.txt 2>&1
+kubectl -n capi-addon-system logs --since=1h deploy/cluster-api-addon-provider > debug-bundle/seed-logs-cluster-api-addon-provider.txt 2>&1
+kubectl -n capi-janitor-system logs --since=1h deploy/cluster-api-janitor-openstack > debug-bundle/seed-logs-cluster-api-janitor-openstack.txt 2>&1
+kubectl -n capi-kubeadm-bootstrap-system logs --since=1h deploy/capi-kubeadm-bootstrap-controller-manager > debug-bundle/seed-logs-capi-kubeadm-bootstrap-controller-manager.txt 2>&1
+kubectl -n capi-kubeadm-control-plane-system logs --since=1h deploy/capi-kubeadm-control-plane-controller-manager > debug-bundle/seed-logs-capi-kubeadm-control-plane-controller-manager.txt 2>&1
+kubectl -n capi-system logs --since=1h deploy/capi-controller-manager > debug-bundle/seed-logs-capi-controller-manager.txt 2>&1
+kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bundle/seed-logs-capo-controller-manager.txt 2>&1
+
+export KUBECONFIG=./kubeconfig-${cluster_name}.yaml
+EOF
+    )"
+fi
+
+
+# We produce an archive on the seed, then pull it down
+# For some reason, cating the archive at the end of the main command corrupts the file
+# but using a separate command doesn't...  :shrugs:
+
+# Things that we include:
+#   * List of pods
+#   * List of PVCs
+#   * List of installed CaaS cluster types and clusters
+#   * List of installed Kubernetes templates and clusters
+#   * List of installed app templates
+#   * List of installed Cluster API resources
+#   * The last hour of logs from some key components
+echo "[INFO] Collecting debug information"
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" <<EOF
+set -e
+
+rm -rf debug-bundle
+mkdir debug-bundle
+
+${additional_commands}
+
+kubectl get pods --all-namespaces -o wide > debug-bundle/list-pods.txt 2>&1
+kubectl get pvc --all-namespaces -o wide > debug-bundle/list-pvcs.txt 2>&1
+kubectl get clustertypes.caas -o wide > debug-bundle/list-caas-clustertypes.txt 2>&1
+kubectl get clusters.caas --all-namespaces -o wide > debug-bundle/list-caas-clusters.txt 2>&1
+kubectl get clustertemplates -o wide > debug-bundle/list-kube-templates.txt 2>&1
+kubectl get clusters --all-namespaces -o wide > debug-bundle/list-kube-clusters.txt 2>&1
+kubectl get apptemplates --all-namespaces -o wide > debug-bundle/list-kube-apptemplates.txt 2>&1
+kubectl get cluster-api --all-namespaces -o wide > debug-bundle/list-cluster-api.txt 2>&1
+
+kubectl -n azimuth logs --since=1h deploy/azimuth-api > debug-bundle/logs-azimuth-api.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/azimuth-caas-operator > debug-bundle/logs-azimuth-caas-operator.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/azimuth-capi-operator > debug-bundle/logs-azimuth-capi-operator.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/azimuth-identity-operator > debug-bundle/logs-azimuth-identity-operator.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/azimuth-ui > debug-bundle/logs-azimuth-ui.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/zenith-server-registrar > debug-bundle/logs-zenith-server-registrar.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/zenith-server-sshd > debug-bundle/logs-zenith-server-sshd.txt 2>&1
+kubectl -n azimuth logs --since=1h deploy/zenith-server-sync > debug-bundle/logs-zenith-server-sync.txt 2>&1
+kubectl -n capi-addon-system logs --since=1h deploy/cluster-api-addon-provider > debug-bundle/logs-cluster-api-addon-provider.txt 2>&1
+kubectl -n capi-janitor-system logs --since=1h deploy/cluster-api-janitor-openstack > debug-bundle/logs-cluster-api-janitor-openstack.txt 2>&1
+kubectl -n capi-kubeadm-bootstrap-system logs --since=1h deploy/capi-kubeadm-bootstrap-controller-manager > debug-bundle/logs-capi-kubeadm-bootstrap-controller-manager.txt 2>&1
+kubectl -n capi-kubeadm-control-plane-system logs --since=1h deploy/capi-kubeadm-control-plane-controller-manager > debug-bundle/logs-capi-kubeadm-control-plane-controller-manager.txt 2>&1
+kubectl -n capi-system logs --since=1h deploy/capi-controller-manager > debug-bundle/logs-capi-controller-manager.txt 2>&1
+kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bundle/logs-capo-controller-manager.txt 2>&1
+
+tar -czf debug-bundle.tar.gz -C debug-bundle \$(ls -A debug-bundle)
+EOF
+echo "[INFO] Fetching debug bundle"
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- cat debug-bundle.tar.gz > "$bundle_name.tar.gz"
+echo "[INFO] Cleaning up interim files"
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- rm -rf debug-bundle debug-bundle.tar.gz

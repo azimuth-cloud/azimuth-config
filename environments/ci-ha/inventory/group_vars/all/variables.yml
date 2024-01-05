@@ -1,0 +1,18 @@
+# Unset the network ID so that a network + router are provisioned
+infra_network_id:
+
+# Flavor auto-detection picks the wrong flavors on Arcus, so override them
+#   The flavor to use for the seed VM (vm.ska.cpu.general.small)
+infra_flavor_id: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the control plane nodes
+capi_cluster_control_plane_flavor: vm.ska.cpu.general.small
+capi_cluster_worker_flavor: vm.ska.cpu.general.eighth
+# Although this is a "HA" test, what we are really testing is the spawning
+# of the CAPI cluster and deployment of Azimuth onto that
+# So one control plane node and two workers is sufficient for that
+capi_cluster_control_plane_count: 1
+capi_cluster_worker_count: 2
+# Disable affinity for the Consul server so we can have 3 pods on two nodes
+consul_release_overrides:
+  server:
+    affinity: ""

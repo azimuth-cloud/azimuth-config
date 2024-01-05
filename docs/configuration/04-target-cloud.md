@@ -1,4 +1,4 @@
-# Target cloud
+# Target OpenStack cloud
 
 The main piece of site-specific configuration required by Azimuth is the connection information
 for the target OpenStack cloud.
@@ -51,16 +51,20 @@ them for an OpenStack token. This requires no additional configuration.
 
 If the target cloud consumes identities from an external provider via
 [Keystone federation](https://docs.openstack.org/keystone/latest/admin/federation/introduction.html),
-then Azimuth can be configured to obtain an OpenStack token from Keystone using the same flow
+then Azimuth should be configured to obtain an OpenStack token from Keystone using the same flow
 as Horizon. To enable this, additional configuration is required for both Azimuth and Keystone
 on the target cloud.
 
 First, the Keystone configuration of the target cloud must be modified to add Azimuth as a
 [trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
 otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
-trusted dashboard, you must specify the URL that will receive token data - for an Azimuth deployment,
-this URL is `https://[portal domain]/auth/federated/complete/`, where the portal domain depends on
-the ingress configuration as described elsewhere in this documentation.
+trusted dashboard, you must specify the URL that will receive token data, where the portal domain
+depends on the [ingress configuration](./06-ingress.md):
+
+```ini  title="Keystone configuration"
+[federation]
+trusted_dashboard = https://portal.azimuth.example.org/auth/federated/complete/
+```
 
 In your Azimuth configuration, enable the federated authenticator and tell it the provider and
 protocol to use:
@@ -121,4 +125,34 @@ on your network that machines provisioned by Azimuth need to access:
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Defaults to 192.168.3.0/24
 azimuth_openstack_internal_net_cidr: 10.0.3.0/24
+```
+
+## Monitoring Cloud Capacity
+
+Azimuth is able to federate cloud metrics from a prometheus running within
+your cloud enviroment, such as the one deployed by:
+https://github.com/stackhpc/stackhpc-kayobe-config
+
+Typically we also assume the following exporter is being used to
+query the current capacity of your cloud, mostly using data from
+OpenStack placement:
+https://github.com/stackhpc/os-capacity
+
+First you need to enable the project metrics and cloud metrics
+links within Azimuth by configuring:
+```yaml
+# Defaults to no
+cloud_metrics_enabled: yes
+```
+
+To make sure Azimuth knows how to access the prometheus running
+in your cloud, you need to configure:
+```yaml
+# hostname needed to match TLS certificate name
+cloud_metrics_prometheus_host: "mycloud.example.com"
+# ip that matches the above hostname
+cloud_metrics_prometheus_ip: "<ip prometheus vip>"
+cloud_metrics_prometheus_port: 9091
+cloud_metrics_prometheus_basic_auth_username: "<basic-auth-username>"
+cloud_metrics_prometheus_basic_auth_password: "<basic-auth-password>"
 ```

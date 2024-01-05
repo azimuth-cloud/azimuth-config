@@ -14,12 +14,10 @@ shared but overridden where required using composition of environments.
 
 ## Structure of an Azimuth deployment
 
-A fully-featured Azimuth deployment consists of many components - see
-[Azimuth Architecture](https://github.com/stackhpc/azimuth/blob/master/docs/architecture.md)
-for details - and several of these components, including
-[Zenith](https://github.com/stackhpc/zenith), [AWX](https://github.com/ansible/awx) and
-[Cluster API](https://cluster-api.sigs.k8s.io/), require a [Kubernetes](https://kubernetes.io/)
-cluster to run.
+A fully-featured Azimuth deployment consists of many components, such as
+[Zenith](https://github.com/stackhpc/zenith), [Cluster API](https://cluster-api.sigs.k8s.io/)
+and the [CaaS operator](https://github.com/stackhpc/azimuth-caas-operator), which
+require a [Kubernetes](https://kubernetes.io/) cluster to run.
 
 However when you consider an Azimuth deployment as a whole, the only _real_ dependency is
 an [OpenStack](https://www.openstack.org/) cloud to target - we can create a Kubernetes
@@ -47,11 +45,10 @@ the same OpenStack project onto which Azimuth is deployed.
     Option 2 requires that [Octavia](https://docs.openstack.org/octavia/latest/index.html)
     is available on the target cloud to provide load-balancers for Azimuth components.
 
-## Configuring and deploying Azimuth
+## Deploying Azimuth
 
-The rest of this documentation provides details on different aspects of building a
-production-ready Azimuth configuration and using it to deploy Azimuth.
+To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
+to get a simple single-node deployment.
 
-In the first instance it is recommended to follow the pages in order, implementing the
-steps in your Azimuth configuration. Once you have a working configuration, you can
-refer back to specific sections as needed.
+For a production-ready deployment, you should follow the steps in the
+[best practice document](./best-practice.md).
