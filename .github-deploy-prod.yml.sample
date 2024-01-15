@@ -1,4 +1,4 @@
-# This example workflow can be adapted to perform manually-triggered Azimuth deployments targeting production environments.
+# This example workflow can be used to perform manually-triggered Azimuth deployments targeting production environments.
 # The workflow requires a GitHub environment (https://docs.github.com/en/actions/using-jobs/using-environments-for-jobs) to
 # be created in the site-specific config repo with a name which exactly matches the azimuth-config environment to be used 
 # for production deployments. For security, this GitHub environment should also have a deployment protection rule which 
