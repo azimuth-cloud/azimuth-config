@@ -35,7 +35,7 @@ Option 1 is useful for development or demo deployments, but is not suitable for 
 deployment.
 
 Option 2 is the recommended deployment mechanism for most deployments. In this mode,
-[Terraform](https://www.terraform.io/) is used to provision a single-node K3S cluster
+[OpenTofu](https://opentofu.org/) is used to provision a single-node K3S cluster
 that is configured as a [Cluster API](https://cluster-api.sigs.k8s.io/) management
 cluster. Cluster API is then used to provision a highly-available Kubernetes cluster in
 the same OpenStack project onto which Azimuth is deployed.

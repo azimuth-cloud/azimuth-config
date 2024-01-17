@@ -2,7 +2,7 @@
 
 Cluster-as-a-Service (CaaS) in Azimuth allows self-service platforms to be provided to
 users that are deployed and configured using a combination of [Ansible](https://www.ansible.com/),
-[Terraform](https://www.terraform.io/) and [Packer](https://www.packer.io/), stored in
+[OpenTofu](https://opentofu.org/) and [Packer](https://www.packer.io/), stored in
 a [git](https://git-scm.com/) repository.
 
 CaaS support in Azimuth is implemented by the

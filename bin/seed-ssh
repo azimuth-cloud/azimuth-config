@@ -44,14 +44,14 @@ fi
 work_dir="$(ansible_variable work_directory)/seed-ssh"
 mkdir -p "$work_dir"
 
-# Initialise the Terraform backend
+# Initialise the OpenTofu backend
 terraform_backend_type="$(ansible_variable terraform_backend_type)"
 if [ "$terraform_backend_type" = "local" ]; then
-    # If the Terraform backend is local, that means the provisioning is run on the current host
+    # If the OpenTofu backend is local, that means the provisioning is run on the current host
     # Hence there should be a pre-existing Terraform project directory we can point at
     terraform_dir="$(ansible_variable terraform_project_path)"
 else
-    # If the Terraform backend type is something other than local, make a terraform
+    # If the OpenTofu backend type is something other than local, make an OpenTofu project
     # directory containing a backend configuration that specifies the type and config
     terraform_dir="$work_dir"
     cat <<EOF > "$terraform_dir/backend.tf"
