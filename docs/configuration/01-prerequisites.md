@@ -64,7 +64,7 @@ cluster, they **must** be from an SSD-backed pool.
 !!! tip
 
     If you do not have much SSD capacity, consider having multiple volume types and limiting
-    access to the SSD-backed volume type to Kubernetes instances only.
+    access to the SSD-backed volume type to Kubernetes instances only. Alternatively, look at the section on [etcd Configuration for Management Cluster](./03-kubernetes-config.md#etcd-configuration-for-management-cluster).
 
 ### OpenStack project quotas
 

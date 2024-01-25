@@ -117,6 +117,29 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
     openstack volume type list
     ```
 
+## etcd Configuration for Management Cluster
+
+When setting up the management cluster, you may need to configure a separate block device for etcd depending on your requirements. Below are the configuration options available:
+
+- `capi_cluster_etcd_blockdevice_size`: This option specifies the size of the etcd block device. The size should be specified in gigabytes (GB), and is typically between 2GB and 10GB. As a reference, Amazon EKS provisions the recommended database size for etcd at 8GB.
+
+- `capi_cluster_etcd_blockdevice_type`: This defines the type of block device that etcd will use. There are two possible values:
+  - `Local`: etcd block device will be a local device on the host machine.
+  - `Volume`: etcd block device will be a network-attached volume.
+
+- `capi_cluster_etcd_blockdevice_volume_type`: If you choose `Volume` as the block device type, this option allows you to specify the volume type. The volume type will be one of those available in your openstack cloud. 
+
+- `capi_cluster_etcd_blockdevice_volume_az`: This is relevant only if you're using a `Volume` type for the etcd block device. It specifies the availability zone in which the etcd volume will be created, ensuring that the etcd service is tied to a specific geographic location for latency or redundancy purposes.
+
+### ETCD Configuration for Tenant Clusters
+
+If you'd like to configure tenant clusters to deploy etcd on a separate block device by default,the following variables can be set to apply this configuration:
+
+- `azimuth_capi_operator_etcd_blockdevice_size`
+- `azimuth_capi_operator_etcd_blockdevice_type`
+- `azimuth_capi_operator_etcd_blockdevice_volume_type` 
+- `azimuth_capi_operator_etcd_blockdevice_volume_az`
+
 ## Load-balancer provider
 
 If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
