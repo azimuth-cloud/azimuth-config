@@ -133,7 +133,7 @@ When setting up the management cluster, you may need to configure a separate blo
 
 ### ETCD Configuration for Tenant Clusters
 
-If you'd like to configure tenant clusters to deploy etcd on a separate block device by default,the following variables can be set to apply this configuration:
+If you'd like to configure tenant clusters to deploy etcd on a separate block device by default, the following variables can be set to apply this configuration:
 
 - `azimuth_capi_operator_etcd_blockdevice_size`
 - `azimuth_capi_operator_etcd_blockdevice_type`
