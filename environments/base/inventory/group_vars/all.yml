@@ -88,6 +88,8 @@ ingress_consul_subdomain: consul
 ingress_ara_subdomain: ara
 # The subdomain that should be used for the Helm dashboard
 ingress_helm_dashboard_subdomain: helm
+# The subdomain that should be used for Skooner
+ingress_skooner_subdomain: skooner
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
