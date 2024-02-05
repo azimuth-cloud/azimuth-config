@@ -27,11 +27,17 @@ git remote rename origin upstream
 git remote add origin git@<repo location>/my-azimuth-config.git
 
 # Push the main branch to the new origin
-git push -u origin main
+git push -u origin main --tags
 ```
 
 You now have an independent copy of the `azimuth-config` repository that has a link back
 to the source repository via the `upstream` remote.
+
+!!! tip
+
+    This is a good point to add branch protection to your local
+    repository, to ensure all changes are reviewed in a pull/merge request.
+
 
 ## Creating a new environment
 
@@ -87,11 +93,16 @@ at new Azimuth versions, upgraded dependencies and new images.
     [can be automated](../deployment/automation.md#automated-synchronisation-of-upstream-changes)
     if you have the tooling available.
 
-To incorporate the latest changes into your site-specific repository, use the following:
+To incorporate the latest changes into your site-specific repository, use the following
+to update your local checkout and merge the tag you want to sync into a branch that helps
+you open a PR against your fork of azimuth-config:
 
 ```sh
-git fetch upstream
-git merge upstream/main
+git remote update
+git checkout origin/main # get the latest local changes
+git checkout -b sync/0.42
+git push --set-upstream origin sync/0.42
+git merge 0.42
 ```
 
 At this point, you will need to fix any conflicts where you have made changes to the same
@@ -107,5 +118,7 @@ Once any conflicts have been resolved, you can commit and push the changes:
 
 ```sh
 git commit -m "Merge changes from upstream"
-git push
+git push --tags
 ```
+
+You can now follow the instructions to open a PR against your upstream repo.
