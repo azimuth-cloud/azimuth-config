@@ -106,8 +106,8 @@ You can review the latest release tags and the associated release notes here:
 https://github.com/stackhpc/azimuth-config/releases
 
 To incorporate the latest changes into your site-specific repository, use the following
-to update your local checkout and merge the tag you want to sync into a branch that helps
-you open a PR against your fork of azimuth-config:
+to update your local checkout. First merge the tag you want to sync into a branch,
+then use that branch to open a pull/merge request to your site-specific repository:
 
 ```sh
 git remote update
