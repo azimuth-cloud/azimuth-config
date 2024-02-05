@@ -26,13 +26,11 @@ git remote rename origin upstream
 # Create a new origin remote for the new repository location
 git remote add origin git@<repo location>/my-azimuth-config.git
 
-# Choose the release you want to use
-git checkout <name-of-tag>
-# Create a new main branch containing the above tag
-git branch -D main
-git checkout -b main
+# Checkout stable to get the latest release
+git checkout stable
 
-# Push the chosen tag to the new origin
+# Create a new main branch for your local repo
+git checkout -b main
 git push --set-upstream origin main --tags
 ```
 
@@ -110,8 +108,11 @@ to update your local checkout. First merge the tag you want to sync into a branc
 then use that branch to open a pull/merge request to your site-specific repository:
 
 ```sh
+# get the latest local and upstream changes
 git remote update
-git checkout origin/main # get the latest local changes
+git checkout origin/main
+
+# create a branch in which to merge the upstream changes
 git checkout -b sync/<chosen-tag>
 git merge <chosen-tag>
 ```
