@@ -26,8 +26,14 @@ git remote rename origin upstream
 # Create a new origin remote for the new repository location
 git remote add origin git@<repo location>/my-azimuth-config.git
 
-# Push the main branch to the new origin
-git push -u origin main --tags
+# Choose the release you want to use
+git checkout <name-of-tag>
+# Create a new main branch containing the above tag
+git branch -D main
+git checkout -b main
+
+# Push the chosen tag to the new origin
+git push --set-upstream origin main --tags
 ```
 
 You now have an independent copy of the `azimuth-config` repository that has a link back
@@ -36,7 +42,9 @@ to the source repository via the `upstream` remote.
 !!! tip
 
     This is a good point to add branch protection to your local
-    repository, to ensure all changes are reviewed in a pull/merge request.
+    repository, to ensure all changes are reviewed in a pull/merge request,
+    and people do not accidentially push their changes into the branch
+    used to deploy into production.
 
 
 ## Creating a new environment
@@ -104,9 +112,8 @@ you open a PR against your fork of azimuth-config:
 ```sh
 git remote update
 git checkout origin/main # get the latest local changes
-git checkout -b sync/0.42
-git push --set-upstream origin sync/0.42
-git merge 0.42
+git checkout -b sync/<chosen-tag>
+git merge <chosen-tag>
 ```
 
 At this point, you will need to fix any conflicts where you have made changes to the same
@@ -118,11 +125,12 @@ files that have been changed by `azimuth-config`.
     `azimuth-config` - instead you should use the environment layering to override
     variables where required, and copy files if necessary.
 
-Once any conflicts have been resolved, you can commit and push the changes:
+Once any conflicts have been resolved, you can commit and push the changes,
+being sure to push the new tags you have pulled in from the upstream repo:
 
 ```sh
 git commit -m "Merge changes from upstream"
-git push --tags
+git push --set-upstream origin sync/<chosen-tag> --tags
 ```
 
 You can now follow the instructions to open a PR against your upstream repo.
