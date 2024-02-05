@@ -8,6 +8,7 @@ infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f 
 #   The flavor to use for the Azimuth AIO VM (vm.ska.cpu.general.eighth)
 infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
 #   The flavors to use for the Slurm login and control nodes
+#   TODO(mkjpryor) remove these once azimuth-ops has been updated
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: vm.ska.cpu.general.small
 azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "{{ azimuth_caas_stackhpc_slurm_appliance_login_flavor_name }}"
 #   The flavor to use for the workstation test case (vm.ska.cpu.general.small)
@@ -16,8 +17,11 @@ generate_tests_caas_test_case_workstation_param_cluster_flavor: c8b72062-5d52-45
 generate_tests_caas_test_case_repo2docker_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
 #   The flavor to use for the R-Studio test case
 generate_tests_caas_test_case_rstudio_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
-#   The flavor to use for the compute nodes in the Slurm test case
-generate_tests_caas_test_case_slurm_param_compute_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the nodes in the Slurm test case
+#   The flavors to use for the Slurm login and control nodes
+generate_tests_caas_test_case_slurm_param_login_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+generate_tests_caas_test_case_slurm_param_control_flavor: "{{ generate_tests_caas_test_case_slurm_param_login_flavor }}"
+generate_tests_caas_test_case_slurm_param_compute_flavor: "{{ generate_tests_caas_test_case_slurm_param_login_flavor }}"
 #   The flavors to use for the control plane and workers in Kubernetes test cases
 generate_tests_kubernetes_test_case_control_plane_size: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
 generate_tests_kubernetes_test_case_worker_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
