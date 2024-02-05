@@ -93,19 +93,13 @@ at new Azimuth versions, upgraded dependencies and new images.
     [can be automated](../deployment/automation.md#automated-synchronisation-of-upstream-changes)
     if you have the tooling available.
 
+The first step is to choose the release you want to apply.
+You can review the latest release tags and the associated release notes here:
+https://github.com/stackhpc/azimuth-config/releases
+
 To incorporate the latest changes into your site-specific repository, use the following
 to update your local checkout and merge the tag you want to sync into a branch that helps
-you open a PR against your fork of azimuth-config.
-
-The first step is to choose a tag, and you can list all tags like this:
-
-```sh
-git remote update
-git tag
-```
-
-Once you have chosen the tag you are updating to, you can now get the latest local
-changes, and create a branch that merges in the changes included in that tag:
+you open a PR against your fork of azimuth-config:
 
 ```sh
 git remote update
