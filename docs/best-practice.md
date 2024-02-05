@@ -100,7 +100,7 @@ manual trigger. Once the change has been validated in `staging`, the job to depl
 can be actioned.
 
 A
-[sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/main/.gitlab-ci.yml.sample)
+[sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.
 
 ## Disaster recovery
