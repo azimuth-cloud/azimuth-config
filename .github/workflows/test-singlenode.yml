@@ -1,6 +1,9 @@
-name: Test Azimuth deployment
+name: Single node test
 
 on:
+  # Allow manual executions
+  workflow_dispatch:
+  # Execute by default on pull requests
   pull_request:
     types:
       - opened
@@ -11,10 +14,6 @@ on:
       - main
     paths-ignore:
       - 'docs/**'
-
-concurrency:
-  group: ${{ github.head_ref }}
-  cancel-in-progress: true
 
 jobs:
   # This job exists so that PRs from outside the main repo are rejected

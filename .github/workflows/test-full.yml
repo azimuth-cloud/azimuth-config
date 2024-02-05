@@ -1,9 +1,11 @@
-name: Test Azimuth deployment
+name: Full test suite
 
 on:
-  push:
-    tags:
-      - "*"
+  # Allow manual executions
+  workflow_dispatch:
+  # Run nightly
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   # We want jobs to wait in a queue for a slot to run, so as not to overload the test infra
@@ -18,7 +20,8 @@ jobs:
         with:
           max-concurrency: 1
 
-  # For tags, we run a full HA test (for now)
+  # Run the full test suite
+  # Currently, this is just a HA install
   run_azimuth_tests:
     needs: [wait_in_queue]
     runs-on: ubuntu-latest
