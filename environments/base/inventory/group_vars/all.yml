@@ -86,6 +86,10 @@ ingress_alertmanager_subdomain: alertmanager
 ingress_consul_subdomain: consul
 # The subdomain that should be used for ARA
 ingress_ara_subdomain: ara
+# The subdomain that should be used for the Helm dashboard
+ingress_helm_dashboard_subdomain: helm
+# The subdomain that should be used for the Kubernetes dashboard
+ingress_kubernetes_dashboard_subdomain: kubernetes
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
