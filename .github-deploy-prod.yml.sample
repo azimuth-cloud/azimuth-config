@@ -1,0 +1,53 @@
+# This example workflow can be used to perform manually-triggered Azimuth deployments targeting production environments.
+# The workflow requires a GitHub environment (https://docs.github.com/en/actions/using-jobs/using-environments-for-jobs) to
+# be created in the site-specific config repo with a name which exactly matches the azimuth-config environment to be used 
+# for production deployments. For security, this GitHub environment should also have a deployment protection rule which 
+# restricts the environment workflows to only run on the main/default branch. This ensures that production deployments 
+# cannot be executed from arbitrary branches which could contain incorrect or unreviewed configuration.
+#
+# A manually-triggered workflow is used here since GitHub does not allow deployment approval rules for environments in 
+# private GitHub repos without a GitHub Enterprise subscription. If the site-specific config repo is public, or if an enterprise
+# subscription is available, then triggering the workflow on push to main with additional approval rules in the environment is 
+# the recommended approach.
+# 
+# The site-specific config repo must also define a repository secret named GIT_CRYPT_KEY_B64 which contains the base64 encoded
+# git-crypt key which was used to encrypt the repository's secrets. This can be obtained by running `git-crypt export-key - | base64`
+# from within an unlocked checkout of the repository. For information on defining GitHub repo secrets, see:
+# https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+
+name: Azimuth deployment
+on:
+  workflow_dispatch:
+    inputs: 
+      environment:
+        description: "The Azimuth config environment to deploy"
+        type: environment
+        required: true
+jobs:
+  deploy_azimuth:
+    environment: ${{ inputs.environment }}
+    runs-on: self-hosted
+    steps:
+
+      - name: Ensure required host packages are installed
+        run: |
+          set -xe
+          sudo apt update
+          sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt
+
+      - name: Checkout the config repo
+        uses: actions/checkout@v3
+
+      - name: Deploy Azimuth
+        shell: bash
+        # Here we just decrypt the repo checkout then follow the steps from the Azimuth deployment docs.
+        # The GitHub repo should have an environment configured with a name which matches the Azimuth config environment.
+        # This GitHub environment should also have a branch protection rule which only allows deployments on chosen production branch (e.g. main).
+        # https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          ./bin/ensure-venv
+          source ./bin/activate  ${{ inputs.environment }}
+          ansible-galaxy install -fr ./requirements.yml
+          ansible-playbook stackhpc.azimuth_ops.provision

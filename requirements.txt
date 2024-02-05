@@ -1,7 +1,9 @@
 ansible-core>=2.12 # require undef filter
 azimuth-robotframework
+bcrypt==4.0.1  # this is the latest version that doesn't emit a warning
 jmespath
 munch
+passlib
 python-octaviaclient
 python-openstackclient
 robotframework
