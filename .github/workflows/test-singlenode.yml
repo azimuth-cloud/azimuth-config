@@ -1,16 +1,35 @@
-name: Test Azimuth deployment
+name: Single node test
 
 on:
-  push:
-    tags:
-      - "*"
+  # Allow manual execution on any branch
+  workflow_dispatch:
+  # Execute by default on pull requests to the devel branch
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
+    branches:
+      - devel
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
+  # This job exists so that PRs from outside the main repo are rejected
+  fail_on_remote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code under test must be from a branch in the azimuth-config repo
+        run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
+
   # We want jobs to wait in a queue for a slot to run, so as not to overload the test infra
   # GitHub concurrency _almost_ does this, except the queue length is one :-(
   # There is a feature request for what we need https://github.com/orgs/community/discussions/12835
   # Until that is implemented, the only other viable option is a busy wait
   wait_in_queue:
+    needs: [fail_on_remote]
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Wait for an available slot
@@ -18,7 +37,6 @@ jobs:
         with:
           max-concurrency: 1
 
-  # For tags, we run a full HA test (for now)
   run_azimuth_tests:
     needs: [wait_in_queue]
     runs-on: ubuntu-latest
@@ -33,7 +51,6 @@ jobs:
           os-clouds: ${{ secrets.CLOUD }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
-          config-environment: ci-ha
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
