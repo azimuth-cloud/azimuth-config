@@ -81,8 +81,8 @@ jobs:
           ref: ${{ steps.latest-tag.outputs.tag-name }}
           config-environment: ci-ha
 
-      # - name: Provision Azimuth
-      #   uses: ./.github/actions/provision
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
 
       - name: Checkout code under test
         uses: actions/checkout@v3
@@ -95,9 +95,9 @@ jobs:
           ref: ${{ github.ref }}
           config-environment: ci-ha
 
-      # - name: Provision Azimuth
-      #   uses: ./.github/actions/provision
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
 
-      # - name: Destroy Azimuth
-      #   uses: ./.github/actions/destroy
-      #   if: ${{ always() }}
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}
