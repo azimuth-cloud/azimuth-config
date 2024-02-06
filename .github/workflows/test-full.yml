@@ -55,6 +55,8 @@ jobs:
   #       if: ${{ always() }}
 
   # Tests an Azimuth upgrade from the current latest release
+  # Currently, this just tests the Azimuth upgrade itself with no appliances
+  # TODO(mkjpryor) add appliance provisioning and verification before and after upgrade
   test_azimuth_upgrade:
     # needs: [test_clean_ha]
     runs-on: ubuntu-latest
@@ -66,4 +68,36 @@ jobs:
           TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
           echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-      - run: echo ${{ steps.latest-tag.outputs.tag-name }}
+      - name: Checkout latest tag
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
+
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          config-environment: ci-ha
+
+      # - name: Provision Azimuth
+      #   uses: ./.github/actions/provision
+
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+
+      - name: Reconfigure Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          config-environment: ci-ha
+
+      # - name: Provision Azimuth
+      #   uses: ./.github/actions/provision
+
+      # - name: Destroy Azimuth
+      #   uses: ./.github/actions/destroy
+      #   if: ${{ always() }}
