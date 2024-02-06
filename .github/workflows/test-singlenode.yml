@@ -4,16 +4,16 @@ on:
   # Allow manual execution on any branch
   workflow_dispatch:
   # Execute by default on pull requests to the devel branch
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - ready_for_review
-      - reopened
-    branches:
-      - devel
-    paths-ignore:
-      - 'docs/**'
+  # pull_request:
+  #   types:
+  #     - opened
+  #     - synchronize
+  #     - ready_for_review
+  #     - reopened
+  #   branches:
+  #     - devel
+  #   paths-ignore:
+  #     - 'docs/**'
 
 jobs:
   # This job exists so that PRs from outside the main repo are rejected
