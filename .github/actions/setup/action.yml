@@ -8,7 +8,7 @@ inputs:
   ref:
     description: The ref to use for the Azimuth configuration.
     required: true
-    default: main
+    default: devel
   config-environment:
     description: The config environment to use.
     required: true

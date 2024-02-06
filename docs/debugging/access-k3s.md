@@ -8,7 +8,7 @@ Cluster API management cluster for the HA cluster.
 In both cases, the K3S node is deployed using Terraform and the IP address and SSH key
 for accessing the node are in the Terraform state for the environment. The `azimuth-config`
 repository contains a utility script - 
-[seed-ssh](https://github.com/stackhpc/azimuth-config/tree/main/bin/seed-ssh) - that will
+[seed-ssh](https://github.com/stackhpc/azimuth-config/tree/stable/bin/seed-ssh) - that will
 extract these details from the Terraform state for the active environment and use them to
 execute an SSH command to access the provisioned node.
 

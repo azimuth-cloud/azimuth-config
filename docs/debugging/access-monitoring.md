@@ -8,7 +8,7 @@ internet, an
 be used from your local machine to the K3S node as well.
 
 To simplify this process, the `azimuth-config` repository contains a utility script - 
-[port-forward](https://github.com/stackhpc/azimuth-config/tree/main/bin/port-forward) -
+[port-forward](https://github.com/stackhpc/azimuth-config/tree/stable/bin/port-forward) -
 that can be used to set up the double port-forward for particular cluster services.
 
 To view monitoring dashboards in Grafana, use the following command to expose the Grafana

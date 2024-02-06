@@ -4,7 +4,7 @@
 
 The Python requirements for an Azimuth deployment host, including Ansible itself,
 are contained in
-[requirements.txt](https://github.com/stackhpc/azimuth-config/blob/main/requirements.txt)
+[requirements.txt](https://github.com/stackhpc/azimuth-config/blob/stable/requirements.txt)
 and must be installed before you can proceed with a deployment. It is recommended
 to use a [virtual environment](https://docs.python.org/3/library/venv.html) in order
 to keep the dependencies isolated from other Python applications on the host.
