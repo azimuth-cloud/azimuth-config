@@ -43,6 +43,7 @@ jobs:
   #         repository: ${{ github.repository }}
   #         ref: ${{ github.ref }}
   #         config-environment: ci-ha
+  #         environment-prefix: ci-ha
 
   #     - name: Provision Azimuth
   #       uses: ./.github/actions/provision
@@ -80,6 +81,7 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ steps.latest-tag.outputs.tag-name }}
           config-environment: ci-ha
+          environment-prefix: ci-az-upgrade
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
@@ -94,6 +96,7 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
           config-environment: ci-ha
+          environment-prefix: ci-az-upgrade
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
