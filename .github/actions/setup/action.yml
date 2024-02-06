@@ -44,6 +44,7 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
+        clean: false
 
     - name: Write clouds.yaml
       shell: bash

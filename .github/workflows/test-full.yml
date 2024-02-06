@@ -88,6 +88,9 @@ jobs:
 
       - name: Checkout code under test
         uses: actions/checkout@v3
+        with:
+          # Make sure not to remove working directories, especially Terraform state!
+          clean: false
 
       - name: Reconfigure Azimuth environment
         uses: ./.github/actions/setup
