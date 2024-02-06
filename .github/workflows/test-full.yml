@@ -67,4 +67,3 @@ jobs:
           echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
       - run: echo ${{ steps.latest-tag.outputs.tag-name }}
-        env:
