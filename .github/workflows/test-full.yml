@@ -62,6 +62,13 @@ jobs:
     # needs: [test_clean_ha]
     runs-on: ubuntu-latest
     steps:
+      # We want to use the actions as defined in the code under test
+      # So check them out separately
+      - name: Checkout code under test into .actions directory
+        uses: actions/checkout@v3
+        with:
+          path: .actions
+
       - name: Get latest tag
         id: latest-tag
         run: |
@@ -75,8 +82,7 @@ jobs:
           ref: ${{ steps.latest-tag.outputs.tag-name }}
 
       - name: Set up Azimuth environment
-        # uses: ./.github/actions/setup
-        uses: stackhpc/azimuth-config/.github/actions/setup@${{ github.sha }}
+        uses: ./.actions/.github/actions/setup
         with:
           os-clouds: ${{ secrets.CLOUD }}
           repository: ${{ github.repository }}
@@ -85,7 +91,7 @@ jobs:
           environment-prefix: ci-az-upgrade
 
       - name: Provision Azimuth
-        uses: ./.github/actions/provision
+        uses: ./.actions/.github/actions/provision
 
       - name: Checkout code under test
         uses: actions/checkout@v3
@@ -108,8 +114,8 @@ jobs:
           ansible-galaxy install -f -r requirements.yml
 
       - name: Provision Azimuth
-        uses: ./.github/actions/provision
+        uses: ./.actions/.github/actions/provision
 
       - name: Destroy Azimuth
-        uses: ./.github/actions/destroy
+        uses: ./.actions/.github/actions/destroy
         if: ${{ always() }}
