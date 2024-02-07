@@ -81,8 +81,6 @@ jobs:
         with:
           path: .actions
 
-      - run: tree -a
-
       - name: Set up Azimuth environment
         uses: ./.actions/.github/actions/setup
         with:
