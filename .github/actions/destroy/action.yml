@@ -13,6 +13,7 @@ runs:
       if: ${{ always() }}
 
     - name: Release ingress floating IP
+      shell: bash
       run: |
         set -eo pipefail
         source ci.env
