@@ -25,17 +25,13 @@ kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 Once a client has connected to SSHD successfully, it should get registered in
 [Consul](https://www.consul.io/).
 
-To determine if this is the case, it is useful to access the Consul
-UI. Similar to the monitoring, this interface is only accessible inside the cluster. To
-access it, use the following command:
+To determine if this is the case, it is useful to access the Consul UI. As discussed
+in [Monitoring and alerting](../configuration/13-monitoring.md), the Consul UI
+is exposed as `consul.<ingress base domain>`, e.g. `consul.azimuth.example.org`,
+and is protected by a username and password.
 
-```sh
-./bin/port-forward consul 3000
-```
-
-The Consul UI will then be available at <http://localhost:3000>. The default view shows
-Consul's view of the services, where you can check if the service is being registered
-correctly.
+The default view shows Consul's view of the services, where you can check if the
+service is being registered correctly.
 
 Clients not registering correctly in Consul usually indicates an issue with Consul
 itself. Futher information for debugging Consul issues is provided in

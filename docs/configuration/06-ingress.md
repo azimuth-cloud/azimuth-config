@@ -1,6 +1,6 @@
 # Ingress
 
-As mentioned in the prerequisites, Azimuth and Zenith expect to be given control of entire
+As mentioned in the prerequisites, Azimuth and Zenith expect to be given control of an entire
 subdomain, e.g. `*.azimuth.example.org`, and this domain must be assigned to a pre-allocated
 floating IP using a wildcard DNS entry.
 
@@ -10,10 +10,12 @@ To tell `azimuth-ops` what domain it should use, simply set the following variab
 ingress_base_domain: azimuth.example.org
 ```
 
-This will result in `azimuth-ops` using `portal.azimuth.example.org` for Azimuth and
-`registrar.azimuth.example.org` for the Zenith registrar. If Harbor is enabled,
-`registry.azimuth.example.org` will be used for the Harbor registry. Zenith will use domains
-of the form `<random subdomain>.azimuth.example.org` for its services.
+This will result in `azimuth-ops` using `portal.azimuth.example.org` for the Azimuth portal
+interface, and Zenith will use domains of the form `<random subdomain>.azimuth.example.org`
+for user-facing services. Other services deployed by Azimuth, such as
+[Harbor](./10-kubernetes-clusters.md#harbor-registry) and the
+[monitoring and alerting dashboards](./13-monitoring.md#accessing-web-interfaces) will
+also be allocated subdomains under this domain.
 
 ## Transport Layer Security (TLS)
 
