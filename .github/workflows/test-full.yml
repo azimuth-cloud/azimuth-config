@@ -3,33 +3,32 @@ name: Full test suite
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
-  pull_request:
 
 jobs:
-  # # This job exists so that PRs from outside the main repo are rejected
-  # fail_on_remote:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Code under test must be from a branch in the azimuth-config repo
-  #       run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
+  # This job exists so that PRs from outside the main repo are rejected
+  fail_on_remote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code under test must be from a branch in the azimuth-config repo
+        run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
 
-  # # We want jobs to wait in a queue for a slot to run, so as not to overload the test infra
-  # # GitHub concurrency _almost_ does this, except the queue length is one :-(
-  # # There is a feature request for what we need https://github.com/orgs/community/discussions/12835
-  # # Until that is implemented, the only other viable option is a busy wait
-  # wait_in_queue:
-  #   needs: [fail_on_remote]
-  #   if: ${{ github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Wait for an available slot
-  #       uses: stackhpc/github-actions/workflow-concurrency@master
-  #       with:
-  #         max-concurrency: 1
+  # We want jobs to wait in a queue for a slot to run, so as not to overload the test infra
+  # GitHub concurrency _almost_ does this, except the queue length is one :-(
+  # There is a feature request for what we need https://github.com/orgs/community/discussions/12835
+  # Until that is implemented, the only other viable option is a busy wait
+  wait_in_queue:
+    needs: [fail_on_remote]
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for an available slot
+        uses: stackhpc/github-actions/workflow-concurrency@master
+        with:
+          max-concurrency: 1
 
-  # # Tests a clean HA deployment + all appliances
+  # Tests a clean HA deployment + all appliances
   test_clean_ha:
-    # needs: [wait_in_queue]
+    needs: [wait_in_queue]
     runs-on: ubuntu-latest
     steps:
       # We need to check out the code under test first in order to use local actions
@@ -48,8 +47,8 @@ jobs:
       - name: Provision Azimuth
         uses: ./.github/actions/provision
 
-      # - name: Run Azimuth tests
-      #   uses: ./.github/actions/test
+      - name: Run Azimuth tests
+        uses: ./.github/actions/test
 
       - name: Destroy Azimuth
         uses: ./.github/actions/destroy
@@ -58,64 +57,64 @@ jobs:
   # Tests an Azimuth upgrade from the current latest release
   # Currently, this just tests the Azimuth upgrade itself with no appliances
   # TODO(mkjpryor) add appliance provisioning and verification before and after upgrade
-  # test_azimuth_upgrade:
-  #   # needs: [test_clean_ha]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get latest tag
-  #       id: latest-tag
-  #       run: |
-  #         set -eo pipefail
-  #         TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
-  #         echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+  test_azimuth_upgrade:
+    needs: [test_clean_ha]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest tag
+        id: latest-tag
+        run: |
+          set -eo pipefail
+          TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
+          echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-  #     - name: Checkout latest tag
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ steps.latest-tag.outputs.tag-name }}
+      - name: Checkout latest tag
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
 
-  #     # We want to use the actions as defined in the code under test
-  #     # So check them out separately
-  #     - name: Checkout code under test into .actions directory
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: .actions
+      # We want to use the actions as defined in the code under test
+      # So check them out separately
+      - name: Checkout code under test into .actions directory
+        uses: actions/checkout@v3
+        with:
+          path: .actions
 
-  #     - name: Set up Azimuth environment
-  #       uses: ./.actions/.github/actions/setup
-  #       with:
-  #         os-clouds: ${{ secrets.CLOUD }}
-  #         repository: ${{ github.repository }}
-  #         ref: ${{ steps.latest-tag.outputs.tag-name }}
-  #         config-environment: ci-ha
-  #         environment-prefix: ci-az-upgrade
+      - name: Set up Azimuth environment
+        uses: ./.actions/.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          config-environment: ci-ha
+          environment-prefix: ci-az-upgrade
 
-  #     - name: Provision Azimuth
-  #       uses: ./.actions/.github/actions/provision
+      - name: Provision Azimuth
+        uses: ./.actions/.github/actions/provision
 
-  #     - name: Checkout code under test
-  #       uses: actions/checkout@v3
-  #       with:
-  #         # Make sure not to remove working directories
-  #         clean: false
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+        with:
+          # Make sure not to remove working directories
+          clean: false
 
-  #     - name: Install updated Python dependencies
-  #       run: |
-  #         set -e
-  #         source ci.env
-  #         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-  #         python -m pip install -r requirements.txt
+      - name: Install updated Python dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          python -m pip install -r requirements.txt
 
-  #     - name: Upgrade Ansible dependencies
-  #       run: |
-  #         set -e
-  #         source ci.env
-  #         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-  #         ansible-galaxy install -f -r requirements.yml
+      - name: Upgrade Ansible dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-galaxy install -f -r requirements.yml
 
-  #     - name: Provision Azimuth
-  #       uses: ./.actions/.github/actions/provision
+      - name: Upgrade Azimuth
+        uses: ./.actions/.github/actions/provision
 
-  #     - name: Destroy Azimuth
-  #       uses: ./.actions/.github/actions/destroy
-  #       if: ${{ always() }}
+      - name: Destroy Azimuth
+        uses: ./.actions/.github/actions/destroy
+        if: ${{ always() }}
