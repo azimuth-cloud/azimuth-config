@@ -81,6 +81,8 @@ jobs:
         with:
           ref: ${{ steps.latest-tag.outputs.tag-name }}
 
+      - run: tree -a
+
       - name: Set up Azimuth environment
         uses: ./.actions/.github/actions/setup
         with:
