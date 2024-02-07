@@ -18,7 +18,6 @@ jobs:
   # Until that is implemented, the only other viable option is a busy wait
   wait_in_queue:
     needs: [fail_on_remote]
-    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: Wait for an available slot
