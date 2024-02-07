@@ -89,17 +89,22 @@ jobs:
       - name: Checkout code under test
         uses: actions/checkout@v3
         with:
-          # Make sure not to remove working directories, especially Terraform state!
+          # Make sure not to remove working directories
           clean: false
 
-      - name: Reconfigure Azimuth environment
-        uses: ./.github/actions/setup
-        with:
-          os-clouds: ${{ secrets.CLOUD }}
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
-          config-environment: ci-ha
-          environment-prefix: ci-az-upgrade
+      - name: Install updated Python dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          python -m pip install -r requirements.txt
+
+      - name: Upgrade Ansible dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-galaxy install -f -r requirements.yml
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
