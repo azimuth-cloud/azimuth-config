@@ -9,4 +9,17 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml
+        ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml -e force_destroy=true
+      if: ${{ always() }}
+
+    - name: Release ingress floating IP
+      shell: bash
+      run: |
+        set -eo pipefail
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        FIP_ID="$(openstack floating ip list --tags "$AZIMUTH_ENVIRONMENT" -f json | jq -r '.[0].ID // ""')"
+        [ -n "$FIP_ID" ] && openstack floating ip delete $FIP_ID
+      env:
+        INGRESS_IP: ${{ steps.ingress-ip.outputs.ip-address }}
+      if: ${{ always() }}
