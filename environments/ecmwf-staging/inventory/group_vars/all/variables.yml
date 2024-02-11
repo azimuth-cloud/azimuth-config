@@ -1,0 +1,183 @@
+#####
+# Configuration for the seed node (HA) or single node
+#####
+clusterapi_openstack_version: v0.7.3
+
+# The ID of an existing network to create the node on
+#infra_network_id: "<internal network id>"
+# OR
+# The CIDR of the subnet that should be created
+infra_network_cidr: "192.168.0.0/24"
+# The ID of the external network to connect to via a router
+infra_external_network_id: cd0f63f2-f3f8-4c14-a688-4c5b9f4bed76
+
+# The fixed floating IP to associate with the machine
+# This IP must be pre-allocated to the project
+# For a single node deployment, this IP should have the wildcard ingress domain assigned to it
+infra_fixed_floatingip: "136.156.158.238"
+# OR
+# The name of the floating IP pool to allocate a floating IP from
+#infra_floatingip_pool: "<floating ip pool>"
+# OR
+# The ID of a provisioning network that will be used to access the seed node
+#infra_provisioning_network_id: a323e69c-d58d-4ca6-84e6-2ef9c965e865
+
+# The image id of an Ubuntu 20.04 image to use for the node
+#   N.B. This is populated automatically using community images by default
+# infra_image_id: "<image id>"
+
+# The id of the flavor to use for the node
+# For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
+# For a single node deployment, >= 16GB RAM is recommended
+infra_flavor_id: eff1de6b-81ba-4f87-a22f-f581b23c8274
+
+# The size in GB for the data volume
+# This will hold all cluster data, including Kubernetes resources, and also PVC data
+infra_data_volume_size: 30
+
+#####
+# Configuration for the HA cluster
+#####
+
+# The Kubernetes version that will be used for the HA cluster
+#   N.B. This is populated automatically using community images by default
+# capi_cluster_kubernetes_version: 1.23.8
+# The ID of the image that will be used for the nodes of the HA cluster
+#   N.B. This is populated automatically using community images by default
+# capi_cluster_machine_image_id: "<image id>"
+# The name of the flavor to use for control plane nodes
+capi_cluster_control_plane_flavor: 8cpu-8gbmem-30gbdisk
+# The name of the flavor to use for worker nodes
+capi_cluster_worker_flavor: 16cpu-16gbmem-30gbdisk
+capi_cluster_control_plane_count: 1
+# The number of worker nodes
+capi_cluster_worker_count: 3
+# The fixed floating IP to associate with the load balancer for the ingress controller
+# This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
+capi_cluster_addons_ingress_load_balancer_ip: "136.156.158.242"
+capi_cluster_root_volume_size: 50
+capi_cluster_root_volume_type: "8794e72a-d2c1-418b-a408-a5f5dc633205"
+capi_cluster_apiserver_floating_ip: true
+
+#####
+# Ingress configuration
+#####
+# The base domain to use for ingress resources
+ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
+
+# Indicates if cert-manager should be enabled
+# Currently, TLS is enabled for ingress iff cert-manager is enabled
+certmanager_enabled: yes
+
+# Indicates if Harbor should be enabled to provide pull-through caches
+harbor_enabled: no
+
+#azimuth_apps_enabled: no
+zenith_sshd_service_load_balancer_ip: "136.156.158.248"
+
+#####
+# Azimuth configuration
+#####
+
+azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
+
+# Indicates if the Zenith app proxy should be enabled
+azimuth_apps_enabled: yes
+# Indicates if Kubernetes support should be enabled
+azimuth_kubernetes_enabled: yes
+# Indicates if Cluster-as-a-Service (CaaS) should be enabled
+#azimuth_clusters_enabled: yes
+
+# The name of the current cloud
+azimuth_current_cloud_name: ecmwf
+# The label for the current cloud
+azimuth_current_cloud_label: ECMWF
+
+
+
+azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: amphora
+capi_cluster_addons_openstack_loadbalancer_provider: amphora
+#####
+# Configuration of authenticators / authentication methods
+#####
+# Whether the password authenticator should be enabled (enabled by default)
+azimuth_authenticator_password_enabled: true
+# The label for the password authenticator
+azimuth_authenticator_password_label: "Username + Password"
+
+# Whether the appcred authenticator should be enabled (not enabled by default)
+azimuth_authenticator_appcred_enabled: false
+# The label for the appcred authenticator
+azimuth_authenticator_appcred_label: "Application Credential"
+
+# Whether the federated authenticator should be enabled (not enabled by default)
+azimuth_authenticator_federated_enabled: false
+# The label for the federated authenticator
+azimuth_authenticator_federated_label: "Federated"
+# The provider for the federated authenticator
+# This should correspond to the Keystone federation URL, e.g. <auth url>/auth/OS-FEDERATION/websso/<provider>
+azimuth_authenticator_federated_provider: oidc
+
+#####
+# Configuration for CaaS appliances
+#####
+azimuth_clusters_enabled: no
+# If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
+# is the id of a Rocky 8 image that will be used for Slurm clusters
+#   N.B. This is populated automatically using community images by default
+# azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
+# The name of the flavor to use for login nodes
+#azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
+# The name of the flavor to use for control nodes
+#azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
+
+# The ID of the desktop or webconsole image to use for the workstation appliance
+# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
+#   N.B. This is populated automatically using community images by default
+# azimuth_caas_stackhpc_workstation_image: "<image id>"
+
+# The ID of the repo2docker image to use for the repo2docker appliance
+# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
+#   N.B. This is populated automatically using community images by default
+# azimuth_caas_stackhpc_repo2docker_image: "<image id>"
+
+#####
+# Terraform State
+####
+
+terraform_backend_type: s3
+
+# The endpoint of the object store
+terraform_s3_endpoint: https://object-store.os-api.tav1.ecmwf.int:8883/
+
+# The region to use
+# Ceph does not normally use the region, but Terraform requires it
+terraform_s3_region: not-used-but-required
+terraform_s3_skip_region_validation: "true"
+
+# The bucket to put Terraform states in
+# NOTE: This bucket must already exist - it will not be created by Terraform
+terraform_s3_bucket: azimuth-staging-state
+
+# The key to use for the state for the environment
+#
+# Using the azimuth_environment variable in the key means that the state
+# for each concrete environment is stored in a separate key, even if this
+# configuration is in a shared mixin environment
+terraform_s3_key: "{{ azimuth_environment }}.tfstate"
+
+# The STS API doesn't exist for Ceph
+terraform_s3_skip_credentials_validation: "true"
+
+# Tell Terraform to use path-style URLs, e.g. <host>/<bucket>, instead of
+# subdomain-style URLs, e.g. <bucket>.<host>
+terraform_s3_force_path_style: "true"
+
+terraform_backend_config:
+  endpoint: "{{ terraform_s3_endpoint }}"
+  region: "{{ terraform_s3_region }}"
+  bucket: "{{ terraform_s3_bucket }}"
+  key: "{{ terraform_s3_key }}"
+  skip_credentials_validation: "{{ terraform_s3_skip_credentials_validation }}"
+  force_path_style: "{{ terraform_s3_force_path_style }}"
+  skip_region_validation: "{{ terraform_s3_skip_region_validation }}" 
