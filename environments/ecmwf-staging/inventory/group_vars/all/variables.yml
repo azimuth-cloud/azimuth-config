@@ -95,8 +95,7 @@ azimuth_current_cloud_label: ECMWF
 
 
 
-azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: amphora
-capi_cluster_apiserver_loadbalancer_provider: amphora
+openstack_loadbalancer_provider: amphora
 #####
 # Configuration of authenticators / authentication methods
 #####
