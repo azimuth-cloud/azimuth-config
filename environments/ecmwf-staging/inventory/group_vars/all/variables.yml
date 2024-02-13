@@ -101,7 +101,7 @@ azimuth_current_cloud_label: ECMWF
 
 
 
-openstack_loadbalancer_provider: amphora
+openstack_loadbalancer_provider: ovn
 #####
 # Configuration of authenticators / authentication methods
 #####
