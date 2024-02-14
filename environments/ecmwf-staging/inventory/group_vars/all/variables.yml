@@ -4,10 +4,10 @@
 clusterapi_openstack_version: v0.7.3
 
 # The ID of an existing network to create the node on
-#infra_network_id: "<internal network id>"
+infra_network_id: "4a65f080-9af6-41ce-9670-d7a3498bc5cf"
 # OR
 # The CIDR of the subnet that should be created
-infra_network_cidr: "192.168.0.0/24"
+#infra_network_cidr: "192.168.0.0/24"
 # The ID of the external network to connect to via a router
 infra_external_network_id: cd0f63f2-f3f8-4c14-a688-4c5b9f4bed76
 
