@@ -90,7 +90,7 @@ certmanager_enabled: yes
 # Indicates if Harbor should be enabled to provide pull-through caches
 harbor_enabled: no
 
-#azimuth_apps_enabled: no
+azimuth_apps_enabled: no
 zenith_sshd_service_load_balancer_ip: "136.156.158.248"
 
 #####
