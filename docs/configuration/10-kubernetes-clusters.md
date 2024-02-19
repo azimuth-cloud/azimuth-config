@@ -43,6 +43,36 @@ set:
 azimuth_kubernetes_enabled: no
 ```
 
+### Tenancy-based Access Controls
+
+Alternatively, Kubernetes support can be restricted on a per-tenancy basis using the following variables:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# List of allowed tenancy IDs
+azimuth_capi_operator_cluster_templates_tenancy_allow_list:
+# List of denied tenancy IDs
+azimuth_capi_operator_cluster_templates_tenancy_deny_list:
+# Regex pattern to allow tenancies by name
+azimuth_capi_operator_cluster_templates_tenancy_allow_regex:
+# Regex pattern to block tenancies by name
+azimuth_capi_operator_cluster_templates_tenancy_deny_regex:
+```
+
+In the event that a given tenancy matches more than one of the above restrictions,
+the following priorities are applied:
+ - IDs are prioritized over Regex pattern matches (e.g. if a tenancy ID is 
+present in the 'deny' list *and* the tenancies name matches an 'allow' pattern then access is *denied*)
+- Deny is prioritized over allow (e.g. if a tenancy ID is present in both 'allow' and 'deny' lists then
+access is *denied*)
+- The presence of either (or both) of the 'allow' restrictions are defined then a deny-by-default policy is enacted so that
+any tenancies not matching the one of the 'allow' specifications are denied
+
+!!! info
+
+    Restricting access to Kubernetes cluster templates automatically applies the same
+    access restrictions to all [Kubernetes Apps](./11-kubernetes-apps.md).
+
+
 ## Kubernetes configuration
 
 Kubernetes configuration is very similar for both the

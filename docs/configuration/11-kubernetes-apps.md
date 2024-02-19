@@ -69,6 +69,25 @@ azimuth_capi_operator_app_templates_daskhub_enabled: false
 azimuth_capi_operator_app_templates_kubeflow_enabled: false
 ```
 
+### Tenancy-based Access Controls
+
+Each app can also be restricted to specific tenancies by setting:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# List of allowed tenancy IDs
+azimuth_capi_operator_app_templates_{name}_tenancy_allow_list:
+# List of denied tenancy IDs
+azimuth_capi_operator_app_templates_{name}_tenancy_deny_list:
+# Regex pattern to allow tenancies by name
+azimuth_capi_operator_app_templates_{name}_tenancy_allow_regex:
+# Regex pattern to block tenancies by name
+azimuth_capi_operator_app_templates_{name}_tenancy_deny_regex:
+```
+
+In the case where a tenancy matches multiple restrictions, the same priorities listed in the corresponding
+Kubernetes cluster configuration [section](./10-kubernetes-clusters.md#tenancy-based-access-controls)
+are applicable.
+
 ## Custom app templates
 
 If you have Helm charts that you want to make available as apps, you can define them as follows:

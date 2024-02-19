@@ -103,6 +103,25 @@ To disable the repo2docker appliance, use the following:
 azimuth_caas_stackhpc_repo2docker_enabled: no
 ```
 
+### Tenancy-based Access Controls
+
+Each of the StackHPC reference appliances can also be restricted to specific tenancies by setting:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# List of allowed tenancy IDs
+azimuth_caas_stackhpc_{name}_tenancy_allow_list:
+# List of denied tenancy IDs
+azimuth_caas_stackhpc_{name}_tenancy_deny_list:
+# Regex pattern to allow tenancies by name
+azimuth_caas_stackhpc_{name}_tenancy_allow_regex:
+# Regex pattern to block tenancies by name
+azimuth_caas_stackhpc_{name}_tenancy_deny_regex:
+```
+
+In the case where a tenancy matches multiple restrictions, the same priorities listed in the corresponding
+Kubernetes cluster configuration [section](./10-kubernetes-clusters.md#tenancy-based-access-controls)
+are applicable.
+
 ## Custom appliances
 
 It is possible to make custom appliances available in the Azimuth interface for users to deploy.
