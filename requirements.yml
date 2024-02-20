@@ -1,6 +1,8 @@
 ---
 
 collections:
+  - name: ansible.utils
+    version: 3.1.0
   - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
     type: git
     version: 0.4.2
