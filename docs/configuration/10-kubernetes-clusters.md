@@ -72,6 +72,9 @@ any tenancies not matching the one of the 'allow' specifications are denied
     Restricting access to Kubernetes cluster templates automatically applies the same
     access restrictions to all [Kubernetes Apps](./11-kubernetes-apps.md).
 
+Any restrictions which are applied to tenancies where clusters are already deployed will not delete existing clusters.
+Instead, new cluster creation will be disabled and the 'update' and 'upgrade' functionality on existing clusters will also
+be disabled so that only the 'delete' operation remains available.
 
 ## Kubernetes configuration
 
