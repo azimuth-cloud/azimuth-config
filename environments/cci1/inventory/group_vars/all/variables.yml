@@ -38,13 +38,27 @@ infra_flavor_id: 5c433e64-c92c-420f-8f49-85f1fb15065d
 # This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
 capi_cluster_addons_ingress_load_balancer_ip: "136.156.131.33"
 
-capi_cluster_root_volume_type: "1dd92f95-bad0-4043-af51-e06b2c799442"
+# Storage settings for the management cluster
+capi_cluster_root_volume_type: "7f400edd-3253-4e11-9c4f-170b4a65db88"
+
+# Storage settings for tenant clusters
+azimuth_capi_operator_capi_helm_root_volume_type: "7f400edd-3253-4e11-9c4f-170b4a65db88"
+
+# Seperate etcd volume config 
+
+# Management Cluster
+# Default volume type for the etcd block device if 'Volume' type is used in management clusters
+capi_cluster_etcd_blockdevice_volume_type: "1dd92f95-bad0-4043-af51-e06b2c799442" # SSD 
+
+# Tenant Clusters
+# Default volume type for the etcd block device if 'Volume' type is used
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type: "1dd92f95-bad0-4043-af51-e06b2c799442" # SSD 
 
 #####
 # Ingress configuration
 #####
 # The base domain to use for ingress resources
-ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
+ingress_base_domain: "azimuth.compute.cci1.ecmwf.int"
 
 zenith_sshd_service_load_balancer_ip: "136.156.131.209"
 
@@ -67,3 +81,6 @@ terraform_s3_endpoint: https://object-store.os-api.cci1.ecmwf.int/
 # The bucket to put Terraform states in
 # NOTE: This bucket must already exist - it will not be created by Terraform
 terraform_s3_bucket: az-terraform-state
+
+# Valero backup & recovery
+velero_s3_url: https://object-store.os-api.cci1.ecmwf.int/
