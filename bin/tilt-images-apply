@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import contextlib
 import json
 import os
 import pathlib
-import re
 import subprocess
 import sys
 
@@ -61,6 +59,22 @@ if not revision_file.exists():
 exec_cmd(["helm", "dependency", "update", os.environ["TILT_CHART_PATH"]])
 
 
+# Get the current user values
+helm_get_values_proc = exec_cmd(
+    [
+        "helm",
+        "get",
+        "values",
+        os.environ["TILT_RELEASE_NAME"],
+        "--namespace",
+        os.environ["TILT_RELEASE_NAMESPACE"],
+    ],
+    stdout = subprocess.PIPE
+)
+current_values = yaml.safe_load(helm_get_values_proc.stdout)
+current_values.pop("USER-SUPPLIED VALUES")
+
+
 # Build and run the Helm upgrade command
 # We reuse the values from the previous installation, but overwrite any images
 # specified in the Tiltfile
@@ -71,7 +85,8 @@ helm_upgrade_command = [
     os.environ["TILT_CHART_PATH"],
     "--namespace",
     os.environ["TILT_RELEASE_NAMESPACE"],
-    "--reuse-values",
+    "--values",
+    "-",
 ]
 
 idx = 0
@@ -91,7 +106,7 @@ while True:
         ])
     idx = idx + 1
 
-exec_cmd(helm_upgrade_command)
+exec_cmd(helm_upgrade_command, input = json.dumps(current_values).encode())
 
 
 # Finally, print the currently installed manifest so Tilt knows about the resources
