@@ -1,3 +1,8 @@
+# TEMP
+# pinning k8s versions through upgrade as we are way behind
+capi_cluster_kubernetes_version: "{{ community_images_azimuth_images_manifest['kubernetes-1-27-jammy'].kubernetes_version }}"
+k3s_version: v1.27.10+k3s1
+
 #####
 # Configuration for the seed node (HA) or single node
 #####
