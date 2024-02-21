@@ -1,0 +1,86 @@
+#####
+# Configuration for the seed node (HA) or single node
+#####
+
+# The ID of an existing network to create the node on
+infra_network_id: "706bf3eb-6a28-4df0-bffa-6be2ea67c9af"
+# OR
+# The CIDR of the subnet that should be created
+#infra_network_cidr: "192.168.0.0/24"
+# The ID of the external network to connect to via a router
+infra_external_network_id: cd0f63f2-f3f8-4c14-a688-4c5b9f4bed76
+
+# The fixed floating IP to associate with the machine
+# This IP must be pre-allocated to the project
+# For a single node deployment, this IP should have the wildcard ingress domain assigned to it
+infra_fixed_floatingip: "136.156.158.238"
+# OR
+# The name of the floating IP pool to allocate a floating IP from
+#infra_floatingip_pool: "<floating ip pool>"
+# OR
+# The ID of a provisioning network that will be used to access the seed node
+#infra_provisioning_network_id: a323e69c-d58d-4ca6-84e6-2ef9c965e865
+
+# The image id of an Ubuntu 20.04 image to use for the node
+#   N.B. This is populated automatically using community images by default
+# infra_image_id: "<image id>"
+
+# The id of the flavor to use for the node
+# For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
+# For a single node deployment, >= 16GB RAM is recommended
+infra_flavor_id: eff1de6b-81ba-4f87-a22f-f581b23c8274
+
+#####
+# Configuration for the HA cluster
+#####
+
+# The fixed floating IP to associate with the load balancer for the ingress controller
+# This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
+capi_cluster_addons_ingress_load_balancer_ip: "136.156.158.242"
+
+capi_cluster_root_volume_type: "8794e72a-d2c1-418b-a408-a5f5dc633205"
+
+## Version overrides 
+# to match the existing prod cluster
+clusterapi_addon_provider_chart_version: 0.1.0-dev.0.main.26
+capi_cluster_chart_version: 0.1.1-dev.0.main.221
+certmanager_chart_version: v1.9.1
+
+# Pin k8s image version for HA cluster
+community_images_default:
+  kube_1_27:
+    name: "{{ community_images_azimuth_images_manifest['kubernetes-1-26-jammy'].name }}"
+    source_url: "{{ community_images_azimuth_images_manifest['kubernetes-1-26-jammy'].url }}"
+    checksum: "{{ community_images_azimuth_images_manifest['kubernetes-1-26-jammy'].checksum }}"
+    source_disk_format: "qcow2"
+    container_format: "bare"
+    kubernetes_version: "{{ community_images_azimuth_images_manifest['kubernetes-1-26-jammy'].kubernetes_version }}"
+community_images_default_visibility: private
+community_images_update_existing_visibility: false
+
+#####
+# Ingress configuration
+#####
+# The base domain to use for ingress resources
+ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
+
+zenith_sshd_service_load_balancer_ip: "136.156.158.248"
+
+#####
+# Azimuth configuration
+#####
+
+azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
+
+openstack_loadbalancer_provider: ovn
+
+#####
+# Terraform State
+####
+
+# The endpoint of the object store
+terraform_s3_endpoint: https://object-store.os-api.tav1.ecmwf.int:8883/
+
+# The bucket to put Terraform states in
+# NOTE: This bucket must already exist - it will not be created by Terraform
+terraform_s3_bucket: azimuth-staging-state
