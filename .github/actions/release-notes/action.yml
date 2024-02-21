@@ -1,0 +1,23 @@
+name: Generate release notes
+description: >-
+  Generates consolidated release notes and uploads them to the target release.
+inputs:
+  token:
+    description: The GitHub token for interacting with the API.
+    default: ${{ github.token }}
+  repository:
+    description: The GitHub repository.
+    default: ${{ github.repository }}
+  tag:
+    description: The tag to update release notes for.
+    # Assume we are running under a release event
+    default: ${{ github.event.release.tag_name }}
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - --token
+    - ${{ inputs.token }}
+    - --repo
+    - ${{ inputs.repository }}
+    - ${{ inputs.tag }}

@@ -1,0 +1,98 @@
+name: Full test suite
+
+on:
+  # Allow manual execution on any branch
+  workflow_dispatch:
+
+jobs:
+  # Tests a clean HA deployment + all appliances
+  test_clean_ha:
+    runs-on: ubuntu-latest
+    steps:
+      # We need to check out the code under test first in order to use local actions
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          config-environment: ci-ha
+          environment-prefix: ci-ha
+
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
+
+      - name: Run Azimuth tests
+        uses: ./.github/actions/test
+
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}
+
+  # Tests an Azimuth upgrade from the current latest release
+  # Currently, this just tests the Azimuth upgrade itself with no appliances
+  # TODO(mkjpryor) add appliance provisioning and verification before and after upgrade
+  test_azimuth_upgrade:
+    needs: [test_clean_ha]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest tag
+        id: latest-tag
+        run: |
+          set -eo pipefail
+          TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
+          echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout latest tag
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
+
+      # We want to use the actions as defined in the code under test
+      # So check them out separately
+      - name: Checkout code under test into .actions directory
+        uses: actions/checkout@v3
+        with:
+          path: .actions
+
+      - name: Set up Azimuth environment
+        uses: ./.actions/.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.CLOUD }}
+          repository: ${{ github.repository }}
+          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          config-environment: ci-ha
+          environment-prefix: ci-az-upgrade
+
+      - name: Provision Azimuth
+        uses: ./.actions/.github/actions/provision
+
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+        with:
+          # Make sure not to remove working directories
+          clean: false
+
+      - name: Install updated Python dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          python -m pip install -r requirements.txt
+
+      - name: Upgrade Ansible dependencies
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-galaxy install -f -r requirements.yml
+
+      - name: Upgrade Azimuth
+        uses: ./.actions/.github/actions/provision
+
+      - name: Destroy Azimuth
+        uses: ./.actions/.github/actions/destroy
+        if: ${{ always() }}

@@ -8,7 +8,7 @@ inputs:
   ref:
     description: The ref to use for the Azimuth configuration.
     required: true
-    default: main
+    default: devel
   config-environment:
     description: The config environment to use.
     required: true
@@ -22,7 +22,7 @@ inputs:
     description: >
       YAML-formatted extra vars for the deployment, if required.
     required: true
-    default: "{}"
+    default: ""
   os-clouds:
     description: The contents of the clouds.yaml to use.
     required: true
@@ -36,6 +36,11 @@ inputs:
       separated by a hyphen.
     required: true
     default: ci
+  allocate-ingress-ip:
+    description: >
+      Indicates whether a floating IP should be allocated for ingress.
+    required: true
+    default: "yes"
 runs:
   using: composite
   steps:
@@ -44,6 +49,7 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
+        clean: false
 
     - name: Write clouds.yaml
       shell: bash
@@ -79,7 +85,10 @@ runs:
       shell: bash
       run: cat > extra-vars.yml <<< "$EXTRA_VARS"
       env:
-        EXTRA_VARS: ${{ inputs.extra-vars }}
+        # Use a dummy variable so that Ansible treats the file as YAML even if the input is empty
+        EXTRA_VARS: |
+          this_variable_is_never_used: ever
+          ${{ inputs.extra-vars }}
 
     - name: Ensure Python 3.9
       uses: actions/setup-python@v4
@@ -98,3 +107,33 @@ runs:
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-galaxy install -f -r requirements.yml
+
+    - name: Allocate floating IP for ingress
+      shell: bash
+      run: |
+        set -eo pipefail
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ansible_variable() {
+          ansible -m debug -a "var=$1" -e @extra-vars.yml all |
+            jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+        }
+        INSTALL_MODE="$(ansible_variable install_mode)"
+        EXTNET_ID="$(ansible_variable infra_external_network_id)"
+        IP_ADDRESS="$(
+          openstack floating ip create $EXTNET_ID \
+            --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
+            --tag "$AZIMUTH_ENVIRONMENT" \
+            --format value \
+            --column floating_ip_address
+        )"
+        VAR_NAME="$([ "$INSTALL_MODE" = "ha" ] && echo "capi_cluster_addons_ingress_load_balancer_ip" || echo "infra_fixed_floatingip")"
+        echo "$VAR_NAME: $IP_ADDRESS" >> extra-vars.yml
+      env:
+        ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
+        ANSIBLE_STDOUT_CALLBACK: json
+      if: ${{ inputs.allocate-ingress-ip == 'yes' }}
+
+    - name: Output extra-vars.yml for debugging
+      shell: bash
+      run: cat extra-vars.yml

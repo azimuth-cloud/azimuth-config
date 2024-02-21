@@ -70,6 +70,7 @@ azimuth_openstack_verify_ssl: false
 azimuth_current_cloud_name: demo
 
 # Use secrets that are not really secret for ease
+admin_dashboard_ingress_basic_auth_password: admin
 harbor_admin_password: admin
 harbor_secret_key: abcdefghijklmnop
 keycloak_admin_password: admin

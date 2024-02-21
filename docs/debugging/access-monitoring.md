@@ -1,34 +1,36 @@
 # Accessing the monitoring
 
-The monitoring is currently only exposed inside the cluster, so it can only be accessed using
-[kubectl port-forward](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/)
-from the K3S node. However because the API is not accessible to the
-internet, an
-[SSH local forward](https://www.ssh.com/academy/ssh/tunneling/example#local-forwarding) must
-be used from your local machine to the K3S node as well.
+As discussed in [Monitoring and alerting](../configuration/13-monitoring.md), the monitoring
+dashboards are exposed as subdomains under `ingress_base_domain` and protected by a username
+and password.
 
-To simplify this process, the `azimuth-config` repository contains a utility script - 
-[port-forward](https://github.com/stackhpc/azimuth-config/tree/main/bin/port-forward) -
-that can be used to set up the double port-forward for particular cluster services.
+## Grafana
 
-To view monitoring dashboards in Grafana, use the following command to expose the Grafana
-interface on a local port:
+Grafana is accessed as `grafana.<ingress base domain>`, e.g. `grafana.azimuth.example.org`,
+and can be used to access various dashboards showing the health of the Azimuth installation
+and its underlying Kubernetes cluster. For example, there are dashboards for resource
+usage, network traffic, etcd, tenant Kubernetes and CaaS clusters, Zenith services,
+pod logs and systemd logs.
 
-```sh
-./bin/port-forward grafana 3000
-```
+## Prometheus
 
-This will make the Grafana interface available at <http://localhost:3000>. Log in with the default
-credentials - `admin/prom-operator` - to access the dashboards.
+Prometheus is accessed as `prometheus.<ingress base domain>`, and can be used to browse the
+configured alerts and see which are firing or pending. It can also be used to make ad-hoc
+queries of the metrics for the installation.
 
-In order to view firing alerts or configure silences, you can also access the Prometheus and
-Alertmanager interfaces using the same method:
+## Alertmanager
 
-```sh
-./bin/port-forward prometheus 9090
-./bin/port-forward alertmanager 9093
-```
+Alertmanager is accessed as `alertmanager.<ingress base domain>`, and can be used to manage
+the firing alerts and configure silences if required.
 
-These commands will expose the Prometheus and Alertmanager interfaces at <http://localhost:9090>
-and <http://localhost:9093> respectively. Both these interfaces are unauthenticated, although
-you must have sufficient access to set up the port forward via the K3S node.
+## Kubernetes dashboard
+
+The Kubernetes dashboard is accessed as `kubernetes.<ingress base domain>`, and can be used to
+browse the current state of Kubernetes resources in the cluster. This includes streaming the
+logs of current pods.
+
+## Helm dashboard
+
+The Helm dashboard is accessed as `helm.<ingress base domain>`, and can be used to browse the
+current state of the Helm releases on the cluster. The dashboard does also attempt to infer
+the health of the resources deployed by Helm, however this does sometimes report false-positives.

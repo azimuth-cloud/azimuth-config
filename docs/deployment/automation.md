@@ -29,7 +29,7 @@ environments, although deployments to production typically include a manual appr
 ## GitLab CI/CD
 
 `azimuth-config` provides a
-[sample configuration](https://github.com/stackhpc/azimuth-config/blob/main/.gitlab-ci.yml.sample)
+[sample configuration](https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
 for use with [GitLab CI/CD](https://docs.gitlab.com/ee/ci/) that demonstrates how to
 set up continuous delivery for an Azimuth configuration repository.
 
@@ -212,3 +212,15 @@ Unfortunately, this is a paid feature and the only real alternative is to use a
     If you do not want to pay for Project access tokens, then you could register a
     separate service account that only belongs to your configuration project and
     issue a personal access token from that account instead.
+
+
+## GitHub CI/CD
+
+For site-specific configuration repositories hosted on GitHub, `azimuth-config` provides two sample workflows
+for automated deployments to a test or staging environment
+([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-staging.yml.sample))
+and manually-triggered deployment to a production environment 
+([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)).
+These can be used with [GitHub Actions](https://docs.github.com/en/actions) to mimic some of the GitLab
+functionality described above. Each sample file contains a top-level comment describing how to tailor these
+workflows to a site-specific configuration repository.
