@@ -3,7 +3,7 @@
 #####
 
 # The ID of an existing network to create the node on
-infra_network_id: "706bf3eb-6a28-4df0-bffa-6be2ea67c9af"
+infra_network_id: "2692933e-244f-4a3b-aa18-4daaf3383838"
 # OR
 # The CIDR of the subnet that should be created
 #infra_network_cidr: "192.168.0.0/24"
