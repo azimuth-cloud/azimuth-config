@@ -61,7 +61,7 @@ jobs:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
-          target-cloud: ${{ inputs.target-cloud || env.TARGET_CLOUD }}
+          target-cloud: ${{ env.TARGET_CLOUD }}
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
