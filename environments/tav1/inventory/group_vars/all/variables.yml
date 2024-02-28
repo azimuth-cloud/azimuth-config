@@ -83,3 +83,37 @@ terraform_s3_bucket: azimuth-staging-state
 
 # Valero backup & recovery
 velero_s3_url: https://object-store.os-api.tav1.ecmwf.int:8883/
+
+# Velero additional config
+velero_release_defaults:
+  configuration:
+    backupsEnabled: true
+    backupStorageLocation:
+      - name: default
+        default: true
+        provider: aws
+        bucket: "{{ velero_bucket_name }}"
+        credential:
+          name: "{{ velero_s3_creds_secret_name }}"
+          key: s3-creds
+        config:
+          region: required-but-not-used
+          s3ForcePathStyle: true
+          s3Url: "{{ velero_s3_url }}"
+
+    # Use CSI snapshotter instead
+    volumeSnapshotLocation: []
+
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: "{{ velero_s3_plugin_image_source }}:{{ velero_s3_plugin_image_version }}"
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
+    - name: velero-plugin-for-csi
+      image: "{{ velero_csi_plugin_image_source }}:{{ velero_csi_plugin_image_version }}"
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
