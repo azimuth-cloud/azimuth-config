@@ -107,7 +107,7 @@ runs:
     - name: Install Ansible dependencies
       shell: bash
       run: |
-        set -e
+        set -ex
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-galaxy install -f -r requirements.yml
