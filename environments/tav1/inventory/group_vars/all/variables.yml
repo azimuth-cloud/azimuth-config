@@ -87,4 +87,4 @@ velero_s3_url: https://object-store.os-api.tav1.ecmwf.int:8883/
 # Velero additional config
 velero_release_overrides:
   image:
-    tag: v1.11
+    tag: v1.12.1
