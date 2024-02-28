@@ -12,8 +12,22 @@ on:
       - reopened
     branches:
       - devel
-    paths-ignore:
-      - 'docs/**'
+    # Only run the tests when something changes that affects us
+    paths:
+      - .gitattributes
+      - .gitignore
+      - requirements.txt
+      - requirements.yml
+      - .github/actions/**
+      - .github/workflows/test-singlenode.yml
+      - bin/**
+      - "!bin/ci-exec"
+      - "!bin/create-merge-branch"
+      - "!bin/tilt-*"
+      - environments/base/**
+      - environments/singlenode/**
+      - environments/demo/**
+      - environments/ci/**
 
 jobs:
   # This job exists so that PRs from outside the main repo are rejected
