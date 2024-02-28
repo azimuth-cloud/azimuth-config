@@ -58,7 +58,7 @@ azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type: "faf12dcf-2b93-4e0
 # Ingress configuration
 #####
 # The base domain to use for ingress resources
-ingress_base_domain: "azimuth.tav1.ecmwf.int"
+ingress_base_domain: "azimuth.os-api.tav1.ecmwf.int"
 
 # Keycloak didn't like using a self-signed cert
 ingress_tls_enabled: false
