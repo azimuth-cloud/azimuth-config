@@ -17,11 +17,16 @@ AZIMUTH_CONFIG_ENVIRONMENT="$1"
 AZIMUTH_ENVIRONMENT="${2:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
 
 AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
-AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
 
-if [ ! -d "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Unrecognised config environment '$AZIMUTH_CONFIG_ENVIRONMENT'" >&2
-    return 1
+# Most environments should exist in a top-level "environments" directory, but CI
+# environments live under .github to avoid cluttering the main directory
+if [ -d "$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
+  AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
+elif [ -d "$AZIMUTH_CONFIG_ROOT/.github/environments/$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
+  AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/.github/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
+else
+  echo "Unrecognised config environment '$AZIMUTH_CONFIG_ENVIRONMENT'" >&2
+  return 1
 fi
 
 ANSIBLE_CONFIG="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/ansible.cfg"
