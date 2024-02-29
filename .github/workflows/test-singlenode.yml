@@ -3,6 +3,16 @@ name: Single node test
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    inputs:
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
   # Execute by default on pull requests to the devel branch
   pull_request:
     types:
@@ -48,9 +58,10 @@ jobs:
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
         with:
-          os-clouds: ${{ secrets.CLOUD }}
+          os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision

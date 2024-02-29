@@ -9,10 +9,18 @@ inputs:
     description: The ref to use for the Azimuth configuration.
     required: true
     default: devel
-  config-environment:
-    description: The config environment to use.
+  target-cloud:
+    description: |-
+      The name of the cloud to target.
+      This is used as both the name of the cloud with the clouds.yaml
+      and to determine the config environment to use.
+      Currently, arcus and leafcloud are supported.
     required: true
-    default: ci
+    default: arcus
+  install-mode:
+    description: The install mode to use. Either singlenode or ha.
+    required: true
+    default: singlenode
   azimuth-ops-version:
     description: >
       The azimuth-ops version to use. If not given, the default version is used.
@@ -26,21 +34,12 @@ inputs:
   os-clouds:
     description: The contents of the clouds.yaml to use.
     required: true
-  os-cloud-name:
-    description: The name of the cloud within the clouds.yaml to use.
-    required: true
-    default: openstack
   environment-prefix:
     description: >
       The environment prefix to use. The run ID will be appended to this,
       separated by a hyphen.
     required: true
     default: ci
-  allocate-ingress-ip:
-    description: >
-      Indicates whether a floating IP should be allocated for ingress.
-    required: true
-    default: "yes"
 runs:
   using: composite
   steps:
@@ -63,9 +62,9 @@ runs:
       run: cat > ./ci.env <<< "$CI_ENV"
       env:
         CI_ENV: |
-          export OS_CLOUD="${{ inputs.os-cloud-name }}"
+          export OS_CLOUD="${{ inputs.target-cloud }}"
           export OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
-          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.config-environment }}
+          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.target-cloud }}${{ inputs.install-mode == 'ha' && '-ha' || '' }}
           export AZIMUTH_ENVIRONMENT="${{ inputs.environment-prefix }}-${{ github.run_id }}"
           export ANSIBLE_FORCE_COLOR=true
 
@@ -120,19 +119,23 @@ runs:
         }
         INSTALL_MODE="$(ansible_variable install_mode)"
         EXTNET_ID="$(ansible_variable infra_external_network_id)"
-        IP_ADDRESS="$(
-          openstack floating ip create $EXTNET_ID \
-            --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
-            --tag "$AZIMUTH_ENVIRONMENT" \
-            --format value \
-            --column floating_ip_address
-        )"
+        IP_ADDRESS=
+        until \
+          IP_ADDRESS="$(
+            openstack floating ip create $EXTNET_ID \
+              --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
+              --tag "$AZIMUTH_ENVIRONMENT" \
+              --format value \
+              --column floating_ip_address
+          )"
+        do
+          sleep 30
+        done
         VAR_NAME="$([ "$INSTALL_MODE" = "ha" ] && echo "capi_cluster_addons_ingress_load_balancer_ip" || echo "infra_fixed_floatingip")"
         echo "$VAR_NAME: $IP_ADDRESS" >> extra-vars.yml
       env:
         ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
         ANSIBLE_STDOUT_CALLBACK: json
-      if: ${{ inputs.allocate-ingress-ip == 'yes' }}
 
     - name: Output extra-vars.yml for debugging
       shell: bash

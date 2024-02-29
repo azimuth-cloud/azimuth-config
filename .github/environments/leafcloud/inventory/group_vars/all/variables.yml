@@ -1,0 +1,48 @@
+# Use the external-facing network
+infra_external_network_id: "{{ lookup('pipe', 'openstack network show external -f value -c id') }}"
+
+# Use the pre-existing portal-internal network so that we don't need to steal a router
+infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f value -c id') }}"
+
+# The flavors only have 20GB root disks, which is not enough to unpack images for uploading
+# So we need to use a Cinder root volume
+# We also don't need the encypted volume type
+infra_root_volume_enabled: yes
+infra_root_volume_size: 40
+infra_root_volume_type: unencrypted
+# But we can decrease the size of the infra data volume
+infra_data_volume_size: 40
+infra_data_volume_type: unencrypted
+
+# Make sure we pick flavors that keep the costs down
+#   The flavor to use for the Azimuth AIO VM
+infra_flavor_id: en1.medium  # 2 vCPUs, 8GB RAM @ leaf site
+#   The flavor to use for the workstation test case
+generate_tests_caas_test_case_workstation_param_cluster_flavor: ec1.medium  # 2 vCPUs, 4GB RAM @ leaf site
+#   The flavor to use for the repo2docker test case
+generate_tests_caas_test_case_repo2docker_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the R-Studio test case
+generate_tests_caas_test_case_rstudio_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+#   The flavor to use for the nodes in the Slurm test case
+#   The flavors to use for the Slurm login and control nodes
+generate_tests_caas_test_case_slurm_param_login_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+generate_tests_caas_test_case_slurm_param_control_flavor: "{{ generate_tests_caas_test_case_slurm_param_login_flavor }}"
+generate_tests_caas_test_case_slurm_param_compute_flavor: "{{ generate_tests_caas_test_case_slurm_param_login_flavor }}"
+#   The flavors to use for the control plane and workers in Kubernetes test cases
+generate_tests_kubernetes_test_case_control_plane_size: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
+generate_tests_kubernetes_test_case_worker_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+#   The flavors to use for the control plane and workers in the Kubernetes apps test cases
+generate_tests_kubernetes_apps_k8s_control_plane_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
+generate_tests_kubernetes_apps_k8s_worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"
+
+# Don't use explicit AZs for Kubernetes nodes
+azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
+azimuth_capi_operator_capi_helm_worker_failure_domain: null
+
+# Leafcloud doesn't use the default 'nova' AZ for volumes
+azimuth_capi_operator_capi_helm_root_volume_availability_zone: europe-nl-ams1
+azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-ams1
+
+# Use the unencrypted volume type for Kubernetes volumes
+azimuth_capi_operator_capi_helm_root_volume_type: unencrypted
+azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
