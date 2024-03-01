@@ -138,7 +138,6 @@ capi_cluster_addons_openstack_loadbalancer_provider: ovn
 # This variable applies to load-balancers created for LoadBalancer services
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: ovn
 ```
-```
 
 !!! tip
 
@@ -171,30 +170,12 @@ available.
     Cluster API refers to "failure domains" which, in the OpenStack provider,
     correspond to availability zones (AZs).
 
-### Use specific availability zones
-
-To specify the availability zones for Kubernetes nodes, the following variables can be used:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-#### For the HA cluster ####
-
-# A list of failure domains that should be considered for control plane nodes
-capi_cluster_control_plane_failure_domains: [az1, az2]
-# The failure domain for worker nodes
-capi_cluster_worker_failure_domain: az1
-
-#### For tenant clusters ####
-
-azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
-azimuth_capi_operator_capi_helm_worker_failure_domain: az1
-```
-
 ### Ignore availability zones
 
 It is possible to configure Cluster API clusters in such a way that AZs are *not specified at all*
 for Kubernetes nodes. This allows other placement constraints such as
 [flavor traits](https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs-required-traits)
-and [host aggregate](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
+and [host aggregates](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
 be used, and a suitable AZ to be selected by OpenStack.
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
@@ -208,4 +189,27 @@ capi_cluster_worker_failure_domain: null
 #### For tenant clusters ####
 azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
 azimuth_capi_operator_capi_helm_worker_failure_domain: null
+```
+
+!!! tip
+
+    This is the recommended configuration for new deployments, unless you have a specific
+    need to use specific availability zones.
+
+### Use specific availability zones
+
+To use specific availability zones for Kubernetes nodes, the following variables can be used:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+#### For the HA cluster ####
+
+# A list of failure domains that should be considered for control plane nodes
+capi_cluster_control_plane_failure_domains: [az1, az2]
+# The failure domain for worker nodes
+capi_cluster_worker_failure_domain: az1
+
+#### For tenant clusters ####
+
+azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
+azimuth_capi_operator_capi_helm_worker_failure_domain: az1
 ```
