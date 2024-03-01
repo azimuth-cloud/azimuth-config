@@ -116,3 +116,15 @@ being deployed with a floating IP attached that routes traffic to the ingress co
 In order for traffic to be routed correctly for these domains, a **wildcard** DNS record must exist
 for `*.azimuth.example.org` that points at the floating IP of the load-balancer for the ingress
 controller. **Azimuth does not manage this DNS record.**
+
+## Transport Layer Security (TLS)
+
+In order to provide secure connections to users, Azimuth needs to be able to obtain a TLS
+certificate and private key for any of the subdomains under its wildcard domain.
+
+This can be achieved in two ways:
+
+  1. Using a pre-existing wildcard TLS certificate for all subdomains
+  2. Using an ACME server (e.g. Let's Encrypt) to issue certificates dynamically
+
+These approaches are discussed in more detail in the [Ingress section](../configuration/06-ingress.md).
