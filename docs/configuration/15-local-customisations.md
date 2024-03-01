@@ -81,3 +81,6 @@ azimuth_theme_custom_css: |
     ```
 
     This is because Azimuth has some Pulse-specific tweaks that you will need to keep.
+    For more details, see the
+    [CSS file](https://github.com/stackhpc/azimuth/blob/master/ui/assets/pulse-overrides.css),
+    which has comments indicating why these are necessary.
