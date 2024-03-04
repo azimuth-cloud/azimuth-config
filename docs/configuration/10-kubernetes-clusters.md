@@ -65,7 +65,7 @@ present in the 'deny' list *and* the tenancies name matches an 'allow' pattern t
 - Deny is prioritized over allow (e.g. if a tenancy ID is present in both 'allow' and 'deny' lists then
 access is *denied*)
 - The presence of either (or both) of the 'allow' restrictions triggers a deny-by-default policy meaning that
-any tenancies not matching the one of the 'allow' specifications are denied
+any tenancies not matching one of the 'allow' specifications are denied
 
 !!! info
 
