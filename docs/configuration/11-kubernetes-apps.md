@@ -56,17 +56,30 @@ Azimuth comes with the following app templates enabled by default:
   that scale out by creating pods on the underlying Kubernetes cluster. As with `jupyterhub`
   above, the notebook interface is exposed using Zenith.
 
+`binderhub`
+: A JupyterHub instance with [Binder](https://mybinder.readthedocs.io/en/latest/) integration.
+  BinderHub allows you to create custom computing environments that can be shared and used by
+  many remote users. As with `jupyterhub` above, the notebook interface is exposed using Zenith.
+
 `kubeflow`
 : Allows users to deploy the [Kubeflow](https://www.kubeflow.org/) machine learning toolkit
   on their clusters. Kubeflow provides an interface for easily accessing best-of-breed machine
   learning systems using Jupyter notebooks and [TensorFlow](https://www.tensorflow.org/).
+
+`huggingface-llm`
+: A generative AI chatbot service backed by a [HuggingFace](https://huggingface.co) large language
+  model. A convenient web interface is exposed via Zenith and the backend API is directly accessible
+  to other applications running on the same Kubernetes cluster for programmatic use cases. For
+  further details, see [this blog post](https://stackhpc.com/running-large-language-models-on-openstack.html).
 
 These can be disabled by setting the following variables:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_jupyterhub_enabled: false
 azimuth_capi_operator_app_templates_daskhub_enabled: false
+azimuth_capi_operator_app_templates_binderhub_enabled: false
 azimuth_capi_operator_app_templates_kubeflow_enabled: false
+azimuth_capi_operator_app_templates_huggingface_llm_enabled: false
 ```
 
 ## Custom app templates
