@@ -14,7 +14,7 @@ This will result in `azimuth-ops` using `portal.azimuth.example.org` for the Azi
 interface, and Zenith will use domains of the form `<random subdomain>.azimuth.example.org`
 for user-facing services. Other services deployed by Azimuth, such as
 [Harbor](./10-kubernetes-clusters.md#harbor-registry) and the
-[monitoring and alerting dashboards](./13-monitoring.md#accessing-web-interfaces) will
+[monitoring and alerting dashboards](./14-monitoring.md#accessing-web-interfaces) will
 also be allocated subdomains under this domain.
 
 ## Transport Layer Security (TLS)
@@ -39,7 +39,7 @@ you can use this to provide TLS for Azimuth and Zenith services.
 
     It is your responsibility to renew the wildcard certificate before it expires.
 
-    The [Azimuth monitoring](./13-monitoring.md) will produce alerts when the certificate
+    The [Azimuth monitoring](./14-monitoring.md) will produce alerts when the certificate
     is approaching its expiry date.
 
 To configure a pre-existing wildcard certificate for ingress, just create the following

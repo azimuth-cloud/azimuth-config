@@ -87,32 +87,41 @@ SR-IOV capable network:
 azimuth_capi_operator_cluster_templates_extra:
   # The index in the dict is the template name
   kube-1-24-2-multinet:
-    # A human-readable label for the template
-    label: v1.24.2 / multinet
-    # A brief description of the template
-    description: >-
-      Kubernetes 1.24.2 with HA control plane and high-performance networking.
-    # Values for the openstack-cluster Helm chart
-    values:
-      # Specify the image and version for the cluster
-      # These are the only required values
-      kubernetesVersion: 1.24.2
-      machineImageId: "{{ community_images_image_ids.kube_1_24 }}"
-      # Use the portal-internal network as the main cluster network
-      clusterNetworking:
-        internalNetwork:
-          networkFilter:
-            tags: portal-internal
-      # Configure an extra SR-IOV port on worker nodes using an SR-IOV capable network
-      nodeGroupDefaults:
-        machineNetworking:
-          ports:
-            - {}
-            - network:
-                tags: sriov-vlan
-              securityGroups: []
-              vnicType: direct
+    # Access control annotations
+    annotations: {}
+    # The cluster template specification
+    spec:
+      # A human-readable label for the template
+      label: v1.24.2 / multinet
+      # A brief description of the template
+      description: >-
+        Kubernetes 1.24.2 with HA control plane and high-performance networking.
+      # Values for the openstack-cluster Helm chart
+      values:
+        # Specify the image and version for the cluster
+        # These are the only required values
+        kubernetesVersion: 1.24.2
+        machineImageId: "{{ community_images_image_ids.kube_1_24 }}"
+        # Use the portal-internal network as the main cluster network
+        clusterNetworking:
+          internalNetwork:
+            networkFilter:
+              tags: portal-internal
+        # Configure an extra SR-IOV port on worker nodes using an SR-IOV capable network
+        nodeGroupDefaults:
+          machineNetworking:
+            ports:
+              - {}
+              - network:
+                  tags: sriov-vlan
+                securityGroups: []
+                vnicType: direct
 ```
+
+!!! info  "Access control"
+
+    See [Access control](./13-access-control.md) for more details on the access
+    control annotations.
 
 ## Harbor registry
 

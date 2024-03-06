@@ -109,7 +109,7 @@ Azimuth uses [Velero](https://velero.io/) to backup the data that is required to
 Azimuth instance in the event of a catastrophic failure. This functionality is not enabled by
 default, as it requires credentials for an S3 bucket in which the backups will be stored.
 
-It is recommended that [disaster recovery is enabled](./configuration/14-disaster-recovery.md) for
+It is recommended that [disaster recovery is enabled](./configuration/15-disaster-recovery.md) for
 a production deployment.
 
 ## Configuration

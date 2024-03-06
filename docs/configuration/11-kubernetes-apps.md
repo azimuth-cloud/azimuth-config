@@ -82,7 +82,7 @@ azimuth_capi_operator_app_templates_kubeflow_enabled: false
 azimuth_capi_operator_app_templates_huggingface_llm_enabled: false
 ```
 
-## Custom app templates
+## Custom app templates
 
 If you have Helm charts that you want to make available as apps, you can define them as follows:
 
@@ -90,13 +90,22 @@ If you have Helm charts that you want to make available as apps, you can define 
 azimuth_capi_operator_app_templates_extra:
   # The key is the name of the app template
   my-custom-app:
-    # This is the only required field, and determines the chart that is used
-    chart:
-      # The chart repository containing the chart
-      repo: https://my.company.org/helm-charts
-      # The name of the chart that the template is for
-      name: my-custom-app
+    # Access control annotations
+    annotations: {}
+    # The cluster template specification
+    spec:
+      # This is the only required field, and determines the chart that is used
+      chart:
+        # The chart repository containing the chart
+        repo: https://my.company.org/helm-charts
+        # The name of the chart that the template is for
+        name: my-custom-app
 ```
+
+!!! info  "Access control"
+
+    See [Access control](./13-access-control.md) for more details on the access
+    control annotations.
 
 By default, Azimuth will use the last 5 stable versions of the chart (i.e. versions without a
 prerelease part, see [semver.org](https://semver.org/)) and the `name`, `icon` and `description`

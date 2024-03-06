@@ -103,7 +103,7 @@ Ansible playbook executions as they are run by the CaaS operator. If the job is 
 as far as starting to run Ansible, then ARA is a much easier way to debug the Ansible
 for an appliance than wading through the Ansible logs from the job.
 
-As discussed in [Monitoring and alerting](../configuration/13-monitoring.md), the ARA
+As discussed in [Monitoring and alerting](../configuration/14-monitoring.md), the ARA
 web interface is exposed as `ara.<ingress base domain>`, e.g. `ara.azimuth.example.org`,
 and is protected by a username and password.
 
