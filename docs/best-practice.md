@@ -32,16 +32,16 @@ It is recommended to use a
 [feature branch workflow](./repository/index.md#making-changes-to-your-configuration)
 to make changes to your Azimuth configuration in a controlled way.
 
-## Terraform state
+## OpenTofu state
 
-Azimuth deployments use [Terraform](https://www.terraform.io/) to manage some parts of
-the infrastructure.
+Azimuth deployments use [OpenTofu](https://opentofu.org/), an open-source fork of
+[Terraform](https://www.terraform.io/), to manage some parts of the infrastructure.
 
-A [Terraform remote state store](./repository/terraform.md#remote-state) must be configured
-in order to persist the Terraform state across playbook executions. If GitLab is being
-used for the repository, it is recommended to use
-[GitLab-managed Terraform state](./repository/terraform.md#gitlab). If not,
-[S3](./repository/terraform.md#s3) is the preferred approach.
+A [remote state store](./repository/opentofu.md#remote-state) must be configured in
+order to persist the OpenTofu state across playbook executions. If GitLab is being
+used for the Azimuth configuration repository, it is recommended to use
+[GitLab-managed Terraform state](./repository/opentofu.md#gitlab) for this. If not,
+[S3](./repository/opentofu.md#s3) is the preferred approach.
 
 ## Environments
 
