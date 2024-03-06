@@ -121,7 +121,7 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
 
 When setting up the management cluster, you may need to configure a separate block device for etcd depending on your requirements. Below are the configuration options available:
 
-- `capi_cluster_etcd_blockdevice_size`: This option specifies the size of the etcd block device. The size should be specified in gigabytes (GB), and is typically between 2GB and 10GB. As a reference, Amazon EKS provisions the recommended database size for etcd at 8GB. Defaults to `0`, i.e. no separate etcd device. 
+- `capi_cluster_etcd_blockdevice_size`: This option specifies the size of the etcd block device. The size should be specified in gigabytes (GB), and is typically between 2GB and 10GB. As a reference, Amazon EKS provisions the recommended database size for etcd at 8GB. Defaults to `0`, i.e. no separate etcd device, in which case the other `capi_cluster_etcd_blockdevice_*` config options below are ignored. 
 
 - `capi_cluster_etcd_blockdevice_type`: This defines the type of block device that etcd will use. There are two possible values:
   - `Local`: etcd block device will be a local device on the host machine.
