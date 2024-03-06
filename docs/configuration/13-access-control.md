@@ -1,6 +1,6 @@
 # Access control
 
-Azimuth allows access to platform types, to be restricted on a per-platform type and
+Azimuth allows access to platform types to be restricted on a per-platform type and
 per-tenant basis, allowing different platform types to be made available to different
 tenants as required.
 
@@ -23,7 +23,7 @@ By default, all of the platform types are available to all tenants.
 
 Access control is implemented using annotations that are applied to instances of the
 `clustertemplates.azimuth.stackhpc.com`, `apptemplates.azimuth.stackhpc.com` and
-`clustertypes.caas.azimuth.stackhpc.com` to limit access to Kubernetes cluster templates,
+`clustertypes.caas.azimuth.stackhpc.com` resources for Kubernetes cluster templates,
 Kubernetes apps and CaaS cluster types respectively.
 
 The annotations are the same for all platform types, and the following annotations are
@@ -41,10 +41,11 @@ respected, in order of precedence:
 In particular, the precedence order means that, for example:
 
   * A tenancy whose name matches the `allow-regex` but whose ID is in the `deny-list`
-    is denied access.
+    is not able to use the platform type.
   * Similarly, a tenancy whose name matches the `deny-regex` but whose ID is in the
-    `allow-list` is allowed access.
-  * A tenancy whose ID is in both the `allow-list` and `deny-list` is denied access.
+    `allow-list` is allowed to use the platform type.
+  * A tenancy whose ID is in both the `allow-list` and `deny-list` is not allowed to
+    use the platform type.
 
 !!! warning  "No annotations means allow"
 
