@@ -132,7 +132,7 @@ Defaults to `Volume`.
 
 - `capi_cluster_etcd_blockdevice_volume_az`: If you choose `Volume` as the block device type, this specifies the availability zone in which the etcd volume will be created, ensuring that the etcd service is tied to a specific geographic location for latency or redundancy purposes. Defaults to `nova`.
 
-### ETCD Configuration for Tenant Clusters
+### etcd Configuration for Tenant Clusters
 
 If you'd like to configure tenant clusters to deploy etcd on a separate block device by default, the following variables can be set to apply this configuration:
 
