@@ -61,10 +61,15 @@ cluster, they **must** be from an SSD-backed pool.
     Network-attached spinning disks **will not** be fast enough for etcd, resulting in
     performance and stability issues for Kubernetes clusters.
 
+    In fact, even network-attached SSDs are not ideal as network instability can cause
+    spikes in the latency, which etcd does not like.
+
 !!! tip
 
-    If you do not have much SSD capacity, consider having multiple volume types and limiting
-    access to the SSD-backed volume type to Kubernetes instances only. Alternatively, look at the section on [etcd Configuration for Management Cluster](./03-kubernetes-config.md#etcd-configuration-for-management-cluster).
+    If you do not have much SSD capacity, it is possible to configure Kubernetes nodes
+    so that etcd is on a separate block device, using a different volume type.
+
+    See [etcd configuration](./03-kubernetes-config.md#etcd-configuration) for details.
 
 ### OpenStack project quotas
 

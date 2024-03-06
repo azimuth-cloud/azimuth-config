@@ -92,6 +92,12 @@ to use volume-backed instances instead.
     in the [prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes) about
     using Cinder volumes with Kubernetes.
 
+!!! tip  "etcd on a separate block device"
+
+    If you only have a limited amount of SSD or, even better, local disk, available,
+    consider placing [etcd on a separate block device](#etcd-block-device) to make
+    best use of the limited capacity.
+
 To configure Kubernetes clusters to use volume-backed instances (i.e. use a Cinder
 volume as the root disk), the following variables can be used:
 
@@ -117,29 +123,53 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
     openstack volume type list
     ```
 
-## etcd Configuration for Management Cluster
+## Etcd configuration
 
-When setting up the management cluster, you may need to configure a separate block device for etcd depending on your requirements. Below are the configuration options available:
+[As discussed in the prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes),
+etcd is extremely sensitive to write latency.
 
-- `capi_cluster_etcd_blockdevice_size`: This option specifies the size of the etcd block device. The size should be specified in gigabytes (GB), and is typically between 2GB and 10GB. As a reference, Amazon EKS provisions the recommended database size for etcd at 8GB. Defaults to `0`, i.e. no separate etcd device, in which case the other `capi_cluster_etcd_blockdevice_*` config options below are ignored. 
+Azimuth is able to configure Kubernetes nodes, both for the HA cluster and tenant clusters, so
+that etcd is on a separate block device. This block device can be of a different volume type to
+the root disk, allowing efficient use of SSD-backed storage. When supported by the flavor, the
+etcd block device can also use local disk even if the root volume is from Cinder.
 
-- `capi_cluster_etcd_blockdevice_type`: This defines the type of block device that etcd will use. There are two possible values:
-  - `Local`: etcd block device will be a local device on the host machine.
-  - `Volume`: etcd block device will be a network-attached volume.
-Defaults to `Volume`.
+!!! tip  "Use local disk for etcd whenever possible"
 
-- `capi_cluster_etcd_blockdevice_volume_type`: If you choose `Volume` as the block device type, this option allows you to specify the volume type. The volume type will be one of those available in your openstack cloud. Defaults to your clouds default. 
+    Using local disk when possible minises the write latency for etcd and also eliminates
+    network instability as a cause of latency problems.
 
-- `capi_cluster_etcd_blockdevice_volume_az`: If you choose `Volume` as the block device type, this specifies the availability zone in which the etcd volume will be created, ensuring that the etcd service is tied to a specific geographic location for latency or redundancy purposes. Defaults to `nova`.
+The following variables are used to configure the etcd block device for the HA cluster:
 
-### etcd Configuration for Tenant Clusters
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# Specifies the size of the etcd block device in GB
+# This is typically between 2GB and 10GB - Amazon recommends 8GB for EKS
+# Defaults to 0, meaning etcd stays on the root device
+capi_cluster_etcd_blockdevice_size: 8
 
-If you'd like to configure tenant clusters to deploy etcd on a separate block device by default, the following variables can be set to apply this configuration:
+# The type of block device that will be used for etcd
+# Specify "Volume" (the default) to use a Cinder volume
+# Specify "Local" to use local disk (the flavor must support ephemeral disk)
+capi_cluster_etcd_blockdevice_type: Volume
 
-- `azimuth_capi_operator_capi_helm_etcd_blockdevice_size`
-- `azimuth_capi_operator_capi_helm_etcd_blockdevice_type`
-- `azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type` 
-- `azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_az`
+# The Cinder volume type to use for the etcd block device
+# Only used if "Volume" is specified as block device type
+# If not given, the default volume type for the cloud will be used
+capi_cluster_etcd_blockdevice_volume_type: nvme
+
+# The Cinder availability zone to use for the etcd block device
+# Only used if "Volume" is specified as block device type
+# Defaults to "nova"
+capi_cluster_etcd_blockdevice_volume_az: nova
+```
+
+The equivalent variables for tenant clusters are:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_capi_operator_capi_helm_etcd_blockdevice_size:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_type:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_az:
+```
 
 ## Load-balancer provider
 
