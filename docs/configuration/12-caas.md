@@ -103,6 +103,19 @@ To disable the repo2docker appliance, use the following:
 azimuth_caas_stackhpc_repo2docker_enabled: no
 ```
 
+### R-studio appliance
+
+The R-studio appliance allows users to deploy an
+[R-studio server](https://posit.co/products/open-source/rstudio-server/)
+instance running on a cloud VM. A simple monitoring stack is also provided,
+with both the R-studio and monitoring services exposed via Zenith.
+
+To disable the R-studio appliance, use the following:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_caas_stackhpc_rstudio_enabled: no
+```
+
 ## Custom appliances
 
 It is possible to make custom appliances available in the Azimuth interface for users to deploy.
