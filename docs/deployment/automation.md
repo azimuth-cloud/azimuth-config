@@ -36,7 +36,7 @@ set up continuous delivery for an Azimuth configuration repository.
 !!! tip
 
     If you are using GitLab for your configuration repository, make sure you have
-    [configured it to use GitLab-managed Terraform state](../repository/terraform.md#gitlab).
+    [configured it to use GitLab-managed Terraform state](../repository/opentofu.md#gitlab).
 
 !!! warning "Runner configuration"
 
@@ -61,7 +61,7 @@ environment in your repository. This is a one-to-one relationship except for
 where multiple GitLab environments will use a single configuration environment.
 
 If you are using GitLab-managed Terraform state, each *GitLab environment* (not
-configuration environment) will get it's own independent Terraform state.
+configuration environment) will get it's own independent state.
 
 The sample configuration defines the following deployment jobs:
 

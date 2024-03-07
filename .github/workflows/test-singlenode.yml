@@ -3,6 +3,16 @@ name: Single node test
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    inputs:
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
   # Execute by default on pull requests to the devel branch
   pull_request:
     types:
@@ -12,8 +22,22 @@ on:
       - reopened
     branches:
       - devel
-    paths-ignore:
-      - 'docs/**'
+    # Only run the tests when something changes that affects us
+    paths:
+      - .gitattributes
+      - .gitignore
+      - requirements.txt
+      - requirements.yml
+      - .github/actions/**
+      - .github/workflows/test-singlenode.yml
+      - bin/**
+      - "!bin/ci-exec"
+      - "!bin/create-merge-branch"
+      - "!bin/tilt-*"
+      - environments/base/**
+      - environments/singlenode/**
+      - environments/demo/**
+      - environments/ci/**
 
 jobs:
   # This job exists so that PRs from outside the main repo are rejected
@@ -48,9 +72,10 @@ jobs:
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
         with:
-          os-clouds: ${{ secrets.CLOUD }}
+          os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
