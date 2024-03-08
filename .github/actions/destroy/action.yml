@@ -18,9 +18,8 @@ runs:
         set -eo pipefail
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        FIP_ID="$(openstack floating ip list --tags "$AZIMUTH_ENVIRONMENT" -f json | jq -r '.[0].ID // ""')"
-        if [ -n "$FIP_ID" ]; then
-          openstack floating ip delete $FIP_ID
+        if [ -n "$INGRESS_IP" ]; then
+          openstack floating ip delete $INGRESS_IP
         fi
       if: ${{ always() }}
 
