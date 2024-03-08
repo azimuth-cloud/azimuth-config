@@ -40,7 +40,8 @@ on:
       - environments/ci/**
 
 # Use the head ref for workflow concurrency, with cancellation
-# This should mean that any previous workflows for a PR get cancelled when a new commit is pushed
+# This should mean that any previous runs of this workflow for the same PR
+# are cancelled when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true

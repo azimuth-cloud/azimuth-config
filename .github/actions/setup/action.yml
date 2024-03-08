@@ -112,9 +112,16 @@ runs:
       id: s3-lock-config
       shell: bash
       run: |
-        set -e
+        set -eu
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        [ -z "$CI_S3_LOCK_HOST" ] && exit
+        CI_S3_LOCK_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
+        CI_S3_LOCK_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $CI_S3_LOCK_ACCESS_KEY)"
+        cat >> ci.env <<EOF
+        export CI_S3_LOCK_ACCESS_KEY="$CI_S3_LOCK_ACCESS_KEY"
+        export CI_S3_LOCK_SECRET_KEY="$CI_S3_LOCK_SECRET_KEY"
+        EOF
         echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
         echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
         echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"

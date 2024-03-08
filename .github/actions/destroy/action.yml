@@ -28,9 +28,10 @@ runs:
       id: s3-lock-config
       shell: bash
       run: |
-        set -e
+        set -eu
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        [ -z "$CI_S3_LOCK_HOST" ] && exit
         echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
         echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
         echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
@@ -46,3 +47,13 @@ runs:
         bucket: ${{ steps.s3-lock-config.outputs.bucket }}
         action: release
       if: ${{ steps.s3-lock-config.outputs.host != '' && always() }}
+
+    - name: Delete S3 credential
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        [ -z "$CI_S3_LOCK_ACCESS_KEY" ] && exit
+        openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
+      if: ${{ always() }}
