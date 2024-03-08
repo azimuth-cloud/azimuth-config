@@ -60,6 +60,6 @@ runs:
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         if [ -n "$CI_S3_LOCK_ACCESS_KEY" ]; then
-          openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
+          openstack ec2 credentials delete $CI_S3_LOCK_ACCESS_KEY
         fi
       if: ${{ always() }}
