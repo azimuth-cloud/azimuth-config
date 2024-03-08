@@ -44,7 +44,7 @@ runs:
       if: ${{ always() }}
 
     - name: Release S3 lock
-      uses: stackhpc/github-actions/s3-lock@feat/s3-lock
+      uses: stackhpc/github-actions/s3-lock@master
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}
