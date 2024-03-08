@@ -20,18 +20,22 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         FIP_ID="$(openstack floating ip list --tags "$AZIMUTH_ENVIRONMENT" -f json | jq -r '.[0].ID // ""')"
         [ -n "$FIP_ID" ] && openstack floating ip delete $FIP_ID
-      env:
-        INGRESS_IP: ${{ steps.ingress-ip.outputs.ip-address }}
       if: ${{ always() }}
 
     - name: Configure S3 lock
       id: s3-lock-config
       shell: bash
       run: |
-        set -eu
+        set -e
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        [ -z "$CI_S3_LOCK_HOST" ] && exit
+        if [ -z "$CI_S3_LOCK_HOST" ]; then
+          echo "CI_S3_LOCK_HOST not set - no lock will be used"
+          exit
+        elif [ -z "$CI_S3_LOCK_BUCKET" ]; then
+          echo "CI_S3_LOCK_BUCKET is required when using the lock" >&2
+          exit 1
+        fi
         echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
         echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
         echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
@@ -54,6 +58,5 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        [ -z "$CI_S3_LOCK_ACCESS_KEY" ] && exit
-        openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
+        [ -n "$CI_S3_LOCK_ACCESS_KEY" ] && openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
       if: ${{ always() }}

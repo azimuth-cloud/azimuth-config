@@ -112,10 +112,16 @@ runs:
       id: s3-lock-config
       shell: bash
       run: |
-        set -eu
+        set -e
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        [ -z "$CI_S3_LOCK_HOST" ] && exit
+        if [ -z "$CI_S3_LOCK_HOST" ]; then
+          echo "CI_S3_LOCK_HOST not set - no lock will be used"
+          exit
+        elif [ -z "$CI_S3_LOCK_BUCKET" ]; then
+          echo "CI_S3_LOCK_BUCKET is required when using the lock" >&2
+          exit 1
+        fi
         CI_S3_LOCK_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
         CI_S3_LOCK_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $CI_S3_LOCK_ACCESS_KEY)"
         cat >> ci.env <<EOF
