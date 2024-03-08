@@ -23,3 +23,26 @@ runs:
       env:
         INGRESS_IP: ${{ steps.ingress-ip.outputs.ip-address }}
       if: ${{ always() }}
+
+    - name: Configure S3 lock
+      id: s3-lock-config
+      shell: bash
+      run: |
+        set -e
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
+        echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
+        echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
+        echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
+      if: ${{ always() }}
+
+    - name: Release S3 lock
+      uses: stackhpc/github-actions/s3-lock@feat/s3-lock
+      with:
+        host: ${{ steps.s3-lock-config.outputs.host }}
+        access-key: ${{ steps.s3-lock-config.outputs.access-key }}
+        secret-key: ${{ steps.s3-lock-config.outputs.secret-key }}
+        bucket: ${{ steps.s3-lock-config.outputs.bucket }}
+        action: release
+      if: ${{ steps.s3-lock-config.outputs.host != '' && always() }}

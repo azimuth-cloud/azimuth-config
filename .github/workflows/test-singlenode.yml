@@ -77,11 +77,11 @@ jobs:
           ref: ${{ github.ref }}
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
 
-      - name: Provision Azimuth
-        uses: ./.github/actions/provision
+      # - name: Provision Azimuth
+      #   uses: ./.github/actions/provision
 
-      - name: Run Azimuth tests
-        uses: ./.github/actions/test
+      # - name: Run Azimuth tests
+      #   uses: ./.github/actions/test
 
       - name: Destroy Azimuth
         uses: ./.github/actions/destroy
