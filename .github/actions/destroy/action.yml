@@ -19,7 +19,9 @@ runs:
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         FIP_ID="$(openstack floating ip list --tags "$AZIMUTH_ENVIRONMENT" -f json | jq -r '.[0].ID // ""')"
-        [ -n "$FIP_ID" ] && openstack floating ip delete $FIP_ID
+        if [ -n "$FIP_ID" ]; then
+          openstack floating ip delete $FIP_ID
+        fi
       if: ${{ always() }}
 
     - name: Configure S3 lock
@@ -58,5 +60,7 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        [ -n "$CI_S3_LOCK_ACCESS_KEY" ] && openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
+        if [ -n "$CI_S3_LOCK_ACCESS_KEY" ]; then
+          openstack ec2 credetials delete $CI_S3_LOCK_ACCESS_KEY
+        fi
       if: ${{ always() }}
