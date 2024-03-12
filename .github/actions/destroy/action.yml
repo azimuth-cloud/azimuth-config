@@ -18,8 +18,48 @@ runs:
         set -eo pipefail
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        FIP_ID="$(openstack floating ip list --tags "$AZIMUTH_ENVIRONMENT" -f json | jq -r '.[0].ID // ""')"
-        [ -n "$FIP_ID" ] && openstack floating ip delete $FIP_ID
-      env:
-        INGRESS_IP: ${{ steps.ingress-ip.outputs.ip-address }}
+        if [ -n "$INGRESS_IP" ]; then
+          openstack floating ip delete $INGRESS_IP
+        fi
+      if: ${{ always() }}
+
+    - name: Configure S3 lock
+      id: s3-lock-config
+      shell: bash
+      run: |
+        set -e
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        if [ -z "$CI_S3_LOCK_HOST" ]; then
+          echo "CI_S3_LOCK_HOST not set - no lock will be used"
+          exit
+        elif [ -z "$CI_S3_LOCK_BUCKET" ]; then
+          echo "CI_S3_LOCK_BUCKET is required when using the lock" >&2
+          exit 1
+        fi
+        echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
+        echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
+        echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
+        echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
+      if: ${{ always() }}
+
+    - name: Release S3 lock
+      uses: stackhpc/github-actions/s3-lock@master
+      with:
+        host: ${{ steps.s3-lock-config.outputs.host }}
+        access-key: ${{ steps.s3-lock-config.outputs.access-key }}
+        secret-key: ${{ steps.s3-lock-config.outputs.secret-key }}
+        bucket: ${{ steps.s3-lock-config.outputs.bucket }}
+        action: release
+      if: ${{ steps.s3-lock-config.outputs.host != '' && always() }}
+
+    - name: Delete S3 credential
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        if [ -n "$CI_S3_LOCK_ACCESS_KEY" ]; then
+          openstack ec2 credentials delete $CI_S3_LOCK_ACCESS_KEY
+        fi
       if: ${{ always() }}

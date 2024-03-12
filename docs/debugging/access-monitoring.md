@@ -1,6 +1,6 @@
 # Accessing the monitoring
 
-As discussed in [Monitoring and alerting](../configuration/13-monitoring.md), the monitoring
+As discussed in [Monitoring and alerting](../configuration/14-monitoring.md), the monitoring
 dashboards are exposed as subdomains under `ingress_base_domain` and protected by a username
 and password.
 

@@ -1,6 +1,10 @@
 # Unset the network ID so that a network + router are provisioned
 infra_network_id:
 
+# Unset the infra IP so we can use the ingress IP for the ingress controller
+infra_fixed_floatingip:
+capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
+
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
 #   The flavor to use for the seed VM (vm.ska.cpu.general.small)
 infra_flavor_id: c8b72062-5d52-4590-9d7a-68a670b44442
