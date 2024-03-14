@@ -107,36 +107,61 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-galaxy install -f -r requirements.yml
 
+    # Generate and append the S3 credential to the CI environment file
+    - name: Configure S3 lock
+      id: s3-lock-config
+      shell: bash
+      run: |
+        set -e
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        if [ -z "$CI_S3_LOCK_HOST" ]; then
+          echo "CI_S3_LOCK_HOST not set - no lock will be used"
+          exit
+        elif [ -z "$CI_S3_LOCK_BUCKET" ]; then
+          echo "CI_S3_LOCK_BUCKET is required when using the lock" >&2
+          exit 1
+        fi
+        CI_S3_LOCK_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
+        CI_S3_LOCK_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $CI_S3_LOCK_ACCESS_KEY)"
+        cat >> ci.env <<EOF
+        export CI_S3_LOCK_ACCESS_KEY="$CI_S3_LOCK_ACCESS_KEY"
+        export CI_S3_LOCK_SECRET_KEY="$CI_S3_LOCK_SECRET_KEY"
+        EOF
+        echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
+        echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
+        echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
+        echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
+
+    - name: Acquire S3 lock
+      uses: stackhpc/github-actions/s3-lock@master
+      with:
+        host: ${{ steps.s3-lock-config.outputs.host }}
+        access-key: ${{ steps.s3-lock-config.outputs.access-key }}
+        secret-key: ${{ steps.s3-lock-config.outputs.secret-key }}
+        bucket: ${{ steps.s3-lock-config.outputs.bucket }}
+        action: acquire
+      if: ${{ steps.s3-lock-config.outputs.host != '' }}
+
     - name: Allocate floating IP for ingress
       shell: bash
       run: |
         set -eo pipefail
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ansible_variable() {
-          ansible -m debug -a "var=$1" -e @extra-vars.yml all |
-            jq -r ".plays[0].tasks[0].hosts.localhost.$1"
-        }
-        INSTALL_MODE="$(ansible_variable install_mode)"
-        EXTNET_ID="$(ansible_variable infra_external_network_id)"
-        IP_ADDRESS=
-        until \
-          IP_ADDRESS="$(
-            openstack floating ip create $EXTNET_ID \
-              --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
-              --tag "$AZIMUTH_ENVIRONMENT" \
-              --format value \
-              --column floating_ip_address
-          )"
-        do
-          sleep 30
-        done
-        VAR_NAME="$([ "$INSTALL_MODE" = "ha" ] && echo "capi_cluster_addons_ingress_load_balancer_ip" || echo "infra_fixed_floatingip")"
-        echo "$VAR_NAME: $IP_ADDRESS" >> extra-vars.yml
+        EXTNET_ID="$(
+          ansible -m debug -a "var=infra_external_network_id" -e @extra-vars.yml all |
+            jq -r ".plays[0].tasks[0].hosts.localhost.infra_external_network_id"
+        )"
+        IP_ADDRESS="$(
+          openstack floating ip create $EXTNET_ID \
+            --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
+            --format value \
+            --column floating_ip_address
+        )"
+        cat >> ci.env <<EOF
+        export INGRESS_IP="$IP_ADDRESS"
+        EOF
       env:
         ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
         ANSIBLE_STDOUT_CALLBACK: json
-
-    - name: Output extra-vars.yml for debugging
-      shell: bash
-      run: cat extra-vars.yml
