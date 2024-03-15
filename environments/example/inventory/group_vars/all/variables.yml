@@ -114,7 +114,7 @@ azimuth_authenticator_federated_provider: oidc
 # azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
 # The name of the flavor to use for login nodes
 azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-# The name of the flavor to use for control nodes
+# The name of the flavor to use for control nodes **NB**: This needs at least 6GB memory
 azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
 
 # The ID of the desktop or webconsole image to use for the workstation appliance
