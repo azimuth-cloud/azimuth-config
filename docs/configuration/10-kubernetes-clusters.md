@@ -170,6 +170,7 @@ The Harbor registry can be disabled entirely:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 harbor_enabled: no
+```
 
 ### Additional proxy caches
 
