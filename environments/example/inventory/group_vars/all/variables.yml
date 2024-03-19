@@ -10,10 +10,22 @@
 # https://stackhpc.github.io/azimuth-config/configuration/
 #####
 
+## Configuration for OpenTofu state
+## https://stackhpc.github.io/azimuth-config/repository/opentofu/
+
+# The Terraform backend type to use (HTTP and S3 supported)
+terraform_backend_type: "<http or s3>"
+
+# The backend configuration (depends on the selected backend type)
+terraform_backend_config: {}
+
+
 ## Configuration for the seed node (HA) or single node deployment
 ## https://stackhpc.github.io/azimuth-config/configuration/02-deployment-method/
 
 # The ID of the external network to use
+# This network must provide _egress_ to the internet
+# https://stackhpc.github.io/azimuth-config/configuration/01-prerequisites/#networking
 infra_external_network_id: "<network id>"
 
 # The id of the flavor to use for the node
@@ -69,17 +81,13 @@ ingress_base_domain: "<base domain>"
 ## Persistence and retention for monitoring (HA only)
 ## https://stackhpc.github.io/azimuth-config/configuration/14-monitoring/#persistence-and-retention
 
-# Alertmanager retention and volume size
-capi_cluster_addons_monitoring_alertmanager_retention: 168h
-capi_cluster_addons_monitoring_alertmanager_volume_size: 10Gi
-
 # Prometheus retention and volume size
 capi_cluster_addons_monitoring_prometheus_retention: 90d
-capi_cluster_addons_monitoring_prometheus_volume_size: 10Gi
+capi_cluster_addons_monitoring_prometheus_volume_size: 50Gi
 
 # Loki retention and volume size
 capi_cluster_addons_monitoring_loki_retention: 744h
-capi_cluster_addons_monitoring_loki_volume_size: 10Gi
+capi_cluster_addons_monitoring_loki_volume_size: 50Gi
 
 
 ## Disaster recovery
