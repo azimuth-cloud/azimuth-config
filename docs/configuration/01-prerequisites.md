@@ -61,10 +61,15 @@ cluster, they **must** be from an SSD-backed pool.
     Network-attached spinning disks **will not** be fast enough for etcd, resulting in
     performance and stability issues for Kubernetes clusters.
 
+    In fact, even network-attached SSDs are not ideal as network instability can cause
+    spikes in the latency, which etcd does not like.
+
 !!! tip
 
-    If you do not have much SSD capacity, consider having multiple volume types and limiting
-    access to the SSD-backed volume type to Kubernetes instances only.
+    If you do not have much SSD capacity, it is possible to configure Kubernetes nodes
+    so that etcd is on a separate block device, using a different volume type.
+
+    See [etcd configuration](./03-kubernetes-config.md#etcd-configuration) for details.
 
 ### OpenStack project quotas
 
@@ -116,3 +121,15 @@ being deployed with a floating IP attached that routes traffic to the ingress co
 In order for traffic to be routed correctly for these domains, a **wildcard** DNS record must exist
 for `*.azimuth.example.org` that points at the floating IP of the load-balancer for the ingress
 controller. **Azimuth does not manage this DNS record.**
+
+## Transport Layer Security (TLS)
+
+In order to provide secure connections to users, Azimuth needs to be able to obtain a TLS
+certificate and private key for any of the subdomains under its wildcard domain.
+
+This can be achieved in two ways:
+
+  1. Using a pre-existing wildcard TLS certificate for all subdomains
+  2. Using an ACME server (e.g. Let's Encrypt) to issue certificates dynamically
+
+These approaches are discussed in more detail in the [Ingress section](../configuration/06-ingress.md).

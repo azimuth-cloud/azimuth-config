@@ -12,7 +12,7 @@ nav:
   - Repository:
       - repository/index.md
       - repository/secrets.md
-      - repository/terraform.md
+      - repository/opentofu.md
   - Configuration:
       - configuration/index.md
       - configuration/01-prerequisites.md
@@ -27,8 +27,10 @@ nav:
       - configuration/10-kubernetes-clusters.md
       - configuration/11-kubernetes-apps.md
       - configuration/12-caas.md
-      - configuration/13-monitoring.md
-      - configuration/14-disaster-recovery.md
+      - configuration/13-access-control.md
+      - configuration/14-monitoring.md
+      - configuration/15-disaster-recovery.md
+      - configuration/16-local-customisations.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md

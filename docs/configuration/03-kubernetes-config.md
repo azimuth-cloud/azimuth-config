@@ -92,6 +92,12 @@ to use volume-backed instances instead.
     in the [prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes) about
     using Cinder volumes with Kubernetes.
 
+!!! tip  "etcd on a separate block device"
+
+    If you only have a limited amount of SSD or, even better, local disk, available,
+    consider placing [etcd on a separate block device](#etcd-block-device) to make
+    best use of the limited capacity.
+
 To configure Kubernetes clusters to use volume-backed instances (i.e. use a Cinder
 volume as the root disk), the following variables can be used:
 
@@ -117,6 +123,54 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
     openstack volume type list
     ```
 
+## Etcd configuration
+
+[As discussed in the prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes),
+etcd is extremely sensitive to write latency.
+
+Azimuth is able to configure Kubernetes nodes, both for the HA cluster and tenant clusters, so
+that etcd is on a separate block device. This block device can be of a different volume type to
+the root disk, allowing efficient use of SSD-backed storage. When supported by the flavor, the
+etcd block device can also use local disk even if the root volume is from Cinder.
+
+!!! tip  "Use local disk for etcd whenever possible"
+
+    Using local disk when possible minises the write latency for etcd and also eliminates
+    network instability as a cause of latency problems.
+
+The following variables are used to configure the etcd block device for the HA cluster:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# Specifies the size of the etcd block device in GB
+# This is typically between 2GB and 10GB - Amazon recommends 8GB for EKS
+# Defaults to 0, meaning etcd stays on the root device
+capi_cluster_etcd_blockdevice_size: 8
+
+# The type of block device that will be used for etcd
+# Specify "Volume" (the default) to use a Cinder volume
+# Specify "Local" to use local disk (the flavor must support ephemeral disk)
+capi_cluster_etcd_blockdevice_type: Volume
+
+# The Cinder volume type to use for the etcd block device
+# Only used if "Volume" is specified as block device type
+# If not given, the default volume type for the cloud will be used
+capi_cluster_etcd_blockdevice_volume_type: nvme
+
+# The Cinder availability zone to use for the etcd block device
+# Only used if "Volume" is specified as block device type
+# Defaults to "nova"
+capi_cluster_etcd_blockdevice_volume_az: nova
+```
+
+The equivalent variables for tenant clusters are:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_capi_operator_capi_helm_etcd_blockdevice_size:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_type:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type:
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_az:
+```
+
 ## Load-balancer provider
 
 If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
@@ -137,7 +191,6 @@ capi_cluster_addons_openstack_loadbalancer_provider: ovn
 # Tenant API servers are load-balanced using Zenith
 # This variable applies to load-balancers created for LoadBalancer services
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: ovn
-```
 ```
 
 !!! tip
@@ -171,30 +224,12 @@ available.
     Cluster API refers to "failure domains" which, in the OpenStack provider,
     correspond to availability zones (AZs).
 
-### Use specific availability zones
-
-To specify the availability zones for Kubernetes nodes, the following variables can be used:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-#### For the HA cluster ####
-
-# A list of failure domains that should be considered for control plane nodes
-capi_cluster_control_plane_failure_domains: [az1, az2]
-# The failure domain for worker nodes
-capi_cluster_worker_failure_domain: az1
-
-#### For tenant clusters ####
-
-azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
-azimuth_capi_operator_capi_helm_worker_failure_domain: az1
-```
-
 ### Ignore availability zones
 
 It is possible to configure Cluster API clusters in such a way that AZs are *not specified at all*
 for Kubernetes nodes. This allows other placement constraints such as
 [flavor traits](https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs-required-traits)
-and [host aggregate](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
+and [host aggregates](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
 be used, and a suitable AZ to be selected by OpenStack.
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
@@ -208,4 +243,27 @@ capi_cluster_worker_failure_domain: null
 #### For tenant clusters ####
 azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
 azimuth_capi_operator_capi_helm_worker_failure_domain: null
+```
+
+!!! tip
+
+    This is the recommended configuration for new deployments, unless you have a specific
+    need to use specific availability zones.
+
+### Use specific availability zones
+
+To use specific availability zones for Kubernetes nodes, the following variables can be used:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+#### For the HA cluster ####
+
+# A list of failure domains that should be considered for control plane nodes
+capi_cluster_control_plane_failure_domains: [az1, az2]
+# The failure domain for worker nodes
+capi_cluster_worker_failure_domain: az1
+
+#### For tenant clusters ####
+
+azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
+azimuth_capi_operator_capi_helm_worker_failure_domain: az1
 ```

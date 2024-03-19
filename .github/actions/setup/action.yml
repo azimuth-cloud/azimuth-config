@@ -8,11 +8,19 @@ inputs:
   ref:
     description: The ref to use for the Azimuth configuration.
     required: true
-    default: main
-  config-environment:
-    description: The config environment to use.
+    default: devel
+  target-cloud:
+    description: |-
+      The name of the cloud to target.
+      This is used as both the name of the cloud with the clouds.yaml
+      and to determine the config environment to use.
+      Currently, arcus and leafcloud are supported.
     required: true
-    default: ci
+    default: arcus
+  install-mode:
+    description: The install mode to use. Either singlenode or ha.
+    required: true
+    default: singlenode
   azimuth-ops-version:
     description: >
       The azimuth-ops version to use. If not given, the default version is used.
@@ -22,14 +30,10 @@ inputs:
     description: >
       YAML-formatted extra vars for the deployment, if required.
     required: true
-    default: "{}"
+    default: ""
   os-clouds:
     description: The contents of the clouds.yaml to use.
     required: true
-  os-cloud-name:
-    description: The name of the cloud within the clouds.yaml to use.
-    required: true
-    default: openstack
   environment-prefix:
     description: >
       The environment prefix to use. The run ID will be appended to this,
@@ -44,6 +48,7 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
+        clean: false
 
     - name: Write clouds.yaml
       shell: bash
@@ -57,9 +62,9 @@ runs:
       run: cat > ./ci.env <<< "$CI_ENV"
       env:
         CI_ENV: |
-          export OS_CLOUD="${{ inputs.os-cloud-name }}"
+          export OS_CLOUD="${{ inputs.target-cloud }}"
           export OS_CLIENT_CONFIG_FILE="$PWD/clouds.yaml"
-          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.config-environment }}
+          export AZIMUTH_CONFIG_ENVIRONMENT=${{ inputs.target-cloud }}${{ inputs.install-mode == 'ha' && '-ha' || '' }}
           export AZIMUTH_ENVIRONMENT="${{ inputs.environment-prefix }}-${{ github.run_id }}"
           export ANSIBLE_FORCE_COLOR=true
 
@@ -79,7 +84,10 @@ runs:
       shell: bash
       run: cat > extra-vars.yml <<< "$EXTRA_VARS"
       env:
-        EXTRA_VARS: ${{ inputs.extra-vars }}
+        # Use a dummy variable so that Ansible treats the file as YAML even if the input is empty
+        EXTRA_VARS: |
+          this_variable_is_never_used: ever
+          ${{ inputs.extra-vars }}
 
     - name: Ensure Python 3.9
       uses: actions/setup-python@v4
@@ -98,3 +106,62 @@ runs:
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-galaxy install -f -r requirements.yml
+
+    # Generate and append the S3 credential to the CI environment file
+    - name: Configure S3 lock
+      id: s3-lock-config
+      shell: bash
+      run: |
+        set -e
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        if [ -z "$CI_S3_LOCK_HOST" ]; then
+          echo "CI_S3_LOCK_HOST not set - no lock will be used"
+          exit
+        elif [ -z "$CI_S3_LOCK_BUCKET" ]; then
+          echo "CI_S3_LOCK_BUCKET is required when using the lock" >&2
+          exit 1
+        fi
+        CI_S3_LOCK_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
+        CI_S3_LOCK_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $CI_S3_LOCK_ACCESS_KEY)"
+        cat >> ci.env <<EOF
+        export CI_S3_LOCK_ACCESS_KEY="$CI_S3_LOCK_ACCESS_KEY"
+        export CI_S3_LOCK_SECRET_KEY="$CI_S3_LOCK_SECRET_KEY"
+        EOF
+        echo "host=${CI_S3_LOCK_HOST}" >> "$GITHUB_OUTPUT"
+        echo "access-key=${CI_S3_LOCK_ACCESS_KEY}" >> "$GITHUB_OUTPUT"
+        echo "secret-key=${CI_S3_LOCK_SECRET_KEY}" >> "$GITHUB_OUTPUT"
+        echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
+
+    - name: Acquire S3 lock
+      uses: stackhpc/github-actions/s3-lock@master
+      with:
+        host: ${{ steps.s3-lock-config.outputs.host }}
+        access-key: ${{ steps.s3-lock-config.outputs.access-key }}
+        secret-key: ${{ steps.s3-lock-config.outputs.secret-key }}
+        bucket: ${{ steps.s3-lock-config.outputs.bucket }}
+        action: acquire
+      if: ${{ steps.s3-lock-config.outputs.host != '' }}
+
+    - name: Allocate floating IP for ingress
+      shell: bash
+      run: |
+        set -eo pipefail
+        source ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        EXTNET_ID="$(
+          ansible -m debug -a "var=infra_external_network_id" -e @extra-vars.yml all |
+            jq -r ".plays[0].tasks[0].hosts.localhost.infra_external_network_id"
+        )"
+        IP_ADDRESS="$(
+          openstack floating ip create $EXTNET_ID \
+            --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
+            --format value \
+            --column floating_ip_address
+        )"
+        cat >> ci.env <<EOF
+        export INGRESS_IP="$IP_ADDRESS"
+        EOF
+      env:
+        ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
+        ANSIBLE_STDOUT_CALLBACK: json

@@ -29,14 +29,14 @@ environments, although deployments to production typically include a manual appr
 ## GitLab CI/CD
 
 `azimuth-config` provides a
-[sample configuration](https://github.com/stackhpc/azimuth-config/blob/main/.gitlab-ci.yml.sample)
+[sample configuration](https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
 for use with [GitLab CI/CD](https://docs.gitlab.com/ee/ci/) that demonstrates how to
 set up continuous delivery for an Azimuth configuration repository.
 
 !!! tip
 
     If you are using GitLab for your configuration repository, make sure you have
-    [configured it to use GitLab-managed Terraform state](../repository/terraform.md#gitlab).
+    [configured it to use GitLab-managed Terraform state](../repository/opentofu.md#gitlab).
 
 !!! warning "Runner configuration"
 
@@ -61,7 +61,7 @@ environment in your repository. This is a one-to-one relationship except for
 where multiple GitLab environments will use a single configuration environment.
 
 If you are using GitLab-managed Terraform state, each *GitLab environment* (not
-configuration environment) will get it's own independent Terraform state.
+configuration environment) will get it's own independent state.
 
 The sample configuration defines the following deployment jobs:
 
@@ -149,10 +149,6 @@ mixin environments):
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 
-# CaaS configuration
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-
 # Azimuth cloud name
 #   This can use the environment name if desired, e.g.:
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"
@@ -218,9 +214,9 @@ Unfortunately, this is a paid feature and the only real alternative is to use a
 
 For site-specific configuration repositories hosted on GitHub, `azimuth-config` provides two sample workflows
 for automated deployments to a test or staging environment
-([example workflow](https://github.com/stackhpc/azimuth-config/blob/main/.github-deploy-staging.yml.sample))
-and manually-triggered deployment to a production environment 
-([example workflow](https://github.com/stackhpc/azimuth-config/blob/main/.github-deploy-prod.yml.sample)).
+([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-staging.yml.sample))
+and manually-triggered deployment to a production environment
+([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)).
 These can be used with [GitHub Actions](https://docs.github.com/en/actions) to mimic some of the GitLab
 functionality described above. Each sample file contains a top-level comment describing how to tailor these
 workflows to a site-specific configuration repository.

@@ -2,7 +2,7 @@
 
 Cluster-as-a-Service (CaaS) in Azimuth allows self-service platforms to be provided to
 users that are deployed and configured using a combination of [Ansible](https://www.ansible.com/),
-[Terraform](https://www.terraform.io/) and [Packer](https://www.packer.io/), stored in
+[OpenTofu](https://opentofu.org/) and [Packer](https://www.packer.io/), stored in
 a [git](https://git-scm.com/) repository.
 
 CaaS support in Azimuth is implemented by the
@@ -66,18 +66,6 @@ To disable the Slurm appliance, use the following:
 azimuth_caas_stackhpc_slurm_appliance_enabled: no
 ```
 
-The Slurm appliance requires the following configuration:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-# The name of a flavor to use for Slurm login nodes
-#   A flavor with at least 2 CPUs and 4GB RAM should be used
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-
-# The name of a flavor to use for Slurm control nodes
-#   A flavor with at least 2 CPUs and 4GB RAM should be used
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-```
-
 ### Linux Workstation appliance
 
 The Linux Workstation appliance allows users to provision a workstation that is accessible
@@ -103,6 +91,19 @@ To disable the repo2docker appliance, use the following:
 azimuth_caas_stackhpc_repo2docker_enabled: no
 ```
 
+### R-studio appliance
+
+The R-studio appliance allows users to deploy an
+[R-studio server](https://posit.co/products/open-source/rstudio-server/)
+instance running on a cloud VM. A simple monitoring stack is also provided,
+with both the R-studio and monitoring services exposed via Zenith.
+
+To disable the R-studio appliance, use the following:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_caas_stackhpc_rstudio_enabled: no
+```
+
 ## Custom appliances
 
 It is possible to make custom appliances available in the Azimuth interface for users to deploy.
@@ -115,17 +116,26 @@ the following will configure the sample appliance as an available cluster type:
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_cluster_templates_overrides:
   sample-appliance:
-    # The git URL of the appliance
-    gitUrl: https://github.com/stackhpc/azimuth-sample-appliance.git
-    # The branch, tag or commit id to use
-    # For production, it is recommended to use a fixed tag or commit ID
-    gitVersion: main
-    # The name of the playbook to use
-    playbook: sample-appliance.yml
-    # The URL of the metadata file
-    uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
-    # Dict of extra variables for the appliance
-    extraVars:
-      # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
-      cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
+    # Access control annotations
+    annotations: {}
+    # The cluster type specification
+    spec:
+      # The git URL of the appliance
+      gitUrl: https://github.com/stackhpc/azimuth-sample-appliance.git
+      # The branch, tag or commit id to use
+      # For production, it is recommended to use a fixed tag or commit ID
+      gitVersion: main
+      # The name of the playbook to use
+      playbook: sample-appliance.yml
+      # The URL of the metadata file
+      uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
+      # Dict of extra variables for the appliance
+      extraVars:
+        # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
+        cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
 ```
+
+!!! info  "Access control"
+
+    See [Access control](./13-access-control.md) for more details on the access
+    control annotations.

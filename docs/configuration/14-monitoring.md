@@ -12,6 +12,50 @@ and [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) that coll
 from all the pods running on the cluster and the systemd services on each cluster node.
 These logs are available in a dashboard in Grafana, where they can be filtered and searched.
 
+In addition to the monitoring and alerting stack, several additional dashboards are installed:
+
+  * The [Kubernetes dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
+    for browsing the current state of Kubernetes resources.
+  * The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
+    state of Helm releases.
+  * The [Consul UI](https://developer.hashicorp.com/consul/tutorials/certification-associate-tutorials/get-started-explore-the-ui)
+    for browsing the Consul state (used by Cluster-as-a-Service and Zenith).
+  * The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
+    Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
+
+All the dashboards that access Kubernetes resources are configured to be read-only.
+
+## Accessing web interfaces
+
+The monitoring and alerting web dashboards are exposed as subdomains under the `ingress_base_domain`:
+
+  * `grafana` for the Grafana dashboards
+  * `prometheus` for the Prometheus web interface
+  * `alertmanager` for the Alertmanager web interface
+  * `consul` for the Consul UI
+  * `ara` for the ARA web interface
+  * `helm` for the Helm dashboard
+  * `kubernetes` for the Kubernetes dashboard
+
+The dashboards are protected by a username and password (using
+[HTTP Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication)).
+The username is `admin` and a strong password must be set in your configuration:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
+admin_dashboard_ingress_basic_auth_password: "<secure password>"
+```
+
+!!! warning  "Sensitive information"
+
+    The dashboards allow read-only access to the internals of your Azimuth installation.
+    As such you should ensure that a strong password is used, and take care when sharing
+    it.
+
+!!! danger
+
+    This password should be kept secret. If you want to keep the password in Git - which is
+    recommended - then it [must be encrypted](../repository/secrets.md).
+
 ## Persistence and retention
 
 !!! note

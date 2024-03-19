@@ -3,12 +3,12 @@
 Both the single node and high-availability (HA) deployment methods have a K3S node that
 is provisioned using Terraform. In the single node case, this is the cluster that actually
 hosts Azimuth and all its dependencies. In the HA case, this cluster is configured as a
-Cluster API management cluster for the HA cluster.
+Cluster API management cluster for the HA cluster that actually runs Azimuth.
 
 In both cases, the K3S node is deployed using Terraform and the IP address and SSH key
 for accessing the node are in the Terraform state for the environment. The `azimuth-config`
 repository contains a utility script - 
-[seed-ssh](https://github.com/stackhpc/azimuth-config/tree/main/bin/seed-ssh) - that will
+[seed-ssh](https://github.com/stackhpc/azimuth-config/tree/stable/bin/seed-ssh) - that will
 extract these details from the Terraform state for the active environment and use them to
 execute an SSH command to access the provisioned node.
 
