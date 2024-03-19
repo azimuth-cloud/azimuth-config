@@ -87,6 +87,7 @@ exec \
   ssh \
     -o UserKnownHostsFile=/dev/null \
     -o StrictHostKeyChecking=no \
+    -o IdentitiesOnly=yes \
     -A \
     -i $deploy_key \
     ubuntu@$node_ip \
