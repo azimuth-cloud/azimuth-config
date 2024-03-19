@@ -7,6 +7,7 @@ nav:
   - Home: index.md
   - try.md
   - best-practice.md
+  - architecture.md
   - environments.md
   - Repository:
       - repository/index.md

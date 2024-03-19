@@ -1,12 +1,15 @@
-# Best practice for deployments
+# Getting started with production deployment
 
 This document guides you through the process of setting up a production-ready Azimuth
 deployment following recommended best practice.
 
-## Prerequisites
+To quickly try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
+to get a simple deployment running within a single VM in your OpenStack cloud.
 
-Before proceeding with an Azimuth deployment, you should ensure that the target cloud
-meets the [prerequisites](./configuration/01-prerequisites.md).
+## 1. Prerequisites
+
+Before proceeding with an Azimuth deployment, you should ensure that the target
+OpenStack cloud meets the [prerequisites](./configuration/01-prerequisites.md).
 
 ## OpenStack projects
 
