@@ -2,12 +2,12 @@
 # This file, combined with secrets.yml, shows an example configuration for a
 # minimal, but still best-practice, Azimuth deployment on a "well-behaved" cloud
 #
-# http://localhost:8000/best-practice/
+# https://stackhpc.github.io/azimuth-config/best-practice/
 #
 # It is recommended to read the "Configuration" section of the Azimuth Operator
 # Documentation in full to understand all the available options
 #
-# http://localhost:8000/configuration/
+# https://stackhpc.github.io/azimuth-config/configuration/
 #####
 
 ## Configuration for the seed node (HA) or single node deployment
@@ -50,7 +50,7 @@ capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
 
 
 ## Target cloud configuration
-## http://localhost:8000/configuration/04-target-cloud/
+## https://stackhpc.github.io/azimuth-config/configuration/04-target-cloud/
 
 # The name of the current cloud
 azimuth_current_cloud_name: example
@@ -60,14 +60,14 @@ azimuth_current_cloud_label: Example
 
 
 ## Ingress configuration
-## http://localhost:8000/configuration/06-ingress/
+## https://stackhpc.github.io/azimuth-config/configuration/06-ingress/
 
 # The base domain to use for ingress resources
 ingress_base_domain: "<base domain>"
 
 
 ## Persistence and retention for monitoring (HA only)
-## http://localhost:8000/configuration/14-monitoring/#persistence-and-retention
+## https://stackhpc.github.io/azimuth-config/configuration/14-monitoring/#persistence-and-retention
 
 # Alertmanager retention and volume size
 capi_cluster_addons_monitoring_alertmanager_retention: 168h
@@ -83,7 +83,7 @@ capi_cluster_addons_monitoring_loki_volume_size: 10Gi
 
 
 ## Disaster recovery
-## http://localhost:8000/configuration/15-disaster-recovery/
+## https://stackhpc.github.io/azimuth-config/configuration/15-disaster-recovery/
 
 # Enable Velero for backup
 velero_enabled: true
