@@ -6,12 +6,13 @@ deployment following recommended best practice.
 To quickly try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
 to get a simple deployment running within a single VM in your OpenStack cloud.
 
-## 1. Prerequisites
+## 1. Check Prerequisites
 
-Before proceeding with an Azimuth deployment, you should ensure that the target
-OpenStack cloud meets the [prerequisites](./configuration/01-prerequisites.md).
+Before proceeding with an Azimuth deployment,
+ensure you meet the required
+[prerequisites](./configuration/01-prerequisites.md).
 
-## OpenStack projects
+### Create OpenStack projects
 
 Azimuth is usually deployed on the cloud that is being targeted for workloads. It is
 recommended to have three OpenStack projects for a production Azimuth deployment, to contain:
@@ -25,7 +26,7 @@ The production and staging projects must have
 deployment. The required quota in the CI/CD project will depend on the number of
 proposed changes that are open concurrently.
 
-## Repository
+## 2. Create your Azimuth Configuration Git Repository
 
 Before building your Azimuth configuration, you must first
 [set up your configuration repository](./repository/index.md), including initialising
@@ -35,20 +36,9 @@ It is recommended to use a
 [feature branch workflow](./repository/index.md#making-changes-to-your-configuration)
 to make changes to your Azimuth configuration in a controlled way.
 
-## OpenTofu state
+## 3. Define your Environments
 
-Azimuth deployments use [OpenTofu](https://opentofu.org/), an open-source fork of
-[Terraform](https://www.terraform.io/), to manage some parts of the infrastructure.
-
-A [remote state store](./repository/opentofu.md#remote-state) must be configured in
-order to persist the OpenTofu state across playbook executions. If GitLab is being
-used for the Azimuth configuration repository, it is recommended to use
-[GitLab-managed Terraform state](./repository/opentofu.md#gitlab) for this. If not,
-[S3](./repository/opentofu.md#s3) is the preferred approach.
-
-## Environments
-
-An Azimuth configuration repository contains multiple [environments](./environments.md),
+Your Azimuth configuration git repository contains multiple [environments](./environments.md),
 some of which contain common configuration ("mixin" environments), and some of which
 represent a deployment ("concrete" environments).
 
@@ -86,7 +76,49 @@ base --> ha --> site --> site-ha --> production
 
 with only necessary differences configured in each environment, e.g. the ingress base domain, between `staging` and `production`.
 
-## Continuous delivery
+## 4. Populate required group_vars
+
+Before looking to customize your local deployment,
+we recommend you first get a minimal configuration
+up and running.
+
+Above you created the following environments:
+
+* site
+* site-ha
+* aio, staging and production
+
+You now need to populate the required group_vars
+such aio, staging and production environments can be deployed.
+
+When building an environment for the first time,
+it is recommended to follow each configuration documentation page in order,
+beginning with the
+[Deployment method](./configuration/02-deployment-method.md).
+A quick overview of the minimal required parameters can be seen in the
+(example environment)[https://github.com/stackhpc/azimuth-config/tree/devel/environments/example/inventory/group_vars/all].
+
+## 5. Review Production Good Practice
+
+### 5.1. OpenTofu state
+
+Azimuth deployments use [OpenTofu](https://opentofu.org/), an open-source fork of
+[Terraform](https://www.terraform.io/), to manage some parts of the infrastructure.
+
+A [remote state store](./repository/opentofu.md#remote-state) must be configured in
+order to persist the OpenTofu state across playbook executions. If GitLab is being
+used for the Azimuth configuration repository, it is recommended to use
+[GitLab-managed Terraform state](./repository/opentofu.md#gitlab) for this. If not,
+[S3](./repository/opentofu.md#s3) is the preferred approach.
+
+### 5.2. Setup Monitoring Alerts
+
+Ensure you can access your monitoring and alerts are flowing somewhere
+you will notice them.
+
+TODO...
+
+### 5.3. Setup Continuous delivery
 
 A production Azimuth deployment should use [continuous delivery](./deployment/automation.md),
 where changes to the configuration are automatically deployed to the `aio` and `staging`
@@ -106,7 +138,7 @@ A
 [sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.
 
-## Disaster recovery
+### 5.4. Backups and Disaster recovery
 
 Azimuth uses [Velero](https://velero.io/) to backup the data that is required to restore an
 Azimuth instance in the event of a catastrophic failure. This functionality is not enabled by
@@ -115,8 +147,10 @@ default, as it requires credentials for an S3 bucket in which the backups will b
 It is recommended that [disaster recovery is enabled](./configuration/15-disaster-recovery.md) for
 a production deployment.
 
-## Configuration
+### 5.5. Do you first upgrade
 
-You are now ready to begin adding configuration to your environments. When building an environment
-for the first time, it is recommended to follow each documentation page in order, beginning with
-the [Deployment method](./configuration/02-deployment-method.md).
+TODO
+
+## 6. Join the community!
+
+TODO
