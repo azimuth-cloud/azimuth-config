@@ -112,6 +112,14 @@ A
 [sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.
 
+## Monitoring
+
+Before going into production, be sure you can
+[access the monitoring](./debugging/access-monitoring.md).
+Also ensure you have
+[configured alert manager](./configuration/14-monitoring.md)
+such that you will notice any alerts on staging and production.
+
 ## Disaster recovery
 
 Azimuth uses [Velero](https://velero.io/) to backup the data that is required to restore an
