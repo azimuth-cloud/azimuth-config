@@ -116,6 +116,7 @@ is provided that implements this workflow for GitLab-hosted repositories.
 
 Before going into production, be sure you can
 [access the monitoring](./debugging/access-monitoring.md).
+
 Also ensure you have
 [configured alert manager](./configuration/14-monitoring.md)
 such that you will notice any alerts on staging and production.
@@ -135,5 +136,6 @@ You are now ready to begin adding configuration to your environments. When build
 for the first time, it is recommended to follow each documentation page in order, beginning with
 the [Deployment method](./configuration/02-deployment-method.md).
 
-Remember to share as much configuration as possible between all your
-[environments](./environments.md)!
+!!! tip
+
+    Remember to share as much configuration as possible between all your [environments](./environments.md)!
