@@ -6,7 +6,11 @@ for the target OpenStack cloud.
 Azimuth uses the
 [Keystone Service Catalog](https://docs.openstack.org/keystone/latest/contributor/service-catalog.html)
 to discover the endpoints for OpenStack services, so only needs to be told where to find the
-Keystone v3 endpoint:
+Keystone v3 endpoint.
+
+By default, the auth URL from the application credential used to deploy Azimuth will be used.
+If you want Azimuth to target a different OpenStack cloud than the one it is deployed in, this
+can be overridden:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_auth_url: https://openstack.example-cloud.org:5000/v3
@@ -24,8 +28,8 @@ trustroots, TLS verification must be disabled:
 azimuth_openstack_verify_ssl: false
 ```
 
-If you use a domain other than `default`, you will also need to tell Azimuth the name of the
-domain to use when authenticating:
+If you are using the password authenticator and use a domain other than `default`,
+you will also need to tell Azimuth the name of the domain to use when authenticating:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_domain: my-domain
@@ -129,25 +133,25 @@ azimuth_openstack_internal_net_cidr: 10.0.3.0/24
 
 ## Monitoring Cloud Capacity
 
-Azimuth is able to federate cloud metrics from a prometheus running within
-your cloud enviroment, such as the one deployed by:
-https://github.com/stackhpc/stackhpc-kayobe-config
+Azimuth is able to federate cloud metrics from a Prometheus running within
+your OpenStack cloud enviroment, such as the one deployed by
+[stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config).
 
-Typically we also assume the following exporter is being used to
-query the current capacity of your cloud, mostly using data from
-OpenStack placement:
-https://github.com/stackhpc/os-capacity
+We also assume the [os-capacity exporter](https://github.com/stackhpc/os-capacity)
+is being used to query the current capacity of your cloud, mostly using data from
+OpenStack placement.
 
-First you need to enable the project metrics and cloud metrics
-links within Azimuth by configuring:
-```yaml
+First you need to enable the project metrics and cloud metrics links within
+Azimuth by configuring:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Defaults to no
 cloud_metrics_enabled: yes
 ```
 
-To make sure Azimuth knows how to access the prometheus running
-in your cloud, you need to configure:
-```yaml
+You then need to tell Azimuth how to access the OpenStack cloud Prometheus:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 # hostname needed to match TLS certificate name
 cloud_metrics_prometheus_host: "mycloud.example.com"
 # ip that matches the above hostname
