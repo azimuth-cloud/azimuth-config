@@ -3,6 +3,8 @@
 This documentation describes how to manage deployments of
 [Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.
 
+## Deploying Azimuth
+
 Azimuth is deployed using [Ansible](https://www.ansible.com/) with playbooks from the
 [azimuth-ops Ansible collection](https://github.com/stackhpc/ansible-collection-azimuth-ops),
 driven by configuration derived from the
@@ -11,6 +13,12 @@ driven by configuration derived from the
 The `azimuth-config` repository is designed to be forked for a specific site and is structured
 into multiple [environments](#environments). This structure allows common configuration to be
 shared but overridden where required using composition of environments.
+
+To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
+to get a simple single-node deployment.
+
+For a production-ready deployment, you should follow the steps in the
+[best practice document](./best-practice.md).
 
 ## Structure of an Azimuth deployment
 
@@ -45,11 +53,3 @@ onto which Azimuth is deployed.
 
     Option 2 requires that [Octavia](https://docs.openstack.org/octavia/latest/index.html)
     is available on the target cloud to provide load-balancers for Azimuth components.
-
-## Deploying Azimuth
-
-To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
-to get a simple single-node deployment.
-
-For a production-ready deployment, you should follow the steps in the
-[best practice document](./best-practice.md).
