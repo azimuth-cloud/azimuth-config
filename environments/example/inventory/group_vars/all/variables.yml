@@ -1,128 +1,103 @@
 #####
-# Configuration for the seed node (HA) or single node
+# This file, combined with secrets.yml, shows an example configuration for a
+# minimal, but still best-practice, Azimuth deployment on a "well-behaved" cloud
+#
+# https://stackhpc.github.io/azimuth-config/best-practice/
+#
+# It is recommended to read the "Configuration" section of the Azimuth Operator
+# Documentation in full to understand all the available options
+#
+# https://stackhpc.github.io/azimuth-config/configuration/
 #####
 
-# The ID of an existing network to create the node on
-infra_network_id: "<internal network id>"
-# OR
-# The CIDR of the subnet that should be created
-infra_network_cidr: 192.168.100.0/24
-# The ID of the external network to connect to via a router
-infra_external_network_id: "<external network id>"
+## Configuration for OpenTofu state
+## https://stackhpc.github.io/azimuth-config/repository/opentofu/
 
-# The fixed floating IP to associate with the machine
-# This IP must be pre-allocated to the project
-# For a single node deployment, this IP should have the wildcard ingress domain assigned to it
-infra_fixed_floatingip: "<pre-allocated floating ip>"
-# OR
-# The name of the floating IP pool to allocate a floating IP from
-infra_floatingip_pool: "<floating ip pool>"
-# OR
-# The ID of a provisioning network that will be used to access the seed node
-infra_provisioning_network_id: "<provisioning network id>"
+# The Terraform backend type to use (HTTP and S3 supported)
+terraform_backend_type: "<http or s3>"
 
-# The image id of an Ubuntu 20.04 image to use for the node
-#   N.B. This is populated automatically using community images by default
-# infra_image_id: "<image id>"
+# The backend configuration (depends on the selected backend type)
+terraform_backend_config: {}
+
+
+## Configuration for the seed node (HA) or single node deployment
+## https://stackhpc.github.io/azimuth-config/configuration/02-deployment-method/
+
+# The ID of the external network to use
+# This network must provide _egress_ to the internet
+# https://stackhpc.github.io/azimuth-config/configuration/01-prerequisites/#networking
+infra_external_network_id: "<network id>"
 
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
 # For a single node deployment, >= 16GB RAM is recommended
 infra_flavor_id: "<flavor id>"
 
-# The size in GB for the data volume
-# This will hold all cluster data, including Kubernetes resources, and also PVC data
+# The size of the volume to use for K3S cluster data
 infra_data_volume_size: 100
 
-#####
-# Configuration for the HA cluster
-#####
+# SINGLE NODE DEPLOYMENT ONLY
+# The fixed floating IP to associate with the machine
+# Must be pre-allocated to the project and have the wildcard ingress domain assigned to it
+# infra_fixed_floatingip: "<pre-allocated floating ip>"
 
-# The Kubernetes version that will be used for the HA cluster
-#   N.B. This is populated automatically using community images by default
-# capi_cluster_kubernetes_version: 1.23.8
-# The ID of the image that will be used for the nodes of the HA cluster
-#   N.B. This is populated automatically using community images by default
-# capi_cluster_machine_image_id: "<image id>"
+
+## Configuration for the HA cluster
+## https://stackhpc.github.io/azimuth-config/configuration/02-deployment-method/
+## https://stackhpc.github.io/azimuth-config/configuration/03-kubernetes-config/
+
 # The name of the flavor to use for control plane nodes
+# A flavor with at least 2 CPUs, 8GB RAM and 100GB root disk is recommended
 capi_cluster_control_plane_flavor: "<flavor name>"
+
 # The name of the flavor to use for worker nodes
+# A flavor with at least 4 CPUs, 16GB RAM and 100GB root disk is recommended
 capi_cluster_worker_flavor: "<flavor name>"
+
 # The number of worker nodes
 capi_cluster_worker_count: 3
-# The fixed floating IP to associate with the load balancer for the ingress controller
-# This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
+
+# The floating IP to which to wildcard DNS entry has been assigned
 capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
 
-#####
-# Ingress configuration
-#####
-# The base domain to use for ingress resources
-ingress_base_domain: "<base domain>"
 
-# Indicates if cert-manager should be enabled
-# Currently, TLS is enabled for ingress iff cert-manager is enabled
-certmanager_enabled: yes
-
-# Indicates if Harbor should be enabled to provide pull-through caches
-harbor_enabled: no
-
-#####
-# Azimuth configuration
-#####
-# Indicates if the Zenith app proxy should be enabled
-azimuth_apps_enabled: yes
-# Indicates if Kubernetes support should be enabled
-azimuth_kubernetes_enabled: yes
-# Indicates if Cluster-as-a-Service (CaaS) should be enabled
-azimuth_clusters_enabled: yes
+## Target cloud configuration
+## https://stackhpc.github.io/azimuth-config/configuration/04-target-cloud/
 
 # The name of the current cloud
 azimuth_current_cloud_name: example
+
 # The label for the current cloud
 azimuth_current_cloud_label: Example
-# The auth URL for the target OpenStack cloud
-azimuth_openstack_auth_url: https://cloud.example.com:5000/v3
 
-#####
-# Configuration of authenticators / authentication methods
-#####
-# Whether the password authenticator should be enabled (enabled by default)
-azimuth_authenticator_password_enabled: true
-# The label for the password authenticator
-azimuth_authenticator_password_label: "Username + Password"
 
-# Whether the appcred authenticator should be enabled (not enabled by default)
-azimuth_authenticator_appcred_enabled: false
-# The label for the appcred authenticator
-azimuth_authenticator_appcred_label: "Application Credential"
+## Ingress configuration
+## https://stackhpc.github.io/azimuth-config/configuration/06-ingress/
 
-# Whether the federated authenticator should be enabled (not enabled by default)
-azimuth_authenticator_federated_enabled: false
-# The label for the federated authenticator
-azimuth_authenticator_federated_label: "Federated"
-# The provider for the federated authenticator
-# This should correspond to the Keystone federation URL, e.g. <auth url>/auth/OS-FEDERATION/websso/<provider>
-azimuth_authenticator_federated_provider: oidc
+# The base domain to use for ingress resources
+ingress_base_domain: "<base domain>"
 
-#####
-# Configuration for CaaS appliances
-#####
-# If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
-# is the id of a Rocky 8 image that will be used for Slurm clusters
-#   N.B. This is populated automatically using community images by default
-# azimuth_caas_stackhpc_slurm_appliance_image: "<image id>"
-# The name of the flavor to use for login nodes
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-# The name of the flavor to use for control nodes
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
 
-# The ID of the desktop or webconsole image to use for the workstation appliance
-# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
-#   N.B. This is populated automatically using community images by default
-# azimuth_caas_stackhpc_workstation_image: "<image id>"
+## Persistence and retention for monitoring (HA only)
+## https://stackhpc.github.io/azimuth-config/configuration/14-monitoring/#persistence-and-retention
 
-# The ID of the repo2docker image to use for the repo2docker appliance
-# See https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_f0dc9cb312144d0aa44037c9149d2513/azimuth-images-prerelease/
-#   N.B. This is populated automatically using community images by default
-# azimuth_caas_stackhpc_repo2docker_image: "<image id>"
+# Prometheus retention and volume size
+capi_cluster_addons_monitoring_prometheus_retention: 90d
+capi_cluster_addons_monitoring_prometheus_volume_size: 50Gi
+
+# Loki retention and volume size
+capi_cluster_addons_monitoring_loki_retention: 744h
+capi_cluster_addons_monitoring_loki_volume_size: 50Gi
+
+
+## Disaster recovery
+## https://stackhpc.github.io/azimuth-config/configuration/15-disaster-recovery/
+
+# Enable Velero for backup
+velero_enabled: true
+
+# The URL of the S3 endpoint to use for backups
+velero_s3_url: "<endpoint URL>"
+
+# The name of the S3 bucket to use for backups (must already exist)
+velero_bucket_name: "<bucket name>"

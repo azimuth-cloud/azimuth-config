@@ -179,18 +179,7 @@ is enabled, then Kubernetes clusters should be configured to use the OVN provide
 any load-balancers that are created:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-#### For the HA cluster ####
-
-# The provider for the API server load-balancer created by Cluster API
-capi_cluster_apiserver_loadbalancer_provider: ovn
-# The provider for load-balancers created for LoadBalancer services
-capi_cluster_addons_openstack_loadbalancer_provider: ovn
-
-#### For tenant clusters ####
-
-# Tenant API servers are load-balanced using Zenith
-# This variable applies to load-balancers created for LoadBalancer services
-azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: ovn
+openstack_loadbalancer_provider: ovn
 ```
 
 !!! tip
