@@ -1,5 +1,5 @@
 ansible-core>=2.12 # require undef filter
-git+https://github.com/stackhpc/azimuth-robotframework.git@feat/test-timing#egg=azimuth-robotframework
+azimuth-robotframework
 bcrypt==4.0.1  # this is the latest version that doesn't emit a warning
 jmespath
 munch
