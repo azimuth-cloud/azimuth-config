@@ -1,7 +1,7 @@
 ---
 
 default:
-  image: python:3.9
+  image: ubuntu:jammy
 
 variables:
   # Because we are installing git-crypt as part of the job, we cannot reuse old
@@ -10,12 +10,13 @@ variables:
   # Write the Azimuth URL to an envfile in the local directory
   AZIMUTH_URL_ENVFILE: ${CI_PROJECT_DIR}/azimuth.env
   # Use the pipeline credentials for Terraform
+  # This assumes that we are using GitLab-managed Terraform state (recommended when available)
   TF_HTTP_USERNAME: gitlab-ci-token
   TF_HTTP_PASSWORD: $CI_JOB_TOKEN
 
 stages:
   # This stage owns the scheduled job that checks for upstream changes
-  - upstream-merge
+  - scheduled
   # This stage owns the deploy and teardown jobs for dynamic environments
   - aio
   # This stage owns the deploy job for our staging environment
@@ -24,23 +25,26 @@ stages:
   - production
 
 #####
-# This job checks to see if there are changes from upstream to be merged
+# This job checks to see if there is a new release that needs to be merged
 #
-# If there are, it will create a new branch containing the changes and a corresponding merge request
+# If there is, it will create a new branch containing the changes and a corresponding merge request
 #
 # It runs as a scheduled job, for which a suitable schedule must be defined, e.g. daily or weekly
 #
 # This job writes back to the repository and to the merge requests API
 # To do this, it needs more power than is granted to the CI token
 # So CI variables must be set that contain an access token and the corresponding username
-# This can be a Project Access Token (paid feature) or a Personal Access Token (not ideal)
+# This can be a Project Access Token (paid feature, recommended if available) or a Personal Access Token (not ideal)
 #####
-upstream_merge:
-  stage: upstream-merge
+check_for_release:
+  stage: scheduled
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "main"
   variables:
     GIT_STRATEGY: none
+  before_script:
+    - apt update -y
+    - apt install -y curl git jq
   script:
     # Configure git to use the available credentials
     - git config --global credential.helper store
@@ -58,7 +62,7 @@ upstream_merge:
           source ".mergeenv"
           BODY="{
             \"id\": ${CI_PROJECT_ID},
-            \"title\": \"[$UPSTREAM_COMMIT] Merge changes from upstream\",
+            \"title\": \"Upgrade Azimuth to ${RELEASE_TAG}\",
             \"source_branch\": \"${BRANCH_NAME}\",
             \"target_branch\": \"main\",
             \"remove_source_branch\": true,
