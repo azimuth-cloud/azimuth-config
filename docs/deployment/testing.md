@@ -227,8 +227,6 @@ generate_tests_caas_test_case_{cluster_type}_verify_timeout: "45 minutes"
     If the cluster type or service name contain dashes (`-`), they will be replaced with
     underscores (`_`).
 
-#### Worked example for a custom cluster type
-
 ### Kubernetes cluster templates
 
 For Kubernetes cluster templates, the generated test cases perform the following steps:
