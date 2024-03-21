@@ -143,7 +143,7 @@ ansible-galaxy install -f -r requirements.yml
 # Generate the test suite
 ansible-playbook stackhpc.azimuth_ops.generate_tests
 
-# Execute the test suite
+# Execute the test suite (using the unrestricted credential)
 OS_CLOUD=unrestricted ./bin/run-tests
 ```
 
