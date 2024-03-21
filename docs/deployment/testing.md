@@ -83,7 +83,7 @@ be the same project that Azimuth is deployed in, but should ideally be a differe
     This is referred to as **unrestricted** in OpenStack (**Unrestricted (dangerous)**
     in the Horizon UI).
 
-The application credential used for running tests should be placed in the
+The application credential used for running tests should be appended to the
 [same clouds.yaml as the credential used to deploy Azimuth](../configuration/01-prerequisites.md#application-credential).
 
 ```yaml  title="environments/my-site/clouds.yaml"
@@ -114,8 +114,9 @@ clouds:
 
 ## Generating and executing tests
 
-Before tests can be generated and executed for an [environment](../environments.md), it must
-be successfully deployed either [manually](../) or by [automation](./automation.md).
+Before tests can be generated and executed for an [environment](../environments.md), the
+environment must be successfully deployed either [manually](../) or by
+[automation](./automation.md).
 
 You must also have the Python dependencies installed on the machine that the tests will be
 run from. The easiest way to do this is using the
@@ -151,9 +152,9 @@ OS_CLOUD=unrestricted ./bin/run-tests
 
 By default, tests cases are generated for:
 
-  * All the installed CaaS cluster types
-  * All the installed **active** (i.e. non-deprecated) Kubernetes cluster types
-  * All the installed Kubernetes app templates
+  * All installed CaaS cluster types
+  * All installed **active** (i.e. non-deprecated) Kubernetes cluster types
+  * All installed Kubernetes app templates
 
 The following sections describe how to enable, disable and configure tests for the
 different types of platform.
