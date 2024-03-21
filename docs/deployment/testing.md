@@ -290,3 +290,11 @@ generate_tests_kubernetes_apps_test_case_{app_template}_service_{service_name}_e
     names will be replaced with underscores (`_`).
 
 ## Automated testing
+
+If you are using [automated deployments](./automation.md), you can also automate tests
+against your deployments.
+
+As an example, the
+[sample GitLab CI/CD configuration file](https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
+includes jobs that run after each deployment to execute the configured tests against
+the deployment.

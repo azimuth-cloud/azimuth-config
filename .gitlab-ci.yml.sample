@@ -7,8 +7,6 @@ variables:
   # Because we are installing git-crypt as part of the job, we cannot reuse old
   # checkouts where git-crypt is already initialised as this results in an error
   GIT_STRATEGY: clone
-  # Write the Azimuth URL to an envfile in the local directory
-  AZIMUTH_URL_ENVFILE: ${CI_PROJECT_DIR}/azimuth.env
   # Use the pipeline credentials for Terraform
   # This assumes that we are using GitLab-managed Terraform state (recommended when available)
   TF_HTTP_USERNAME: gitlab-ci-token
@@ -19,10 +17,16 @@ stages:
   - scheduled
   # This stage owns the deploy and teardown jobs for dynamic environments
   - aio
-  # This stage owns the deploy job for our staging environment
+  # This stage runs tests for dynamic environments
+  - aio_test
+  # This stage owns the deploy job for the staging environment
   - staging
-  # This stage owns the deploy job for our production environment
+  # This stage owns the test job for the staging environment
+  - staging_test
+  # This stage owns the deploy job for the production environment
   - production
+  # This stage owns the test job for the production environment
+  - production_test
 
 #####
 # This job checks to see if there is a new release that needs to be merged
@@ -76,9 +80,7 @@ check_for_release:
         fi
 
 #####
-# This job deploys a dynamic review environment for the current branch
-#
-# Runs for every commit to every branch except main
+# This job deploys a dynamic review environment for a merge request
 #
 # Each environment is a single node deployment that is isolated from the other
 # branches with it's own GitLab environment, Terraform state and OpenStack resources
@@ -98,8 +100,8 @@ deploy_aio:
       when: never
     # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
-    # Run when there is a push to a branch that is not main changes one of the relevant files
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+    # Run when there is a push to a branch with a merge request that changes one of the relevant files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         # Files that affect the aio environment
         - env
@@ -109,12 +111,8 @@ deploy_aio:
         - environments/singlenode/**/*
         - environments/site/**/*
         - environments/aio/**/*
-  artifacts:
-    reports:
-      dotenv: azimuth.env
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
-    url: $AZIMUTH_URL
     on_stop: stop_aio
   variables:
     # This is normally taken from the GitLab environment name, but in this case that
@@ -122,6 +120,37 @@ deploy_aio:
     AZIMUTH_CONFIG_ENVIRONMENT: aio
   script:
     - ./bin/ci-exec provision
+
+#####
+# This job executes tests against dynamic review environments each time they are deployed
+#####
+test_aio:
+  stage: aio_test
+  rules:
+    # Do not run for commits to main
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    # Allow deployments to be manually triggered even when there are no changed files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
+    # Run when there is a push to a branch with a merge request that changes one of the relevant files
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        # Files that affect the aio environment
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**/*
+        - environments/singlenode/**/*
+        - environments/site/**/*
+        - environments/aio/**/*
+  environment:
+    name: aio/$CI_COMMIT_REF_SLUG
+  variables:
+    # This is normally taken from the GitLab environment name, but in this case that
+    # depends on the branch name so we need to be explicit about the config to use
+    AZIMUTH_CONFIG_ENVIRONMENT: aio
+  script:
+    - ./bin/ci-exec test
 
 #####
 # This job tears down dynamic review environments
@@ -139,7 +168,7 @@ stop_aio:
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
       when: manual
       allow_failure: true
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         # Files that affect the aio environment
         - env
@@ -192,14 +221,38 @@ deploy_staging:
         - environments/site/**/*
         - environments/site-ha/**/*
         - environments/staging/**/*
-  artifacts:
-    reports:
-      dotenv: azimuth.env
   environment:
     name: staging
-    url: $AZIMUTH_URL
   script:
     - ./bin/ci-exec provision
+
+#####
+# This job executes tests against the staging environment each time it is deployed
+#####
+test_staging:
+  stage: staging_test
+  rules:
+    # Prevent the job from running on any branch that is not main
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
+    # Allow deployments to be manually triggered on main even when there are no changed files
+    - if: $CI_PIPELINE_SOURCE == "web"
+    # Run for commits to main that change particular files
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        # Files that affect the staging environment
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**/*
+        - environments/ha/**/*
+        - environments/site/**/*
+        - environments/site-ha/**/*
+        - environments/staging/**/*
+  environment:
+    name: staging
+  script:
+    - ./bin/ci-exec test
 
 #####
 # This job deploys Azimuth to the production environment
@@ -231,11 +284,31 @@ deploy_production:
         - environments/site-ha/**/*
         - environments/production/**/*
       when: manual
-  artifacts:
-    reports:
-      dotenv: azimuth.env
   environment:
     name: production
-    url: $AZIMUTH_URL
   script:
     - ./bin/ci-exec provision
+
+#####
+# This job executes tests against the production environment each time it is deployed
+#####
+test_production:
+  stage: production_test
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - env
+        - env.secret
+        - requirements.yml
+        - environments/base/**/*
+        - environments/ha/**/*
+        - environments/site/**/*
+        - environments/site-ha/**/*
+        - environments/production/**/*
+  environment:
+    name: production
+  script:
+    - ./bin/ci-exec test
