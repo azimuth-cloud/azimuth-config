@@ -164,7 +164,7 @@ generate_tests_caas_test_case_{cluster_type}_param_{parameter_name}: "<parameter
 # Used to configure the expected title fragment for the named Zenith service
 generate_tests_caas_test_case_{cluster_type}_service_{service_name}_expected_title: "<title fragment>"
 
-# If a cluster takes a long time to deploy, 
+# If a cluster takes a long time to deploy, the verify timeout can be increased
 generate_tests_caas_test_case_{cluster_type}_verify_timeout: "45 minutes"
 ```
 
@@ -175,6 +175,118 @@ generate_tests_caas_test_case_{cluster_type}_verify_timeout: "45 minutes"
 
 ### Kubernetes cluster templates
 
+For Kubernetes cluster templates, the generated test cases perform the following steps:
+
+  1. Build the Kubernetes cluster configuration
+  2. Create a Kubernetes cluster using the configuration
+  3. Wait for the Kubernetes cluster to become `Ready`
+  4. Check that the Zenith service for the Kubernetes Dashboard is working, if configured
+  5. Check that the Zenith service for the monitoring is working, if configured
+  6. Delete the Kubernetes cluster
+
+!!! info  "Verification of Zenith services"
+
+    Steps 4 and 5 use the same title-based verification as for CaaS clusters.
+
+    No validation of actual behaviour is currently performed.
+
+By default, a test case is generated for each **active**, i.e. non-deprecated, cluster template.
+
+The following variables are available to affect the test generation for Kubernetes cluster
+templates:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+# When false (the default), test cases are generated for all
+# non-deprecated templates
+#
+# When true, test cases will only be generated for templates
+# that target the latest Kubernetes version
+generate_tests_kubernetes_test_cases_latest_only: false
+
+# The ID of the flavors to use for control plane and worker nodes respectively
+# By default, the smallest suitable size is used
+generate_tests_kubernetes_test_case_control_plane_size:
+generate_tests_kubernetes_test_case_worker_size:
+
+# The number of workers that should be deployed for each test case
+generate_tests_kubernetes_test_case_worker_count: 2
+
+# Indicates whether the dashboard and monitoring should be enabled for tests
+generate_tests_kubernetes_test_case_dashboard_enabled: true
+generate_tests_kubernetes_test_case_monitoring_enabled: true
+```
+
 ### Kubernetes app templates
+
+For Kubernetes app templates, we first deploy a Kubernetes cluster to host the apps.
+Once this cluster becomes `Ready`, the following steps are performed for each app:
+
+  1. Create the app with inferred configuration
+  2. Wait for the app to become `Deployed`
+  3. For each specified Zenith service, check that it is accessible
+  4. (Optional) Verify that the page title for the Zenith service contains some expected content
+  5. Delete the app
+
+!!! info  "Verification of Zenith services"
+
+    As for other platform types, only title-based verification is performed for Zenith services.
+
+!!! warning  "Overridding inferred configuration"
+
+    Currently, it is not possible to override the inferred configuration for Kubernetes
+    apps. This may mean it is not currently possible to test some Kubernetes apps that
+    have required parameters.
+
+!!! warning  "Specifying Zenith services"
+
+    With Kubernetes apps, the expected Zenith services are not known up front as part
+    of the app metadata, as they are for CaaS clusters.
+
+    This means that the expected Zenith services for each app must be declared in config.
+
+By default, a test case is generated for all app templates except those that are explicitly
+disabled. This logic can be inverted, so that test cases are **only** generated for app
+templates where they are **explicitly enabled**, using the following variable:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+generate_tests_kubernetes_apps_default_test_case_enabled: false
+```
+
+The Kubernetes cluster on which the apps will be deployed is configured using the
+following variables:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+# The name of the Kubernetes cluster template to use
+# If not given, the latest Kubernetes cluster template is used
+generate_tests_kubernetes_apps_k8s_template:
+
+# The ID of the flavors to use for control plane and worker nodes respectively
+# By default, the smallest suitable size is used
+generate_tests_kubernetes_apps_k8s_control_plane_size:
+generate_tests_kubernetes_apps_k8s_worker_size:
+
+# The number of workers that should be deployed for the cluster
+generate_tests_kubernetes_apps_k8s_worker_count: 2
+```
+
+The following variables are available to affect the test generation for each app template:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+# Indicates if the test case for the cluster type should be enabled
+generate_tests_kubernetes_apps_test_case_{app_template}_enabled: true
+
+# The names of the expected Zenith services for the app
+generate_tests_kubernetes_apps_test_case_{app_template}_services:
+  - service-1
+  - service-2
+
+# The expected title fragment for the named Zenith service
+generate_tests_kubernetes_apps_test_case_{app_template}_service_{service_name}_expected_title: "<title fragment>"
+```
+
+!!! warning
+
+    When used in variable names, dashes (`-`) in the app template name or Zenith service
+    names will be replaced with underscores (`_`).
 
 ## Automated testing
