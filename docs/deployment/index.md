@@ -10,7 +10,9 @@ to use a [virtual environment](https://docs.python.org/3/library/venv.html) in o
 to keep the dependencies isolated from other Python applications on the host.
 
 `azimuth-config` includes a utility script that will create a Python virtual
-environment in the configuration directory and install the required dependencies:
+environment, this requires python version 3.9+.
+
+In the configuration directory and install the required dependencies:
 
 ```sh
 ./bin/ensure-venv
