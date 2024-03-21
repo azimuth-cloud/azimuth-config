@@ -75,7 +75,7 @@ user workloads using the appropriate automation.
 
 ## Deployment Prerequisites
 
-Before proceeding with an Azimuth Azimuth [deployment](./deployment/index.md),
+Before proceeding with an Azimuth [deployment](./deployment/index.md),
 you should ensure that you can fulfil
 [all the prerequisites](./configuration/01-prerequisites.md).
 
