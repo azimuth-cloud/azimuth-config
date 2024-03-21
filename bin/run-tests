@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+#####
+## This script generates and then runs tests for the active environment
+#####
+
+set -exo pipefail
+
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
+fi
+
+
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+# Process the arguments to see if we should generate tests or just execute
+# By default, we will generate the tests
+GENERATE_TESTS=1
+ROBOT_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --generate)
+            GENERATE_TESTS=1
+            shift
+            ;;
+        --no-generate)
+            GENERATE_TESTS=0
+            shift
+            ;;
+        *)
+            ROBOT_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Generate the test suite based on the current config
+if [[ "$GENERATE_TESTS" -eq 1 ]]; then
+    ansible-galaxy install -f -r requirements.yml
+    ansible-playbook stackhpc.azimuth_ops.generate_tests
+fi
+
+# Get the test directory
+test_directory="$(ansible_variable generate_tests_suite_directory)"
+# Use a headless browser by default
+export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
+# Execute the test suite, including any args we were given
+exec robot --loglevel debug --consolecolors on "${ROBOT_ARGS[@]}" "$test_directory"
