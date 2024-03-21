@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-# This script is designed to be run in a CI pipeline in an isolated Ubuntu 20.04 environment
+# This script is designed to be run in a CI pipeline in an isolated Ubuntu Jammy environment
 #####
 
 set -eo pipefail
@@ -30,7 +30,6 @@ function run_apt {
   fi
 }
 
-
 if [ -n "$GIT_CRYPT_KEY_B64" ]; then
   # Unlock the repository
   run_apt update
@@ -55,7 +54,7 @@ if [ -z "$AZIMUTH_ENVIRONMENT" ]; then
 fi
 
 run_apt update
-run_apt install -y qemu-utils
+run_apt install -y git python3 python3-pip qemu-utils
 pip install -U pip
 pip install -r requirements.txt
 

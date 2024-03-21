@@ -102,6 +102,12 @@ component versions, upgraded dependencies and new images.
     The available releases, with associated release notes, can be reviewed on the
     [Azimuth releases page](https://github.com/stackhpc/azimuth-config/releases).
 
+!!! tip  "Automating upgrades"
+
+    If you have automated deployments, which is recommended for a production installation,
+    this process
+    [can also be automated](../deployment/automation.md#automated-synchronisation-of-upstream-changes).
+
 To upgrade your Azimuth configuration to a new release, use the following steps to create
 a new branch containing the upgrade:
 
