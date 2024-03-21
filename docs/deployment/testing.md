@@ -68,6 +68,50 @@ values that are guessed based on the cluster type and target Azimuth. It then wa
 workstation to become `Ready` before verifying that the the Zenith services are behaving
 as expected. Finally, the workstation is deleted.
 
+## Credentials for executing tests
+
+The generated test suite uses an OpenStack application credential to authenticate with Azimuth,
+and this credential determines which project test platforms will be created in. This *can*
+be the same project that Azimuth is deployed in, but should ideally be a different project.
+
+!!! danger  "Application credential must be unrestricted"
+
+    Because Azimuth creates an application credential for each deployed platform, the
+    application credential used to authenticate with Azimuth to create test platforms
+    must be able to create and delete other application credentials.
+
+    This is referred to as **unrestricted** in OpenStack (**Unrestricted (dangerous)**
+    in the Horizon UI).
+
+The application credential used for running tests should be placed in the
+[same clouds.yaml as the credential used to deploy Azimuth](../configuration/01-prerequisites.md#application-credential).
+
+```yaml  title="environments/my-site/clouds.yaml"
+clouds:
+  # The main application credential used to deploy Azimuth
+  openstack:
+    auth:
+      auth_url: https://openstack.example-cloud.org:5000
+      application_credential_id: "<appcred id>"
+      application_credential_secret: "<appcred secret>"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"
+
+  # The application credential used to create test platforms via Azimuth
+  unrestricted:
+    auth:
+      auth_url: https://openstack.example-cloud.org:5000
+      application_credential_id: "<appcred id>"
+      application_credential_secret: "<appcred secret>"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"
+```
+
+
 ## Generating and executing tests
 
 Before tests can be generated and executed for an [environment](../environments.md), it must
@@ -83,14 +127,24 @@ pip install -U pip
 pip install -r requirements.txt
 ```
 
-The tests can then be generated and executed using the `run-tests` utility script:
+The integration test suite can then be generated and executed for the environment.
+
+Because the test generation connects to the Azimuth deployment to query the installed platform
+types, this must use the application credential that is used for deployment. The execution
+of the tests then uses the unrestricted application credential:
 
 ```sh
 # Activate the target environment
 source ./bin/activate my-site
 
-# Generate and run the tests
-./bin/run-tests
+# Make sure you have the correct version of the Ansible collection installed
+ansible-galaxy install -f -r requirements.yml
+
+# Generate the test suite
+ansible-playbook stackhpc.azimuth_ops.generate_tests
+
+# Execute the test suite
+OS_CLOUD=unrestricted ./bin/run-tests
 ```
 
 ## Configuring test generation
@@ -172,6 +226,8 @@ generate_tests_caas_test_case_{cluster_type}_verify_timeout: "45 minutes"
 
     If the cluster type or service name contain dashes (`-`), they will be replaced with
     underscores (`_`).
+
+#### Worked example for a custom cluster type
 
 ### Kubernetes cluster templates
 

@@ -68,6 +68,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - toc:
+      toc_depth: 3
 
 plugins:
   - git-revision-date-localized:
