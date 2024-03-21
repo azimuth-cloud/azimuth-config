@@ -75,11 +75,13 @@ user workloads using the appropriate automation.
 
 ## Deployment Prerequisites
 
-Before proceeding with an Azimuth [deployment](./deployment/index.md),
-you should ensure that the target cloud
-meets the [prerequisites](./configuration/01-prerequisites.md).
-The prerequisite docs include details around the need for a wildcard DNS entry,
-matching TLS certificates and creating OpenStack application credentials.
+Before proceeding with an Azimuth Azimuth [deployment](./deployment/index.md),
+you should ensure that you can fulfil
+[all the prerequisites](./configuration/01-prerequisites.md).
+
+The prerequisites include verifying that the target cloud has the required features available,
+generating OpenStack application credentials
+and ensuring that the required DNS records and TLS certificates are available.
 
 ## OpenTofu state
 
