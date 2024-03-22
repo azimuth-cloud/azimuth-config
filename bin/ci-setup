@@ -1,24 +1,10 @@
 #!/usr/bin/env bash
 
 #####
-# This script is designed to be run in a CI pipeline in an isolated Ubuntu Jammy environment
+# This script performs setup for a CI job in a clean Ubuntu Jammy environment
 #####
 
 set -eo pipefail
-
-case "$1" in
-  provision | destroy)
-    echo "Executing operation '$1'..."
-    AZIMUTH_OPERATION="$1"
-    ;;
-  *)
-    echo "No operation given - please specify either 'provision' or 'destroy'"
-    exit 1
-    ;;
-esac
-
-# Now we have processed the operation, drop the argument
-shift
 
 # Runs apt with sudo only if required
 # Required for environments where sudo is not present
@@ -55,11 +41,9 @@ fi
 
 run_apt update
 run_apt install -y git python3 python3-pip qemu-utils
+
 pip install -U pip
 pip install -r requirements.txt
 
 source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
 ansible-galaxy install -f -r requirements.yml
-# Force Ansible to print colours for nicer logs
-export ANSIBLE_FORCE_COLOR=true
-exec ansible-playbook "stackhpc.azimuth_ops.${AZIMUTH_OPERATION}" "$@"

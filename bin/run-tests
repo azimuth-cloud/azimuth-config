@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+#####
+## This script generates and then runs tests for the active environment
+#####
+
+set -exo pipefail
+
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+    echo "Please activate an environment" >&2
+    exit 1
+fi
+
+
+ansible_variable() {
+    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=json \
+    ansible -m debug -a "var=$1" all | \
+      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+}
+
+
+# Get the test directory
+test_directory="$(ansible_variable generate_tests_suite_directory)"
+# Use a headless browser by default
+export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
+# Execute the test suite, including any args we were given
+exec robot --loglevel debug --consolecolors on "$@" "$test_directory"

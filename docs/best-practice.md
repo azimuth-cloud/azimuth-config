@@ -110,6 +110,11 @@ Merging to `main` will also create a job to deploy to `production`, but that job
 manual trigger. Once the change has been validated in `staging`, the job to deploy to `production`
 can be actioned.
 
+It is also possible to run [integration tests](./deployment/testing.md) against a
+deployment. It is recommended that this is configured to run automatically for at least
+`aio` and `staging` environments. It should also be safe to run against `production` as
+long as the tests are configured to target an isolated project.
+
 A
 [sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.

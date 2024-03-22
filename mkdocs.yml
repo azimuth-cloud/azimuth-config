@@ -33,6 +33,7 @@ nav:
   - Deployment:
       - deployment/index.md
       - deployment/automation.md
+      - deployment/testing.md
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
@@ -67,6 +68,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - toc:
+      toc_depth: 3
 
 plugins:
   - git-revision-date-localized:

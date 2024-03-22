@@ -1,4 +1,4 @@
-# Automating deployments
+# Automated deployments
 
 For a production installation of Azimuth, it is recommended to adopt a
 [continuous delivery](https://en.wikipedia.org/wiki/Continuous_delivery) approach to
