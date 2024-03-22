@@ -11,10 +11,14 @@ to keep the dependencies isolated from other Python applications on the host.
 
 `azimuth-config` includes a utility script that will create a Python virtual
 environment in the configuration directory and install the required dependencies:
+!!! warning  "Python 3.9 required"
+
+    Azimuth requires Python 3.9 or newer.
 
 ```sh
 ./bin/ensure-venv
 ```
+
 
 If it exists, this virtual environment will be activated as part of the environment
 activation (see below).
