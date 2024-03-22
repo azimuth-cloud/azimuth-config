@@ -141,6 +141,10 @@ runs:
         secret-key: ${{ steps.s3-lock-config.outputs.secret-key }}
         bucket: ${{ steps.s3-lock-config.outputs.bucket }}
         action: acquire
+      # GitHub terminates jobs after 6 hours
+      # We don't want jobs to acquire the lock then get timed out before they can finish
+      # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+      timeout-minutes: 180
       if: ${{ steps.s3-lock-config.outputs.host != '' }}
 
     - name: Allocate floating IP for ingress
