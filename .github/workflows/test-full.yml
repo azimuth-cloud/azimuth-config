@@ -32,6 +32,10 @@ jobs:
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-ha
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
@@ -78,6 +82,10 @@ jobs:
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-upgrade
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
 
       - name: Provision Azimuth
         uses: ./.actions/.github/actions/provision
