@@ -115,7 +115,7 @@ azimuth_authenticator_federated_provider: oidc
 #####
 # Configuration for CaaS appliances
 #####
-azimuth_clusters_enabled: no
+azimuth_clusters_enabled: yes
 # If CaaS is enabled and the StackHPC Slurm appliance is enabled (the default), this
 # is the id of a Rocky 8 image that will be used for Slurm clusters
 #   N.B. This is populated automatically using community images by default
