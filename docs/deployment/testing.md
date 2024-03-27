@@ -199,6 +199,13 @@ Test cases for CaaS cluster types perform the following steps:
     All other parameters must be specified explicitly. Guesses can be overridden if not
     appropriate for the test environment.
 
+The generation of tests for CaaS cluster types can be suppressed completely using the
+following variable:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+generate_tests_caas_suite_enabled: false
+```
+
 By default, a test case is generated for all cluster types except those that are explicitly
 disabled. This logic can be inverted, so that test cases are **only** generated for cluster
 types where they are **explicitly enabled**, using the following variable:
@@ -244,6 +251,13 @@ For Kubernetes cluster templates, the generated test cases perform the following
     Steps 4 and 5 use the same title-based verification as for CaaS clusters.
 
     No validation of actual behaviour is currently performed.
+
+The generation of tests for Kubernetes cluster templates can be suppressed completely using
+the following variable:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+generate_tests_kubernetes_suite_enabled: false
+```
 
 By default, a test case is generated for each **active**, i.e. non-deprecated, cluster template.
 
@@ -298,6 +312,13 @@ Once this cluster becomes `Ready`, the following steps are performed for each ap
     of the app metadata, as they are for CaaS clusters.
 
     This means that the expected Zenith services for each app must be declared in config.
+
+The generation of tests for Kubernetes app templates can be suppressed completely using the
+following variable:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/tests.yml"
+generate_tests_kubernetes_apps_suite_enabled: false
+```
 
 By default, a test case is generated for all app templates except those that are explicitly
 disabled. This logic can be inverted, so that test cases are **only** generated for app
