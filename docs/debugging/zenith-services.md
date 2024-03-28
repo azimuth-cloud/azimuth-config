@@ -26,7 +26,7 @@ Once a client has connected to SSHD successfully, it should get registered in
 [Consul](https://www.consul.io/).
 
 To determine if this is the case, it is useful to access the Consul UI. As discussed
-in [Monitoring and alerting](../configuration/13-monitoring.md), the Consul UI
+in [Monitoring and alerting](../configuration/14-monitoring.md), the Consul UI
 is exposed as `consul.<ingress base domain>`, e.g. `consul.azimuth.example.org`,
 and is protected by a username and password.
 

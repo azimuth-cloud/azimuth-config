@@ -11,3 +11,5 @@ runs:
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook stackhpc.azimuth_ops.provision -e @extra-vars.yml
+      env:
+        ANSIBLE_CALLBACKS_ENABLED: ansible.posix.profile_tasks

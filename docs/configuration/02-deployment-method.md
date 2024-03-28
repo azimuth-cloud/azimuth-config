@@ -10,7 +10,7 @@
 
 ## Single node
 
-In this deployment method, a single node is provisioned with [Terraform](https://www.terraform.io/)
+In this deployment method, a single node is provisioned with [OpenTofu](https://opentofu.org/)
 and configured as a [K3S](https://k3s.io/) cluster. The full Azimuth stack is then deployed
 onto this cluster.
 
@@ -44,7 +44,7 @@ infra_data_volume_size: 100
 
 ## Highly-available (HA)
 
-For the HA deployment method, Terraform is also used to provision a single node that is
+For the HA deployment method, OpenTofu is also used to provision a single node that is
 configured as a K3S cluster. However rather than hosting the Azimuth components, as in
 the single node case, this K3S cluster is only configured as a
 [Cluster API management cluster](https://cluster-api.sigs.k8s.io/user/concepts.html#management-cluster).

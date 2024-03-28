@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-# This script creates a branch that merges the latest upstream changes
+# This script creates a branch that merges the latest release
 #####
 
 set -e
@@ -18,29 +18,33 @@ if [ -n "$(git status --short)" ]; then
   exit 1
 fi
 
-if ! git remote show upstream > /dev/null 2>&1; then
-  echo "[INFO] Adding upstream remote..."
-  git remote add upstream https://github.com/stackhpc/azimuth-config.git
-fi
+UPSTREAM_REPO="${UPSTREAM_REPO:-"stackhpc/azimuth-config"}"
+echo "[INFO] Using upstream repo - $UPSTREAM_REPO"
 
+# Fetch the tag for the latest release from the upstream repository
+RELEASE_TAG="$(curl -fsSL "https://api.github.com/repos/${UPSTREAM_REPO}/releases/latest" | jq -r '.tag_name')"
+echo "[INFO] Found latest release tag - $RELEASE_TAG"
+
+# Add the repository as an upstream
+echo "[INFO] Adding upstream remote..."
+git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
 git remote show upstream
 
-echo "[INFO] Fetching remote branches..."
-git fetch upstream
+echo "[INFO] Fetching remote tags..."
+git remote update
 
-# Use the short sha from the upstream branch to distinguish merge branches
-UPSTREAM_COMMIT="$(git rev-parse --short upstream/main)"
-BRANCH_NAME="upstream-merge-${UPSTREAM_COMMIT}"
+# Use a branch that is named for the release
+BRANCH_NAME="upgrade/$RELEASE_TAG"
 
 # Check if the branch already exists on the origin
-# If it does, there is nothing more to do as the branch can be rebased from the MR if required
+# If it does, there is nothing more to do as the branch can be rebased from the MR
 if git show-branch "remotes/origin/$BRANCH_NAME" >/dev/null 2>&1; then
-  echo "[INFO] Merge branch already created for commit '${UPSTREAM_COMMIT}'"
+  echo "[INFO] Merge branch already created for $RELEASE_TAG"
   exit
 fi
 
-echo "[INFO] Attempting to merge from upstream"
-git merge --strategy recursive -X theirs --no-commit upstream/main
+echo "[INFO] Merging release tag - $RELEASE_TAG"
+git merge --strategy recursive -X theirs --no-commit $RELEASE_TAG
 
 # Check if the merge resulted in any changes being staged
 if [ -n "$(git status --short)" ]; then
@@ -50,8 +54,8 @@ if [ -n "$(git status --short)" ]; then
   echo "[INFO] Checking out temporary branch '$BRANCH_NAME'..."
   git checkout -b "$BRANCH_NAME"
 
-  echo "[INFO] Committing changes from upstream"
-  git commit -m "Merging changes from upstream"
+  echo "[INFO] Committing changes"
+  git commit -m "Upgrade Azimuth to $RELEASE_TAG"
 
   echo "[INFO] Pushing changes to origin"
   git push --set-upstream origin "$BRANCH_NAME"
@@ -63,10 +67,10 @@ if [ -n "$(git status --short)" ]; then
   echo "[INFO] Removing temporary branch"
   git branch -d "$BRANCH_NAME"
 
-  # Write a file containing the branch name and upstream commit
+  # Write a file containing the branch name and tag
   # for automatic PR or MR creation that follows
   echo "BRANCH_NAME=\"$BRANCH_NAME\"" > .mergeenv
-  echo "UPSTREAM_COMMIT=\"$UPSTREAM_COMMIT\"" >> .mergeenv
+  echo "RELEASE_TAG=\"$RELEASE_TAG\"" >> .mergeenv
 else
   echo "[INFO] Merge resulted in no changes"
 fi

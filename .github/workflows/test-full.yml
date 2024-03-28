@@ -3,6 +3,16 @@ name: Full test suite
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    inputs:
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
 
 jobs:
   # Tests a clean HA deployment + all appliances
@@ -16,11 +26,16 @@ jobs:
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
         with:
-          os-clouds: ${{ secrets.CLOUD }}
+          os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
-          config-environment: ci-ha
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          install-mode: ha
           environment-prefix: ci-ha
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
 
       - name: Provision Azimuth
         uses: ./.github/actions/provision
@@ -61,11 +76,16 @@ jobs:
       - name: Set up Azimuth environment
         uses: ./.actions/.github/actions/setup
         with:
-          os-clouds: ${{ secrets.CLOUD }}
+          os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
           ref: ${{ steps.latest-tag.outputs.tag-name }}
-          config-environment: ci-ha
-          environment-prefix: ci-az-upgrade
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          install-mode: ha
+          environment-prefix: ci-upgrade
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
 
       - name: Provision Azimuth
         uses: ./.actions/.github/actions/provision

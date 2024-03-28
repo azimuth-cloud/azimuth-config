@@ -1,4 +1,4 @@
-# Automating deployments
+# Automated deployments
 
 For a production installation of Azimuth, it is recommended to adopt a
 [continuous delivery](https://en.wikipedia.org/wiki/Continuous_delivery) approach to
@@ -36,7 +36,7 @@ set up continuous delivery for an Azimuth configuration repository.
 !!! tip
 
     If you are using GitLab for your configuration repository, make sure you have
-    [configured it to use GitLab-managed Terraform state](../repository/terraform.md#gitlab).
+    [configured it to use GitLab-managed Terraform state](../repository/opentofu.md#gitlab).
 
 !!! warning "Runner configuration"
 
@@ -61,7 +61,7 @@ environment in your repository. This is a one-to-one relationship except for
 where multiple GitLab environments will use a single configuration environment.
 
 If you are using GitLab-managed Terraform state, each *GitLab environment* (not
-configuration environment) will get it's own independent Terraform state.
+configuration environment) will get it's own independent state.
 
 The sample configuration defines the following deployment jobs:
 
@@ -149,10 +149,6 @@ mixin environments):
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 
-# CaaS configuration
-azimuth_caas_stackhpc_slurm_appliance_login_flavor_name: "<flavor name>"
-azimuth_caas_stackhpc_slurm_appliance_control_flavor_name: "<flavor name>"
-
 # Azimuth cloud name
 #   This can use the environment name if desired, e.g.:
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"
@@ -161,18 +157,21 @@ azimuth_current_cloud_label: "{{ lookup('env', 'CI_ENVIRONMENT_NAME') }}"
 # "Secrets"
 #   Since the dynamic environments are short-lived, there is not much
 #   risk in using secrets that are not really secret for ease
+admin_dashboard_ingress_basic_auth_password: admin
 harbor_admin_password: admin
-harbor_secret_key: notsecret0123456
-zenith_registrar_subdomain_token_signing_key: notsecret
-azimuth_secret_key: notsecret
+harbor_secret_key: abcdefghijklmnop
+keycloak_admin_password: admin
+zenith_registrar_subdomain_token_signing_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789AA
+azimuth_secret_key: 9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcda00
 ```
 
-### Automated synchronisation of upstream changes
+### Automated upgrades
 
 The sample configuration also includes a job that can automatically
-[synchronise changes from upstream](../repository/index.md#synchronising-changes-from-upstream).
+[propose an Azimuth upgrade](../repository/index.md#upgrading-to-a-new-azimuth-release)
+when a new release becomes available.
 
-If the job detects changes, it will create a new branch, merge the changes
+If the job detects a new release, it will create a new branch, merge the changes
 into it and create an associated
 [merge request](https://docs.gitlab.com/ee/user/project/merge_requests/).
 If you also have
@@ -181,10 +180,10 @@ enabled, then this will automatically trigger a job to deploy the changes for re
 
 The job will only run for a
 [scheduled pipeline](https://docs.gitlab.com/ee/ci/pipelines/schedules.html), so
-if you want to have automatic synchronisation of upstream changes you must
+to enable automated upgrades you must
 [add a pipeline schedule](https://docs.gitlab.com/ee/ci/pipelines/schedules.html#add-a-pipeline-schedule)
 for the `main` branch of your configuration repository with a suitable interval
-(e.g. daily or weekly).
+(e.g. weekly).
 
 Because the job needs to write to the repository and call the merge requests API,
 the [CI/CD job token](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html) is not
@@ -219,7 +218,7 @@ Unfortunately, this is a paid feature and the only real alternative is to use a
 For site-specific configuration repositories hosted on GitHub, `azimuth-config` provides two sample workflows
 for automated deployments to a test or staging environment
 ([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-staging.yml.sample))
-and manually-triggered deployment to a production environment 
+and manually-triggered deployment to a production environment
 ([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)).
 These can be used with [GitHub Actions](https://docs.github.com/en/actions) to mimic some of the GitLab
 functionality described above. Each sample file contains a top-level comment describing how to tailor these

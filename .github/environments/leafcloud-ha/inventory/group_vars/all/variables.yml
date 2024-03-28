@@ -1,0 +1,36 @@
+# Unset the network ID so that a network + router are provisioned
+infra_network_id:
+
+# Unset the infra IP so we can use the ingress IP for the ingress controller
+infra_fixed_floatingip:
+capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
+
+# Make sure we pick flavors that keep the costs down
+#   The flavor to use for the seed VM
+infra_flavor_id: ec1.medium  # 2 vCPUs, 4GB RAM @ leaf site
+#   The flavor to use for the control plane nodes
+capi_cluster_control_plane_flavor: ec1.medium  # 2 vCPUs, 4GB RAM @ leaf site
+#   The flavor to use for worker nodes
+capi_cluster_worker_flavor: en1.medium  # 2 vCPUs, 8GB RAM @ leaf site
+
+# Although this is a "HA" test, what we are really testing is the spawning
+# of the CAPI cluster and deployment of Azimuth onto that
+# So one control plane node is sufficient for that
+capi_cluster_control_plane_count: 1
+capi_cluster_worker_count: 2
+
+# Don't use explicit AZs for Kubernetes nodes
+capi_cluster_control_plane_omit_failure_domain: true
+capi_cluster_worker_failure_domain: null
+
+# Leafcloud doesn't use the default 'nova' AZ for volumes
+capi_cluster_root_volume_availability_zone: europe-nl-ams1
+capi_cluster_addons_csi_cinder_availability_zone: europe-nl-ams1
+
+# Use the unencrypted volume type for Kubernetes volumes
+capi_cluster_root_volume_type: unencrypted
+capi_cluster_addons_csi_cinder_volume_type: unencrypted
+
+# Use a single replica for Consul
+# The risk of failed upgrades is too great, and it is going away soon
+consul_server_replicas: 1

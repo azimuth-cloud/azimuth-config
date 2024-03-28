@@ -3,6 +3,8 @@
 This documentation describes how to manage deployments of
 [Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.
 
+## Deploying Azimuth
+
 Azimuth is deployed using [Ansible](https://www.ansible.com/) with playbooks from the
 [azimuth-ops Ansible collection](https://github.com/stackhpc/ansible-collection-azimuth-ops),
 driven by configuration derived from the
@@ -11,6 +13,12 @@ driven by configuration derived from the
 The `azimuth-config` repository is designed to be forked for a specific site and is structured
 into multiple [environments](#environments). This structure allows common configuration to be
 shared but overridden where required using composition of environments.
+
+To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
+to get a simple single-node deployment.
+
+For a production-ready deployment, you should follow the steps in the
+[best practice document](./best-practice.md).
 
 ## Structure of an Azimuth deployment
 
@@ -35,20 +43,13 @@ Option 1 is useful for development or demo deployments, but is not suitable for 
 deployment.
 
 Option 2 is the recommended deployment mechanism for most deployments. In this mode,
-[Terraform](https://www.terraform.io/) is used to provision a single-node K3S cluster
-that is configured as a [Cluster API](https://cluster-api.sigs.k8s.io/) management
-cluster. Cluster API is then used to provision a highly-available Kubernetes cluster in
-the same OpenStack project onto which Azimuth is deployed.
+[OpenTofu](https://opentofu.org/), an open-source fork of [Terraform](https://www.terraform.io/),
+is used to provision a single-node K3S cluster that is configured as a
+[Cluster API](https://cluster-api.sigs.k8s.io/) management cluster. Cluster API is then
+used to provision a highly-available Kubernetes cluster in the same OpenStack project
+onto which Azimuth is deployed.
 
 !!! warning
 
     Option 2 requires that [Octavia](https://docs.openstack.org/octavia/latest/index.html)
     is available on the target cloud to provide load-balancers for Azimuth components.
-
-## Deploying Azimuth
-
-To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
-to get a simple single-node deployment.
-
-For a production-ready deployment, you should follow the steps in the
-[best practice document](./best-practice.md).

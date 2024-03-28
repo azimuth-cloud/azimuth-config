@@ -4,10 +4,9 @@
 
 
 # Check python version
-# NOTE: Python 3.8 or newer is required for ansible 2.12 
-# which is in turn required for the 'undef' ansible keyword
+# NOTE: Python 3.9 or newer is required to use str.removeprefix()
 PY_MAJOR=3
-PY_MINOR=8
+PY_MINOR=9
 version_check() {
 cat << EOF | python3
 import sys
