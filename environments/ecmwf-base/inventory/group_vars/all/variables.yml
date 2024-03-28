@@ -99,11 +99,6 @@ azimuth_authenticator_password_enabled: true
 # The label for the password authenticator
 azimuth_authenticator_password_label: "Username + Password"
 
-# Whether the appcred authenticator should be enabled (not enabled by default)
-azimuth_authenticator_appcred_enabled: false
-# The label for the appcred authenticator
-azimuth_authenticator_appcred_label: "Application Credential"
-
 # Whether the federated authenticator should be enabled (not enabled by default)
 azimuth_authenticator_federated_enabled: false
 # The label for the federated authenticator
