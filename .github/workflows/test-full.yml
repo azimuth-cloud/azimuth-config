@@ -51,7 +51,6 @@ jobs:
   # Currently, this just tests the Azimuth upgrade itself with no appliances
   # TODO(mkjpryor) add appliance provisioning and verification before and after upgrade
   test_azimuth_upgrade:
-    needs: [test_clean_ha]
     runs-on: ubuntu-latest
     steps:
       - name: Get latest tag
