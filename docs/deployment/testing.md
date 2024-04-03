@@ -68,7 +68,41 @@ values that are guessed based on the cluster type and target Azimuth. It then wa
 workstation to become `Ready` before verifying that the the Zenith services are behaving
 as expected. Finally, the workstation is deleted.
 
-## Credentials for executing tests
+## Prerequisites
+
+### Config
+
+Make sure references to the application credential authenticator in your current config environment
+are either set to `true` or removed completely: 
+```yaml  title="environments/my-site/clouds.yaml"
+azimuth_authenticator_appcred_enabled: true
+```
+
+### Firefox package
+If you are running tests manually outside of a CI environment, you need to ensure you have the correct
+Firefox package installed for Selium. 
+
+On Ubuntu: 
+```
+# Remove any old firefox packages
+sudo apt remove --purge  firefox
+sudo snap remove --purge firefox
+# Add the Mozilla PPA 
+wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
+
+# Set firefox priority to ensure the Mozilla package is always preferred
+echo '
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000
+' | sudo tee /etc/apt/preferences.d/mozilla
+
+# Install firefox
+sudo apt update && sudo apt install firefox
+```
+
+### Credentials for executing tests
 
 The generated test suite uses an OpenStack application credential to authenticate with Azimuth,
 and this credential determines which project test platforms will be created in. This *can*
