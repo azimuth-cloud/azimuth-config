@@ -16,36 +16,36 @@ on:
 
 jobs:
   # Tests a clean HA deployment + all appliances
-  # test_clean_ha:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     # We need to check out the code under test first in order to use local actions
-  #     - name: Checkout code under test
-  #       uses: actions/checkout@v3
+  test_clean_ha:
+    runs-on: ubuntu-latest
+    steps:
+      # We need to check out the code under test first in order to use local actions
+      - name: Checkout code under test
+        uses: actions/checkout@v3
 
-  #     - name: Set up Azimuth environment
-  #       uses: ./.github/actions/setup
-  #       with:
-  #         os-clouds: ${{ secrets.OS_CLOUDS }}
-  #         repository: ${{ github.repository }}
-  #         ref: ${{ github.ref }}
-  #         target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
-  #         install-mode: ha
-  #         environment-prefix: ci-ha
-  #       # GitHub terminates jobs after 6 hours
-  #       # We don't want jobs to acquire the lock then get timed out before they can finish
-  #       # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
-  #       timeout-minutes: 180
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.OS_CLOUDS }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          install-mode: ha
+          environment-prefix: ci-ha
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
 
-  #     - name: Provision Azimuth
-  #       uses: ./.github/actions/provision
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
 
-  #     - name: Run Azimuth tests
-  #       uses: ./.github/actions/test
+      - name: Run Azimuth tests
+        uses: ./.github/actions/test
 
-  #     - name: Destroy Azimuth
-  #       uses: ./.github/actions/destroy
-  #       if: ${{ always() }}
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}
 
   # Tests an Azimuth upgrade from the current latest release to the code under test
   #
