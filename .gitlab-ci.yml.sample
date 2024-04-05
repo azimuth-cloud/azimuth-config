@@ -118,7 +118,7 @@ deploy_aio:
     # This is normally taken from the GitLab environment name, but in this case that
     # depends on the branch name so we need to be explicit about the config to use
     AZIMUTH_CONFIG_ENVIRONMENT: aio
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -150,7 +150,7 @@ test_aio:
     name: aio/$CI_COMMIT_REF_SLUG
   variables:
     AZIMUTH_CONFIG_ENVIRONMENT: aio
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -192,7 +192,7 @@ stop_aio:
   variables:
     AZIMUTH_CONFIG_ENVIRONMENT: aio
     GIT_STRATEGY: none
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - git clone ${CI_REPOSITORY_URL} ${CI_PROJECT_NAME}
     - cd ${CI_PROJECT_NAME}
@@ -232,7 +232,7 @@ deploy_staging:
   environment:
     name: staging
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -264,7 +264,7 @@ test_staging:
   environment:
     name: staging
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -305,7 +305,7 @@ deploy_production:
   environment:
     name: production
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -333,7 +333,7 @@ test_production:
   environment:
     name: production
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
