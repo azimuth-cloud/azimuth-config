@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-## This script sets up a port-forward to the specified Azimuth service, via the K3S
+## This script sets up a port-forward to the specified Azimuth service, via the K3s
 ## node for the environment
 #####
 

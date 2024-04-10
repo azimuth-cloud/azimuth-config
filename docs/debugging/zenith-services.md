@@ -8,7 +8,7 @@ The first thing that happens to connect a Zenith service is that the Zenith clie
 must connect to the Zenith SSHD. To see if a Zenith client is connecting, check for the
 Zenith subdomain in the logs of the SSHD server:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth logs deploy/zenith-server-sshd [-f]
 ```
 
@@ -16,7 +16,7 @@ If there are no logs for the target Zenith subdomain, this usually indicates a p
 with the client. Check the logs for the client and restart it if necessary. If problems
 persist, try restarting the Zenith SSHD:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 ```
 
@@ -39,7 +39,7 @@ itself. Futher information for debugging Consul issues is provided in
 
 If the issue persists once Consul issues are ruled out, try restarting SSHD:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 ```
 
@@ -51,7 +51,7 @@ by the [azimuth-identity-operator](https://github.com/stackhpc/azimuth-identity-
 To see if this step has happened, check the status of the `realm` and `platform` resources
 created by the identity operator. They should all be in the `Ready` phase:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl get realm,platform -A
 NAMESPACE   NAME                                          PHASE   TENANCY ID      OIDC ISSUER                                           AGE
 az-demo     realm.identity.azimuth.stackhpc.com/az-demo   Ready   xxxxxxxxxxxxx   https://identity.azimuth.example.org/realms/az-demo   4d2h
@@ -63,7 +63,7 @@ az-demo     platform.identity.azimuth.stackhpc.com/kube-mykubecluster   Ready   
 If any of these resources stay in an unready state for more than a few minutes, try restarting
 the identity operator:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deployment/azimuth-identity-operator
 ```
 
@@ -74,7 +74,7 @@ services with Kubernetes resources is not functioning correctly. To check if Kub
 resources are being created, run the following command and check that the `Ingress`,
 `Service` and `Endpoints` resources have been created for the service:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n zenith-services get ingress,service,endpoints
 NAME                                                            CLASS   HOSTS                                                     ADDRESS         PORTS     AGE
 ingress.networking.k8s.io/cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   nginx   cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g.azimuth.example.org   96.241.100.96   80, 443   2d
@@ -102,7 +102,7 @@ endpoints/txn3zidfdnru5rg109voh848n51rvicmr1s   172.18.152.99:45379             
 
 If they do not exist, try restarting the Zenith sync component:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deployment/zenith-server-sync
 ```
 
@@ -114,7 +114,7 @@ it has been rate-limited.
 
 To check if this is the case, check the state of the certificates for the Zenith services:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n zenith-services get certificate
 NAME                                      READY   SECRET                                    AGE
 tls-cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   True    tls-cjzm03yczuj6oqrj3h8htl4u1bbx96qd53g   2d

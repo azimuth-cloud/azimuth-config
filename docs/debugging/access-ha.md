@@ -1,9 +1,9 @@
 # Accessing the HA cluster
 
-HA clusters are provisioned using Cluster API on the K3S node. The Kubernetes API of the
-HA cluster is not accessible to the internet, so the K3S node is used to access it.
+HA clusters are provisioned using Cluster API on the K3s node. The Kubernetes API of the
+HA cluster is not accessible to the internet, so the K3s node is used to access it.
 
-On the K3S node, a kubeconfig file for the HA cluster is created in the `$HOME` directory
+On the K3s node, a kubeconfig file for the HA cluster is created in the `$HOME` directory
 of the `ubuntu` user. You can activate this kubeconfig by setting the `KUBECONFIG` environment
 variable, which allows you to access the HA cluster using `kubectl`:
 

@@ -1,6 +1,6 @@
 # OpenTofu state
 
-`azimuth-ops` uses [OpenTofu](https://opentofu.org/) to manage the K3S node in both the
+`azimuth-ops` uses [OpenTofu](https://opentofu.org/) to manage the K3s node in both the
 single node and high-availability deployment methods.
 
 !!! info

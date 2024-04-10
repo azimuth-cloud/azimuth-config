@@ -33,7 +33,7 @@ infra_external_network_id: "<network id>"
 # For a single node deployment, >= 16GB RAM is recommended
 infra_flavor_id: "<flavor id>"
 
-# The size of the volume to use for K3S cluster data
+# The size of the volume to use for K3s cluster data
 infra_data_volume_size: 100
 
 # SINGLE NODE DEPLOYMENT ONLY
