@@ -100,17 +100,10 @@ deploy_aio:
       when: never
     # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
-    # Run when there is a push to a branch with a merge request that changes one of the relevant files
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    # Run when there is a push to a branch with a merge request to main
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
     on_stop: stop_aio
@@ -130,22 +123,12 @@ deploy_aio:
 test_aio:
   stage: aio_test
   rules:
-    # Do not run for commits to main
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
-    # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
-    # Run when there is a push to a branch with a merge request that changes one of the relevant files
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
   variables:
@@ -174,16 +157,9 @@ stop_aio:
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
       when: manual
       allow_failure: true
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: manual
       allow_failure: true
   environment:
