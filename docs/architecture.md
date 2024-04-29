@@ -1,15 +1,14 @@
 # Azimuth Architecture
 
-These docs look at the Azimuth Architecture from a deployer point of view.
+These docs look at the Azimuth Architecture from an operator's point of view.
 
 For more details on Azimuth Architecture from a developer point of view, please see the
 [Azimuth Architecture Developer Docs](https://github.com/stackhpc/azimuth/blob/master/docs/architecture.md).
 
 ## Azimuth Components
 
-Lets look at the key parts of an Azimuth deployment,
-working through them as they are setup by the
-Ansible automation.
+The following sections highlight the key parts of an Azimuth deployment,
+working through them in the order that they are setup by the Ansible automation.
 
 ### Config git repository
 
@@ -17,46 +16,48 @@ The desired state is recorded in git.
 Updating involves merging in the latest changes from the
 [azimuth-config reference configuration](https://github.com/stackhpc/azimuth-config).
 
-Good practice is to use a single git repository
+It is recommmended to use a single git repository
 for all your [Azimuth environments](./environments.md),
 e.g. for both staging and production.
-Similarly, `git-crypt` is recommended
+Similarly, `git-crypt` should be used
 for [encrypting secrets](./repository/secrets.md).
 
 ### Control host
 
-This is where Ansible is run.
-
-Ideally Ansible is run from within an ephemeral runner
-created by [GitHub or GitLab automation](./deployment/automation.md).
+This is where Ansible is run. Ideally, this should be from within an ephemeral runner
+created by [GitHub or GitLab automation](./deployment/automation.md). The control host must
+be able to reach the OpenStack public API endpoints for the target cloud.
 
 ### Ansible collection
 
-TODO
+The [azimuth-ops](https://github.com/stackhpc/ansible-collection-azimuth-ops/) Ansible collection
+contains all of the roles and playbooks required to deploy and update Azimuth. The
+[provision](https://github.com/stackhpc/ansible-collection-azimuth-ops/blob/main/playbooks/provision.yml)
+playbook provides the main entry point into the Ansible collection.
 
 ### Deployment OpenStack Project
 
-Azimuth is typically run within the OpenStack cloud it is targeting.
+Azimuth management infrastructure is typically run within the OpenStack cloud it is targeting.
 
-To isolate your Azimuth deployment from other workloads,
-it is good practice to run Azimuth within a separate OpenStack project
-dedicated to running Azimuth.
+To isolate your Azimuth manangement infrastructure from other workloads,
+it is good practice to run Azimuth within a separate dedicated OpenStack project.
 Moreover, production and staging deployments are typically
 given their own separate OpenStack project.
 
 ### Seed VM with K3S
 
-This VM is created using OpenTofu, within the deployment OpenStack project
-used to deploy Azimuth.
-We run [K3S](https://k3s.io/) in this VM.
+This VM is created in the deployment OpenStack project using OpenTofu.
+A light-weight [K3S](https://k3s.io/) cluster is run on the seed node, with all
+K3S data stored in a dedicated Cinder volume mounted at `/var/lib/rancher/`,
+allowing the seed VM to be upgraded or recreated without data loss (as long as the
+Cinder volume is preserved).
 
-For single node deployments, all services run here.
+For single node deployments, all Azimuth components run on the seed's K3S cluster.
 
-For HA deployments, K3S is used to run a
+For highly-available (HA) deployments, K3S is instead used to run a
 [Cluster API management cluster](https://cluster-api.sigs.k8s.io/user/concepts#management-cluster).
-We then use the
-[CAPI helm charts](https://github.com/stackhpc/capi-helm-charts)
-to create a highly available kubernetes cluster.
+which in turn uses [CAPI Helm charts](https://github.com/stackhpc/capi-helm-charts)
+to create a highly-available Kubernetes cluster for hosting the Azimuth management components.
 
 !!! warning
 
@@ -68,17 +69,17 @@ to create a highly available kubernetes cluster.
 ### Seed VM OpenTofu state
 
 An [OpenTofu remote state store](./repository/terraform.md) must be configured
-in order to persist the OpenTofu state used to create the Seed VM.
+in order to persist the OpenTofu state used to create the Seed VM. This state store is accessed,
+for example, when [accessing the seed VM](https://stackhpc.github.io/azimuth-config/debugging/access-k3s/).
 
 ### Azimuth Management Kubernetes Cluster
 
-For ha clusters, we run all Azimuth services in the HA K8s cluster.
+For HA deployments, we run all Azimuth services in the HA K8s cluster.
 For the single node deployment, we run everything in K3s on the seed VM.
 For simplicity we call this the Azimuth Management Cluster.
 
 For more details about the architecture of the Azimuth services, please see the
 [Azimuth Architecture Developer Docs](https://github.com/stackhpc/azimuth/blob/master/docs/architecture.md).
-
 
 ### CaaS images, templates and workloads
 
