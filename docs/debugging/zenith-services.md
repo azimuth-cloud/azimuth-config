@@ -33,7 +33,7 @@ The components of Zenith communicate using three [Kubernetes CRDs](https://kuber
     Heartbeat information for an individual SSH tunnel.  
     Each Zenith SSH tunnel has its own lease resource that is regularly updated with a heartbeat.
 
-If a service is not functioning as expected, we should check the state of the CRDs for
+If a Zenith service is not functioning as expected, check the state of the CRDs for 
 that service.
 
 First, check that the service exists and has an SSH key associated:
