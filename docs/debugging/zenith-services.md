@@ -27,7 +27,7 @@ The components of Zenith communicate using three [Kubernetes CRDs](https://kuber
   * `services.zenith.stackhpc.com`  
     A reserved domain and associated SSH public key.
   * `endpoints.zenith.stackhpc.com`  
-    Stores the current endpoints for a Zenith service.  
+    The current endpoints for a Zenith service.  
     Each SSH tunnel for a service updates this resource to add its address, port and configuration.
   * `leases.zenith.stackhpc.com`  
     Stores heartbeat information for an individual SSH tunnel.  
