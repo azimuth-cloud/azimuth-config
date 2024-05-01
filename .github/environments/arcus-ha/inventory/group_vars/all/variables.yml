@@ -6,12 +6,12 @@ infra_fixed_floatingip:
 capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
 
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
-#   The flavor to use for the seed VM (vm.ska.cpu.general.small)
-infra_flavor_id: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the seed VM (vm.azimuth.ci.ec1.medium)
+infra_flavor_id: 2ef4c0c5-0fb3-457d-9573-cb62a43c34f5
 #   The flavor to use for the control plane nodes
-capi_cluster_control_plane_flavor: vm.ska.cpu.general.small
+capi_cluster_control_plane_flavor: vm.azimuth.ci.ec1.medium
 #   The flavor to use for worker nodes
-capi_cluster_worker_flavor: vm.ska.cpu.general.small
+capi_cluster_worker_flavor: vm.azimuth.ci.ec1.medium
 
 # Although this is a "HA" test, what we are really testing is the spawning
 # of the CAPI cluster and deployment of Azimuth onto that
