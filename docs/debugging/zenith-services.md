@@ -25,7 +25,7 @@ kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 The components of Zenith communicate using three [Kubernetes CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/):
 
   * `services.zenith.stackhpc.com`  
-    Respresents a reserved domain and stores the associated public key.
+    A reserved domain and associated SSH public key.
   * `endpoints.zenith.stackhpc.com`  
     Stores the current endpoints for a Zenith service.  
     Each SSH tunnel for a service updates this resource to add its address, port and configuration.
