@@ -85,7 +85,7 @@ spec:
       status: passing
 ```
 
-The address should be the pod IP of an SSHD pod and the port should be the allocated port
+The address should be the pod IP of a Zenith SSHD pod, and the port should be the allocated port
 reported by the client.
 
 ## OIDC credentials not created
