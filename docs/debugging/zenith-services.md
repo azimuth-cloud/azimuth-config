@@ -22,7 +22,7 @@ kubectl -n azimuth rollout restart deployment/zenith-server-sshd
 
 ## Client not appearing in Zenith CRDs
 
-The components of Zenith communicate using three Kubernetes CRDs:
+The components of Zenith communicate using three [Kubernetes CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/):
 
   * `services.zenith.stackhpc.com`  
     Respresents a reserved domain and stores the associated public key.
