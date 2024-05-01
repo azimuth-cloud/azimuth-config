@@ -31,7 +31,7 @@ The components of Zenith communicate using three [Kubernetes CRDs](https://kuber
     Each Zenith SSH tunnel for a service updates this resource to add its address, port and configuration.
   * `leases.zenith.stackhpc.com`  
     Heartbeat information for an individual SSH tunnel.  
-    Each SSH tunnel has its own lease resource that is regularly updated with a heartbeat.
+    Each Zenith SSH tunnel has its own lease resource that is regularly updated with a heartbeat.
 
 If a service is not functioning as expected, we should check the state of the CRDs for
 that service.
