@@ -121,7 +121,7 @@ kubectl -n azimuth logs deployment/azimuth-identity-operator [-f]
 ## Kubernetes resources for the Zenith service have not been created
 
 If the CRDs for the service look correct, it is possible that the component that watches
-the Zenith CRDs and hooks up the Kubernetes ingress for those services is not functioning
+the Zenith CRDs and creates the Kubernetes ingress for those services is not functioning
 correctly.
 
 This component creates Helm releases to deploy the resources for a service, so first check
