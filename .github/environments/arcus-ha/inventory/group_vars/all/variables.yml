@@ -6,8 +6,9 @@ infra_fixed_floatingip:
 capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
 
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
-#   The flavor to use for the seed VM (vm.azimuth.ci.ec1.medium)
-infra_flavor_id: 2ef4c0c5-0fb3-457d-9573-cb62a43c34f5
+#   The flavor to use for the seed VM
+infra_flavor_id: >-
+  {{ lookup('pipe', 'openstack flavor show vm.azimuth.ci.ec1.medium -f value -c id') }}
 #   The flavor to use for the control plane nodes
 capi_cluster_control_plane_flavor: vm.azimuth.ci.ec1.medium
 #   The flavor to use for worker nodes
