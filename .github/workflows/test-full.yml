@@ -55,6 +55,7 @@ jobs:
   # failed job when required, we need to use step ids and the conclusions of specific steps
   test_azimuth_upgrade:
     runs-on: ubuntu-latest
+    needs: [test_clean_ha]
     steps:
       - name: Get latest tag
         id: latest-tag
