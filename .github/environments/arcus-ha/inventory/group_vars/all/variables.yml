@@ -12,15 +12,13 @@ infra_flavor_id: >-
 #   The flavor to use for the control plane nodes
 capi_cluster_control_plane_flavor: vm.azimuth.ci.ec1.medium
 #   The flavor to use for worker nodes
-capi_cluster_worker_flavor: vm.azimuth.ci.ec1.medium
+capi_cluster_worker_flavor: vm.azimuth.ci.en1.medium
 
 # Although this is a "HA" test, what we are really testing is the spawning
 # of the CAPI cluster and deployment of Azimuth onto that
-# We have also preferred to use 3 small workers rather than 1 or 2 eighth workers,
-# as they are more likely to fit in the gaps between other workloads
-# So one control plane node and two workers is sufficient for that
+# So one control plane node is sufficient for that
 capi_cluster_control_plane_count: 1
-capi_cluster_worker_count: 3
+capi_cluster_worker_count: 2
 
 # Use a single replica for Consul
 # The risk of failed upgrades is too great, and it is going away soon
