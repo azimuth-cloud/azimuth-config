@@ -37,8 +37,15 @@ compiled CSS file. For example, the following configuration tells Azimuth to use
 [Zephyr theme from Bootswatch](https://bootswatch.com/zephyr/):
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_theme_bootstrap_css_url: https://docs.example.org/azimuth
+azimuth_theme_bootstrap_css_url: https://bootswatch.com/5/zephyr/bootstrap.css
 ```
+!!! tip
+
+    In order for the theming changes to take effect you may need to do a hard refresh of 
+    the page due to the aggressive nature of CSS caching.
+
+    Mac: <kbd>⇧ Shift</kbd> + <kbd>⌘ Command</kbd> + <kbd>R</kbd>
+    Windows: <kbd> ctrl</kbd> + <kbd>⇧ Shift</kbd> + <kbd>R</kbd> / <kbd> ctrl</kbd> + <kbd> F5</kbd>
 
 ### Injecting custom CSS
 
