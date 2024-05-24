@@ -100,17 +100,10 @@ deploy_aio:
       when: never
     # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
-    # Run when there is a push to a branch with a merge request that changes one of the relevant files
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    # Run when there is a push to a branch with a merge request to main
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
     on_stop: stop_aio
@@ -118,7 +111,7 @@ deploy_aio:
     # This is normally taken from the GitLab environment name, but in this case that
     # depends on the branch name so we need to be explicit about the config to use
     AZIMUTH_CONFIG_ENVIRONMENT: aio
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -130,27 +123,17 @@ deploy_aio:
 test_aio:
   stage: aio_test
   rules:
-    # Do not run for commits to main
     - if: $CI_COMMIT_BRANCH == "main"
       when: never
-    # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
-    # Run when there is a push to a branch with a merge request that changes one of the relevant files
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
   variables:
     AZIMUTH_CONFIG_ENVIRONMENT: aio
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -174,16 +157,9 @@ stop_aio:
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
       when: manual
       allow_failure: true
-    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        # Files that affect the aio environment
-        - env
-        - env.secret
-        - requirements.yml
-        - environments/base/**/*
-        - environments/singlenode/**/*
-        - environments/site/**/*
-        - environments/aio/**/*
+    - if: >-
+        $CI_PIPELINE_SOURCE == "merge_request_event" &&
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: manual
       allow_failure: true
   environment:
@@ -192,7 +168,7 @@ stop_aio:
   variables:
     AZIMUTH_CONFIG_ENVIRONMENT: aio
     GIT_STRATEGY: none
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - git clone ${CI_REPOSITORY_URL} ${CI_PROJECT_NAME}
     - cd ${CI_PROJECT_NAME}
@@ -232,7 +208,7 @@ deploy_staging:
   environment:
     name: staging
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -264,7 +240,7 @@ test_staging:
   environment:
     name: staging
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -305,7 +281,7 @@ deploy_production:
   environment:
     name: production
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:
@@ -333,7 +309,7 @@ test_production:
   environment:
     name: production
   variables:
-    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_FORCE_COLOR: "true"
   before_script:
     - source ./bin/ci-setup
   script:

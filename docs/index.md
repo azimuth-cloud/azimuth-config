@@ -36,7 +36,7 @@ a configuration derived from `azimuth-config`.
 There are two methods that `azimuth-ops` can use to deploy Azimuth and all of its
 dependencies:
 
-  1. Onto a managed single-node [K3S](https://k3s.io/) cluster in an OpenStack project.
+  1. Onto a managed single-node [K3s](https://k3s.io/) cluster in an OpenStack project.
   2. Onto a managed highly-available Kubernetes cluster in an OpenStack project.
 
 Option 1 is useful for development or demo deployments, but is not suitable for a production
@@ -44,7 +44,7 @@ deployment.
 
 Option 2 is the recommended deployment mechanism for most deployments. In this mode,
 [OpenTofu](https://opentofu.org/), an open-source fork of [Terraform](https://www.terraform.io/),
-is used to provision a single-node K3S cluster that is configured as a
+is used to provision a single-node K3s cluster that is configured as a
 [Cluster API](https://cluster-api.sigs.k8s.io/) management cluster. Cluster API is then
 used to provision a highly-available Kubernetes cluster in the same OpenStack project
 onto which Azimuth is deployed.

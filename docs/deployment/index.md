@@ -61,7 +61,7 @@ ansible-playbook stackhpc.azimuth_ops.provision
 ## Tearing down an environment
 
 `azimuth-ops` is also able to tear down an Azimuth environment, including the
-K3S and HA Kubernetes clusters as required.
+K3s and HA Kubernetes clusters as required.
 
 After activating the environment that you want to tear down, run the following:
 

@@ -8,10 +8,12 @@ infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f 
 infra_fixed_floatingip: "{{ lookup('env', 'INGRESS_IP') }}"
 
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
-#   The flavor to use for the Azimuth AIO VM (vm.ska.cpu.general.eighth)
-infra_flavor_id: 5f9def81-c93f-4c1f-a521-3b810061ff6c
-#   The flavor to use for the workstation test case (vm.ska.cpu.general.small)
-generate_tests_caas_test_case_workstation_param_cluster_flavor: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the Azimuth AIO VM
+infra_flavor_id: >-
+  {{ lookup('pipe', 'openstack flavor show vm.azimuth.ci.en1.medium -f value -c id') }}
+#   The flavor to use for the workstation test case
+generate_tests_caas_test_case_workstation_param_cluster_flavor: >-
+  {{ lookup('pipe', 'openstack flavor show vm.azimuth.ci.ec1.medium -f value -c id') }}
 #   The flavor to use for the repo2docker test case
 generate_tests_caas_test_case_repo2docker_param_cluster_flavor: "{{ generate_tests_caas_test_case_workstation_param_cluster_flavor }}"
 #   The flavor to use for the R-Studio test case
