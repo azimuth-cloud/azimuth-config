@@ -26,7 +26,7 @@ locate the issue.
 
 First, check if the cluster resource exists in the tenant namespace:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n az-demo get cluster
 NAME   LABEL  TEMPLATE      KUBERNETES VERSION   PHASE   NODE COUNT   AGE
 demo   demo   kube-1-24-2   1.24.2               Ready   4            11d
@@ -34,7 +34,7 @@ demo   demo   kube-1-24-2   1.24.2               Ready   4            11d
 
 If no cluster resource exists, check if the Kubernetes CRDs are installed:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl get crd | grep azimuth
 apptemplates.azimuth.stackhpc.com                            2022-11-02T11:11:13Z
 clusters.azimuth.stackhpc.com                                2022-11-02T10:53:26Z
@@ -43,7 +43,7 @@ clustertemplates.azimuth.stackhpc.com                        2022-11-02T10:53:26
 
 If they do not exist, check if the `azimuth-capi-operator` is running:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n azimuth get po -l app.kubernetes.io/instance=azimuth-capi-operator
 NAME                                     READY   STATUS    RESTARTS   AGE
 azimuth-capi-operator-5c65c4b598-h2thx   1/1     Running   0          10d
@@ -54,7 +54,7 @@ azimuth-capi-operator-5c65c4b598-h2thx   1/1     Running   0          10d
 The first thing that the `azimuth-capi-operator` does when it sees a new cluster resource
 is make a Helm release:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ helm -n az-demo list -a
 NAME   NAMESPACE      REVISION        UPDATED                                 STATUS          CHART                                   APP VERSION
 demo   az-demo        1               2022-07-07 13:26:22.94084961 +0000 UTC  deployed        openstack-cluster-0.1.0-dev.0.main.161  a0bcee5
@@ -62,14 +62,14 @@ demo   az-demo        1               2022-07-07 13:26:22.94084961 +0000 UTC  de
 
 If the Helm release does not exist, restart the `azimuth-capi-operator`:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth rollout restart deploy/azimuth-capi-operator
 ```
 
 If the Helm release does not get created, even after a restart, check the logs
 of the `azimuth-capi-operator` for any warnings or errors:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n azimuth logs deploy/azimuth-capi-operator [-f]
 ```
 
@@ -78,7 +78,7 @@ kubectl -n azimuth logs deploy/azimuth-capi-operator [-f]
 If the Helm release is in the `deployed` status, the next thing to check is the
 state of the Cluster API resources that were created:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n az-demo get cluster-api
 NAME                                                                  CLUSTER   BOOTSTRAP   TARGET NAMESPACE       RELEASE NAME                       PHASE      REVISION   AGE
 manifests.addons.stackhpc.com/demo-cloud-config                       demo      true        openstack-system       cloud-config                       Deployed   1          11d
@@ -159,7 +159,7 @@ for the service should have an entry for each control plane node (usually three)
 
 If these all look OK, check the logs of the Cluster API providers for any errors:
 
-```sh  title="On the K3S node, targetting the HA cluster if deployed"
+```sh  title="On the K3s node, targetting the HA cluster if deployed"
 kubectl -n capi-system logs deploy/capi-controller-manager
 kubectl -n capi-kubeadm-bootstrap-system logs deploy/capi-kubeadm-bootstrap-controller-manager
 kubectl -n capi-kubeadm-control-plane-system logs deploy/capi-kubeadm-control-plane-controller-manager
@@ -209,13 +209,13 @@ monitoring-system      pod/kube-prometheus-stack-zenith-client-b9986579d-qgp82  
 
     The kubeconfig for a tenant cluster is available in a secret in the tenant namespace:
 
-    ```command  title="On the K3S node, targetting the HA cluster if deployed"
+    ```command  title="On the K3s node, targetting the HA cluster if deployed"
     $ kubectl -n az-demo get secret | grep kubeconfig
     demo-kubeconfig                                   cluster.x-k8s.io/secret               1      11d
     ```
 
 If everything looks OK, try restarting the Zenith operator for the cluster:
 
-```command  title="On the K3S node, targetting the HA cluster if deployed"
+```command  title="On the K3s node, targetting the HA cluster if deployed"
 $ kubectl -n az-demo rollout restart deploy/demo-zenith-operator
 ```

@@ -26,7 +26,7 @@ meaning they are accessible by all projects in the target cloud, but not include
 when listing images in Horizon, the OpenStack CLI or the OpenStack API.
 
 By default, `azimuth-ops` uploads the set of images that are needed to support Azimuth's
-functionality and auto-wires them into the correct places for the K3S node, the HA Kubernetes
+functionality and auto-wires them into the correct places for the K3s node, the HA Kubernetes
 cluster, the default Kubernetes templates and the default Cluster-as-a-Service appliances.
 
 ## Image properties

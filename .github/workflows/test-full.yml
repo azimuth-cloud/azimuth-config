@@ -47,12 +47,15 @@ jobs:
         uses: ./.github/actions/destroy
         if: ${{ always() }}
 
-  # Tests an Azimuth upgrade from the current latest release
-  # Currently, this just tests the Azimuth upgrade itself with no appliances
-  # TODO(mkjpryor) add appliance provisioning and verification before and after upgrade
+  # Tests an Azimuth upgrade from the current latest release to the code under test
+  #
+  # Note that success() and failure() consider *all previous steps*, and continue-on-failure
+  # prevents the job from being marked as failed if that step fails
+  # This means that in order to get the execution flow that we want while still resulting in a
+  # failed job when required, we need to use step ids and the conclusions of specific steps
   test_azimuth_upgrade:
-    needs: [test_clean_ha]
     runs-on: ubuntu-latest
+    needs: [test_clean_ha]
     steps:
       - name: Get latest tag
         id: latest-tag
@@ -87,31 +90,105 @@ jobs:
         # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
         timeout-minutes: 180
 
-      - name: Provision Azimuth
+      - name: Provision Azimuth at latest tag
         uses: ./.actions/.github/actions/provision
 
+      - name: Generate test suite
+        id: generate-tests
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+
+      - name: Create test platforms
+        id: tests-create
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include create --outputdir reports/create
+
+      - name: Verify test platforms
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include verify --outputdir reports/verify-create
+        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
+
       - name: Checkout code under test
+        id: checkout-latest
         uses: actions/checkout@v3
         with:
           # Make sure not to remove working directories
           clean: false
+        if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies
+        id: update-py
         run: |
           set -e
           source ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           python -m pip install -r requirements.txt
+        if: ${{ !cancelled() && steps.checkout-latest.conclusion == 'success' }}
 
       - name: Upgrade Ansible dependencies
+        id: update-ansible
         run: |
           set -e
           source ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ansible-galaxy install -f -r requirements.yml
+        if: ${{ !cancelled() && steps.update-py.conclusion == 'success' }}
 
       - name: Upgrade Azimuth
+        id: upgrade-azimuth
         uses: ./.actions/.github/actions/provision
+        if: ${{ !cancelled() && steps.update-ansible.conclusion == 'success' }}
+
+      - name: Verify test platforms post upgrade
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-upgrade
+        if: ${{ !cancelled() && steps.upgrade-azimuth.conclusion == 'success' }}
+
+      # TODO(mkjpryor) patch/upgrade not implemented in test generation yet
+      # - name: Upgrade test platforms
+      # - name: Verify test platforms
+
+      - name: Delete test platforms
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include delete --outputdir reports/delete
+        if: ${{ always() }}
+
+      - name: Upload test report artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: azimuth-upgrade-test-reports
+          path: reports/*
+        if: ${{ always() }}
+
+      - name: Create debug bundle
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/create-debug-bundle
+        if: ${{ always() }}
+
+      - name: Upload debug bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: azimuth-upgrade-debug-bundle
+          path: debug-bundle.tar.gz
+        if: ${{ always() }}
 
       - name: Destroy Azimuth
         uses: ./.actions/.github/actions/destroy

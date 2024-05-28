@@ -145,7 +145,7 @@ combined with the `base` and `singlenode` mixin environments (plus any site-spec
 mixin environments):
 
 ```yaml
-# Configuration for the K3S node
+# Configuration for the K3s node
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 

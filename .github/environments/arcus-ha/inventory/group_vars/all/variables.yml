@@ -6,20 +6,19 @@ infra_fixed_floatingip:
 capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
 
 # Flavor auto-detection picks the wrong flavors on Arcus, so override them
-#   The flavor to use for the seed VM (vm.ska.cpu.general.small)
-infra_flavor_id: c8b72062-5d52-4590-9d7a-68a670b44442
+#   The flavor to use for the seed VM
+infra_flavor_id: >-
+  {{ lookup('pipe', 'openstack flavor show vm.azimuth.ci.ec1.medium -f value -c id') }}
 #   The flavor to use for the control plane nodes
-capi_cluster_control_plane_flavor: vm.ska.cpu.general.small
+capi_cluster_control_plane_flavor: vm.azimuth.ci.ec1.medium
 #   The flavor to use for worker nodes
-capi_cluster_worker_flavor: vm.ska.cpu.general.small
+capi_cluster_worker_flavor: vm.azimuth.ci.en1.medium
 
 # Although this is a "HA" test, what we are really testing is the spawning
 # of the CAPI cluster and deployment of Azimuth onto that
-# We have also preferred to use 3 small workers rather than 1 or 2 eighth workers,
-# as they are more likely to fit in the gaps between other workloads
-# So one control plane node and two workers is sufficient for that
+# So one control plane node is sufficient for that
 capi_cluster_control_plane_count: 1
-capi_cluster_worker_count: 3
+capi_cluster_worker_count: 2
 
 # Use a single replica for Consul
 # The risk of failed upgrades is too great, and it is going away soon
