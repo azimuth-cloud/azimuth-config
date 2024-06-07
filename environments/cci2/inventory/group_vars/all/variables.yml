@@ -8,7 +8,7 @@
 # The CIDR of the subnet that should be created
 infra_network_cidr: "192.168.0.0/24"
 # The ID of the external network to connect to via a router
-infra_external_network_id: "cd0f63f2-f3f8-4c14-a688-4c5b9f4bed76" # external-internet
+infra_external_network_id: "60b799f7-68ad-4385-9e2e-be923cdbfad0" # external-internet
 
 # The fixed floating IP to associate with the machine
 # This IP must be pre-allocated to the project
@@ -53,6 +53,9 @@ capi_cluster_etcd_blockdevice_volume_type: "87bc5d37-08b0-46c3-9e94-f93fe2616b21
 # Tenant Clusters
 # Default volume type for the etcd block device if 'Volume' type is used
 azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type: "87bc5d37-08b0-46c3-9e94-f93fe2616b21" # Ceph-SSD
+
+# Reduce just in CCI2 to avoid affected other environments for now.
+capi_cluster_worker_flavor: "8cpu-8gbmem-30gbdisk"
 
 #####
 # Ingress configuration
