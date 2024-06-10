@@ -59,7 +59,7 @@ azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_az: "nova"
 # Ingress configuration
 #####
 # The base domain to use for ingress resources
-ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
+#ingress_base_domain: "{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io"
 
 # Indicates if cert-manager should be enabled
 # Currently, TLS is enabled for ingress iff cert-manager is enabled
