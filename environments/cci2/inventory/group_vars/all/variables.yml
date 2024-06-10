@@ -72,6 +72,9 @@ zenith_sshd_service_load_balancer_ip: "136.156.138.51"
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: amphora
 capi_cluster_addons_openstack_loadbalancer_provider: amphora
 
+# Pin to bugfix for Machines tab 
+azimuth_chart_version: "0.9.1-dev.0.fix-machine-list-when-flavor-is-deleted.1"
+
 #####
 # Terraform State
 ####
