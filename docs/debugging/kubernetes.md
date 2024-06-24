@@ -167,6 +167,31 @@ kubectl -n capo-system logs deploy/capo-controller-manager
 kubectl -n capi-addon-system logs deploy/cluster-api-addon-provider
 ```
 
+## Accessing tenant clusters
+
+The kubeconfigs for all tenant clusters are stored as secrets. First, you need
+to find the name and namespace of the cluster you want to debug. This can be
+seen from the list of clusters:
+
+```command  title="On the K3s node, targetting the HA cluster if deployed"
+$ kubectl get cluster -A
+```
+
+Then, you can retrieve and decode the kubeconfig with the following:
+
+```command  title="On the K3s node, targetting the HA cluster if deployed"
+$ kubectl -n <namespace> get secret <clustername>-kubeconfig -o json | \
+    jq -r '.data.value' | \
+    base64 -d \
+    > kubeconfig-tenant.yaml
+```
+
+This can now be used by exporting the path to this file:
+
+```command  title="On the K3s node, targetting the HA cluster if deployed"
+$ export KUBECONFIG=kubeconfig-tenant.yaml
+```
+
 ## Zenith service issues
 
 Zenith services are enabled on Kubernetes clusters using the
