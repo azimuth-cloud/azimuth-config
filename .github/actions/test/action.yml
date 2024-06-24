@@ -49,6 +49,7 @@ runs:
       if: ${{ always() }}
 
     - name: Clean up test platforms
+      shell: bash
       run: |
         set -e
         source ./ci.env
