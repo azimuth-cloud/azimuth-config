@@ -7,9 +7,9 @@ it, just set:
 azimuth_apps_enabled: no
 ```
 
-The only piece of configuration that is required for Zenith is a secret key that is used
-to sign and verify the single-use tokens issued by the registrar (see the Zenith architecture
-document for details):
+For all deployments, Zenith requires a secret key to be configured. This is used to sign and
+verify the single-use tokens issued by the registrar (see the Zenith architecture document
+for details):
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
 zenith_registrar_subdomain_token_signing_key: "<some secret key>"
@@ -24,6 +24,20 @@ zenith_registrar_subdomain_token_signing_key: "<some secret key>"
 
     This key should be kept secret. If you want to keep it in Git - which is recommended - then
     it [must be encrypted](../repository/secrets.md).
+
+## SSHD load-balancer IP address
+
+!!! note  "HA deployments only"
+
+    This section only applies to HA deployments.
+
+In a HA deployment, the Zenith SSHD server has a dedicated load-balancer with its own IP address.
+The floating IP to use for this load balancer must be pre-allocated and specified using the
+following variable:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+zenith_sshd_service_load_balancer_ip: "<ip address>"
+```
 
 ## SSHD port number
 
