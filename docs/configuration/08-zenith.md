@@ -17,7 +17,7 @@ zenith_registrar_subdomain_token_signing_key: "<some secret key>"
 
 !!! tip
 
-    This key should be a long, random string - at least 32 bytes (256 bits) is recommended.
+    This key must be a long, random string - at least 32 bytes (256 bits) is required.
     A suitable key can be generated using `openssl rand -hex 32`.
 
 !!! danger
