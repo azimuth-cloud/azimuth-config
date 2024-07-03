@@ -33,16 +33,10 @@ runs:
     - name: Run test suite
       shell: bash
       run: |
-        set -eo pipefail
+        set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        test_directory="$(ansible -m debug -a "var=$VAR_NAME" all | jq -r ".plays[0].tasks[0].hosts.localhost.$VAR_NAME")"
-        robot --loglevel debug --consolecolors on "$test_directory"
-      env:
-        ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
-        ANSIBLE_STDOUT_CALLBACK: json
-        MOZ_HEADLESS: "1"
-        VAR_NAME: generate_tests_suite_directory
+        ./bin/run-tests
 
     - name: Upload test report artifacts
       uses: actions/upload-artifact@v3
@@ -53,6 +47,15 @@ runs:
           log.html
           report.html
       if: ${{ always() }}
+
+    - name: Clean up test platforms
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ./bin/run-tests --include delete
+      if: ${{ cancelled() }}
 
     - name: Create debug bundle
       shell: bash

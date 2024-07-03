@@ -68,11 +68,13 @@ helm_get_values_proc = exec_cmd(
         os.environ["TILT_RELEASE_NAME"],
         "--namespace",
         os.environ["TILT_RELEASE_NAMESPACE"],
+        "--output",
+        "json",
     ],
     stdout = subprocess.PIPE
 )
-current_values = yaml.safe_load(helm_get_values_proc.stdout)
-current_values.pop("USER-SUPPLIED VALUES")
+current_values = json.loads(helm_get_values_proc.stdout) or {}
+current_values.pop("USER-SUPPLIED VALUES", None)
 
 
 # Build and run the Helm upgrade command
