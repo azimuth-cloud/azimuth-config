@@ -1,0 +1,90 @@
+#####
+# Configuration for the seed node (HA) or single node
+#####
+
+# The ID of an existing network to create the node on
+# infra_network_id: "2692933e-244f-4a3b-aa18-4daaf3383838"
+# OR
+# The CIDR of the subnet that should be created
+infra_network_cidr: "192.168.0.0/24"
+# The ID of the external network to connect to via a router
+infra_external_network_id: "60b799f7-68ad-4385-9e2e-be923cdbfad0" # external-internet
+
+# The fixed floating IP to associate with the machine
+# This IP must be pre-allocated to the project
+# For a single node deployment, this IP should have the wildcard ingress domain assigned to it
+infra_fixed_floatingip: "136.156.140.50"
+# OR
+# The name of the floating IP pool to allocate a floating IP from
+#infra_floatingip_pool: "<floating ip pool>"
+# OR
+# The ID of a provisioning network that will be used to access the seed node
+#infra_provisioning_network_id:
+
+# The image id of an Ubuntu 20.04 image to use for the node
+#   N.B. This is populated automatically using community images by default
+# infra_image_id: "<image id>"
+
+# The id of the flavor to use for the node
+# For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
+# For a single node deployment, >= 16GB RAM is recommended
+infra_flavor_id: "c01884ee-7bf3-4dfb-a947-ea3c68a0a66e" # 8cpu-8gbmem-30gbdisk
+
+#####
+# Configuration for the HA cluster
+#####
+
+# The fixed floating IP to associate with the load balancer for the ingress controller
+# This IP must be pre-allocated to the project and should have the wildcard ingress domain assigned to it
+capi_cluster_addons_ingress_load_balancer_ip: "136.156.138.225"
+
+# Storage settings for the management cluster
+capi_cluster_root_volume_type: "d6a82d3a-0ece-42ea-9aee-ffe768e5de22" # Ceph-HDD
+
+# Storage settings for tenant clusters
+azimuth_capi_operator_capi_helm_root_volume_type: "d6a82d3a-0ece-42ea-9aee-ffe768e5de22" # Ceph-HDD
+
+# Seperate etcd volume config 
+
+# Management Cluster
+# Default volume type for the etcd block device if 'Volume' type is used in management clusters
+capi_cluster_etcd_blockdevice_volume_type: "87bc5d37-08b0-46c3-9e94-f93fe2616b21" # Ceph-SSD
+
+# Tenant Clusters
+# Default volume type for the etcd block device if 'Volume' type is used
+azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type: "87bc5d37-08b0-46c3-9e94-f93fe2616b21" # Ceph-SSD
+
+# Reduce just in CCI2 to avoid affected other environments for now.
+capi_cluster_worker_flavor: "8cpu-8gbmem-30gbdisk"
+
+#####
+# Ingress configuration
+#####
+# The base domain to use for ingress resources
+ingress_base_domain: "azimuth.compute.cci2.ecmwf.int"
+
+zenith_sshd_service_load_balancer_ip: "136.156.138.51"
+
+#####
+# Azimuth configuration
+#####
+
+azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: amphora
+capi_cluster_addons_openstack_loadbalancer_provider: amphora
+
+# Pin to bugfix for Machines tab 
+azimuth_chart_version: "0.9.1-dev.0.fix-machine-list-when-flavor-is-deleted.1"
+
+#####
+# Terraform State
+####
+
+# The endpoint of the object store
+terraform_s3_endpoint: https://object-store.os-api.cci2.ecmwf.int/
+
+# The bucket to put Terraform states in
+# NOTE: This bucket must already exist - it will not be created by Terraform
+terraform_s3_bucket: az-terraform-state
+
+# Valero backup & recovery
+velero_s3_url: https://object-store.os-api.cci2.ecmwf.int/
