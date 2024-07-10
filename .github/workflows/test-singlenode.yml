@@ -29,15 +29,18 @@ on:
       - requirements.txt
       - requirements.yml
       - .github/actions/**
+      - .github/environments/common
+      - .github/environments/arcus
+      - .github/environments/leafcloud
       - .github/workflows/test-singlenode.yml
       - bin/**
-      - "!bin/ci-exec"
+      - "!bin/ci-setup"
       - "!bin/create-merge-branch"
+      - "!bin/port-forward"
       - "!bin/tilt-*"
       - environments/base/**
       - environments/singlenode/**
       - environments/demo/**
-      - environments/ci/**
 
 # Use the head ref for workflow concurrency, with cancellation
 # This should mean that any previous runs of this workflow for the same PR

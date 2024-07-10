@@ -33,9 +33,13 @@ velero_enabled: true
 # The URL of the S3 storage endpoint
 velero_s3_url: <object-store-endpoint-url>
 
-# The name of the bucket to use for backups - the bucket must already exist
+# The name of the bucket to use for backups
 velero_bucket_name: <bucket-name>
 ```
+
+!!! warning  "Bucket must already exist"
+
+    The specified bucket must already exist - neither azimuth-ops nor Velero will create it.
 
 You will also need to consult the documentation for your S3 provider to obtain S3 credentials for
 the bucket, and add the access key ID and secret to the following variables:
@@ -46,7 +50,7 @@ velero_aws_access_key_id: <s3-access-key-id>
 velero_aws_secret_access_key: <s3-secret-value>
 ```
 
-!!! tip
+!!! tip  "Generating credentials for Keystone-integrated Ceph Object Gateway"
 
     If the S3 target is
     [Ceph Object Gateway integrated with Keystone](https://docs.ceph.com/en/latest/radosgw/keystone/),
@@ -120,10 +124,10 @@ velero_backup_schedule_enabled: true
 velero_backup_schedule_name: default
 # Schedule to use for backups (defaults to every day at midnight)
 # See https://en.wikipedia.org/wiki/Cron for format options
-velero_backup_schedule_timings: "0 0 * * *"
+velero_backup_schedule: "0 0 * * *"
 # Time-to-live for existing backups (defaults to 1 week)
 # See https://pkg.go.dev/time#ParseDuration for duration format options
-velero_backup_schedule_ttl: "168h"
+velero_backup_ttl: "168h"
 ```
 
 !!! note

@@ -39,10 +39,8 @@ consul_server_replicas: 1
 zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
 
 # Configure Velero backups
-velero_enabled: true
+velero_enabled: "{{ not (not velero_aws_access_key_id) }}"
 velero_s3_url: https://leafcloud.store
-velero_bucket_name: "azimuth-{{ azimuth_environment }}-backups"
-# Create the bucket if it doesn't exist
-velero_bucket_create: true
-velero_aws_access_key_id: 
-velero_aws_secret_access_key : 
+velero_bucket_name: azimuth-ci-backups
+velero_aws_access_key_id: "{{ lookup('env', 'VELERO_S3_ACCESS_KEY') }}"
+velero_aws_secret_access_key: "{{ lookup('env', 'VELERO_S3_SECRET_KEY') }}"
