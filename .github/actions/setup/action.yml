@@ -166,7 +166,7 @@ runs:
             --format value \
             --column floating_ip_address
         )"
-        cat >> ci.env <<-EOF
+        cat >> ci.env <<EOF
         export INGRESS_IP="$INGRESS_IP"
         EOF
 
@@ -177,7 +177,7 @@ runs:
                 --format value \
                 --column floating_ip_address
             )"
-            cat >> ci.env <<-EOF
-            export ZENITH_SSHD_IP="$ZENITH_SSHD_IP"
-            EOF
+            cat >> ci.env <<EOF
+        export ZENITH_SSHD_IP="$ZENITH_SSHD_IP"
+        EOF
         fi
