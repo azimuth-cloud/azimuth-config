@@ -37,7 +37,13 @@ customisations that are required, usually by building on a
 [demo environment](https://github.com/stackhpc/azimuth-config/tree/devel/environments/demo)
 is a good starting point for this, as it is designed to be flexible and dynamic.
 
-!!! warning
+!!! tip  "Producing unique values in your Azimuth configuration"
+
+    The Ansible variable `azimuth_environment` contains the unique instance name, and
+    can be used in other variables in your configuration where a unique value is required
+    for each developer environment.
+
+!!! warning  "Developers should use their own application credential"
 
     You should not include an application credential in your development environment.
     Instead, each developer can use their own application credential as described in the
