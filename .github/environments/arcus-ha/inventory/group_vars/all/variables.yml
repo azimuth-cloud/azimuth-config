@@ -27,5 +27,9 @@ consul_server_replicas: 1
 # Pick up the reserved IP for the Zenith SSHD LB
 zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
 
-# Enable Velero just to check that installation works
-velero_enabled: false
+# Configure Velero backups
+velero_enabled: "{{ velero_aws_access_key_id | bool }}"
+velero_s3_url: https://object.arcus.openstack.hpc.cam.ac.uk
+velero_bucket_name: azimuth-ci-backups
+velero_aws_access_key_id: "{{ lookup('env', 'VELERO_S3_ACCESS_KEY') }}"
+velero_aws_secret_access_key: "{{ lookup('env', 'VELERO_S3_SECRET_KEY') }}"

@@ -173,7 +173,7 @@ runs:
         if [ "$INSTALL_MODE" = "ha" ]; then
             ZENITH_SSHD_IP="$(
               openstack floating ip create $EXTNET_ID \
-                --description "zenith SSHD IP for $AZIMUTH_ENVIRONMENT" \
+                --description "Zenith SSHD IP for $AZIMUTH_ENVIRONMENT" \
                 --format value \
                 --column floating_ip_address
             )"
