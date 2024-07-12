@@ -197,10 +197,10 @@ jobs:
       #   uses: ./.github/actions/destroy
       #   if: ${{ always() }}
 
-      # - name: Delete Velero S3 credentials
-      #   run: |
-      #     set -e
-      #     source ./ci.env
-      #     source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-      #     openstack ec2 credentials delete $VELERO_S3_ACCESS_KEY
-      #   if: ${{ always() }}
+      - name: Delete Velero S3 credentials
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          openstack ec2 credentials delete $VELERO_S3_ACCESS_KEY
+        if: ${{ always() }}
