@@ -89,7 +89,7 @@ jobs:
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/seed-ssh -- \
             velero backup create $AZIMUTH_ENVIRONMENT \
-              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT \
+              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
               --from-schedule default \
               --wait
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
@@ -152,7 +152,7 @@ jobs:
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/seed-ssh -- \
             velero backup delete $AZIMUTH_ENVIRONMENT \
-              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT \
+              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
               --confirm
         if: ${{ always() }}
 
