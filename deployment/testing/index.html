@@ -1,0 +1,1604 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/azimuth-logo-blue.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.8">
+    
+    
+      
+        <title>Integration testing - Azimuth Operator Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#integration-testing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Azimuth Operator Documentation" class="md-header__button md-logo" aria-label="Azimuth Operator Documentation" data-md-component="logo">
+      
+  <img src="../../assets/azimuth-logo-white.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Azimuth Operator Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Integration testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/stackhpc/azimuth-config" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Azimuth Operator Documentation" class="md-nav__button md-logo" aria-label="Azimuth Operator Documentation" data-md-component="logo">
+      
+  <img src="../../assets/azimuth-logo-white.png" alt="logo">
+
+    </a>
+    Azimuth Operator Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/stackhpc/azimuth-config" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../try/" class="md-nav__link">
+        Try Azimuth
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../best-practice/" class="md-nav__link">
+        Best practice for production deployments
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../environments/" class="md-nav__link">
+        Environments
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../repository/">Repository</a>
+          
+            <label for="__nav_5">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Repository" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Repository
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../repository/secrets/" class="md-nav__link">
+        Managing secrets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../repository/opentofu/" class="md-nav__link">
+        OpenTofu state
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../configuration/">Configuration</a>
+          
+            <label for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Configuration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/01-prerequisites/" class="md-nav__link">
+        Prerequisites
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/02-deployment-method/" class="md-nav__link">
+        Deployment method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/03-kubernetes-config/" class="md-nav__link">
+        Kubernetes configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/04-target-cloud/" class="md-nav__link">
+        Target OpenStack cloud
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/05-secret-key/" class="md-nav__link">
+        Secret key
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/06-ingress/" class="md-nav__link">
+        Ingress
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/07-platform-identity/" class="md-nav__link">
+        Platform Identity
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/08-zenith/" class="md-nav__link">
+        Zenith Application Proxy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/09-community-images/" class="md-nav__link">
+        Community images
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/10-kubernetes-clusters/" class="md-nav__link">
+        Kubernetes clusters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/11-kubernetes-apps/" class="md-nav__link">
+        Kubernetes apps
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/12-caas/" class="md-nav__link">
+        Cluster-as-a-Service (CaaS)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/13-access-control/" class="md-nav__link">
+        Access control
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/14-monitoring/" class="md-nav__link">
+        Monitoring and alerting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/15-disaster-recovery/" class="md-nav__link">
+        Disaster Recovery
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/16-local-customisations/" class="md-nav__link">
+        Local customisations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Deployment</a>
+          
+            <label for="__nav_7">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Deployment" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Deployment
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automation/" class="md-nav__link">
+        Automated deployments
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Integration testing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Integration testing
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    Config
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firefox-package" class="md-nav__link">
+    Firefox package
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-for-executing-tests" class="md-nav__link">
+    Credentials for executing tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating-and-executing-tests" class="md-nav__link">
+    Generating and executing tests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-test-generation" class="md-nav__link">
+    Configuring test generation
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring test generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#caas-cluster-types" class="md-nav__link">
+    CaaS cluster types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-cluster-templates" class="md-nav__link">
+    Kubernetes cluster templates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-app-templates" class="md-nav__link">
+    Kubernetes app templates
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-testing" class="md-nav__link">
+    Automated testing
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../debugging/">Debugging</a>
+          
+            <label for="__nav_8">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Debugging" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          Debugging
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/access-k3s/" class="md-nav__link">
+        Accessing the K3s cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/access-ha/" class="md-nav__link">
+        Accessing the HA cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/access-monitoring/" class="md-nav__link">
+        Accessing the monitoring
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/zenith-services/" class="md-nav__link">
+        Debugging Zenith services
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/consul/" class="md-nav__link">
+        Debugging Consul
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/kubernetes/" class="md-nav__link">
+        Debugging Kubernetes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../debugging/caas/" class="md-nav__link">
+        Debugging Cluster-as-a-Service
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../developing/">Developing</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Developing" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          Developing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    Config
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firefox-package" class="md-nav__link">
+    Firefox package
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-for-executing-tests" class="md-nav__link">
+    Credentials for executing tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating-and-executing-tests" class="md-nav__link">
+    Generating and executing tests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-test-generation" class="md-nav__link">
+    Configuring test generation
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring test generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#caas-cluster-types" class="md-nav__link">
+    CaaS cluster types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-cluster-templates" class="md-nav__link">
+    Kubernetes cluster templates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-app-templates" class="md-nav__link">
+    Kubernetes app templates
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-testing" class="md-nav__link">
+    Automated testing
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="integration-testing">Integration testing</h1>
+<p><code>azimuth-ops</code> is able to generate integration tests for an <a href="../../environments/">environment</a>
+that can be executed against the deployed Azimuth to validate that it is working correctly.</p>
+<p>Currently, the following tests can be generated:</p>
+<ul>
+<li>Deploy and verify <a href="../../configuration/12-caas/">CaaS clusters</a></li>
+<li>Deploy and verify <a href="../../configuration/10-kubernetes-clusters/">Kubernetes clusters</a></li>
+<li>Deploy and verify <a href="../../configuration/11-kubernetes-apps/">Kubernetes apps</a></li>
+</ul>
+<p>The generated test suites use <a href="https://robotframework.org/">Robot Framework</a> to handle the
+execution of the tests and gathering and reporting of results.</p>
+<p>In Robot Framework,
+<a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-cases">test cases</a>
+are created by chaining together keywords imported from various
+<a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#using-test-libraries">libraries</a>.
+Robot Framework also allows the creation of
+<a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#creating-test-libraries">custom keyword libraries</a>
+containing domain-specific keywords.</p>
+<p>The tests generated by <code>azimuth-ops</code> use keywords from a
+<a href="https://github.com/stackhpc/azimuth-robotframework">custom library</a>
+for interacting with Azimuth, which in turn uses the
+<a href="https://github.com/stackhpc/azimuth-sdk">Azimuth Python SDK</a> to interact with the
+target Azimuth deployment.
+The result is that a typical test case looks something like this:</p>
+<div class="highlight"><span class="filename">Example of a generated test case</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gh">*** Settings ***</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="err">Name</span><span class="p">          </span><span class="s">CaaS</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">Library</span><span class="p">       </span><span class="nn">Azimuth</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="err">Test Tags</span><span class="p">     </span><span class="s">caas</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="kn">Test Timeout</span><span class="p">  </span><span class="s">15 minutes</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="gh">*** Test Cases ***</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="gu">Create workstation</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">    [</span><span class="kn">Tags</span><span class="p">]  </span><span class="s">workstation</span><span class="p">  </span><span class="s">create</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">    ${</span><span class="nv">ctype</span><span class="p">} =  </span><span class="nf">Find Cluster Type By Name</span><span class="p">  </span><span class="s">workstation</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">    ${</span><span class="nv">params</span><span class="p">} =  </span><span class="nf">Guess Parameter Values For Cluster Type</span><span class="p">  ${</span><span class="nv">ctype</span><span class="p">}</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">    ${</span><span class="nv">cluster</span><span class="p">} =  </span><span class="nf">Create Cluster</span><span class="p">  </span><span class="s">test-rbe6w</span><span class="p">  ${</span><span class="nv">ctype.name</span><span class="p">}  &amp;{</span><span class="nv">params</span><span class="p">}</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="gu">Verify workstation</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="p">    [</span><span class="kn">Tags</span><span class="p">]  </span><span class="s">workstation</span><span class="p">  </span><span class="s">verify</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">    ${</span><span class="nv">cluster</span><span class="p">} =  </span><span class="nf">Find Cluster By Name</span><span class="p">  </span><span class="s">test-rbe6w</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="p">    ${</span><span class="nv">cluster</span><span class="p">} =  </span><span class="nf">Wait For Cluster Ready</span><span class="p">  ${</span><span class="nv">cluster.id</span><span class="p">}</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">    ${</span><span class="nv">url</span><span class="p">} =  </span><span class="nf">Get Cluster Service URL</span><span class="p">  ${</span><span class="nv">cluster</span><span class="p">}  </span><span class="s">webconsole</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">    </span><span class="nf">Open Zenith Service</span><span class="p">  ${</span><span class="nv">url</span><span class="p">}</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">    </span><span class="nf">Wait Until Page Title Contains</span><span class="p">  </span><span class="s">Apache Guacamole</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="p">    ${</span><span class="nv">url</span><span class="p">} =  </span><span class="nf">Get Cluster Service URL</span><span class="p">  ${</span><span class="nv">cluster</span><span class="p">}  </span><span class="s">monitoring</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="p">    </span><span class="nf">Open Zenith Service</span><span class="p">  ${</span><span class="nv">url</span><span class="p">}</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="p">    </span><span class="nf">Wait Until Page Title Contains</span><span class="p">  </span><span class="s">Grafana</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="gu">Delete workstation</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="p">    [</span><span class="kn">Tags</span><span class="p">]  </span><span class="s">workstation</span><span class="p">  </span><span class="s">delete</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="p">    ${</span><span class="nv">cluster</span><span class="p">} =  </span><span class="nf">Find Cluster By Name</span><span class="p">  </span><span class="s">test-rbe6w</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="p">    </span><span class="nf">Delete Cluster</span><span class="p">  ${</span><span class="nv">cluster.id</span><span class="p">}</span>
+</code></pre></div>
+<p>This example will create a
+<a href="../../configuration/12-caas/#linux-workstation-appliance">CaaS workstation</a> using parameter
+values that are guessed based on the cluster type and target Azimuth. It then waits for the
+workstation to become <code>Ready</code> before verifying that the the Zenith services are behaving
+as expected. Finally, the workstation is deleted.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="config">Config</h3>
+<p>Make sure references to the application credential authenticator in your current config environment
+are either set to <code>true</code> or removed completely: 
+<div class="highlight"><span class="filename">environments/my-site/clouds.yaml</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">azimuth_authenticator_appcred_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div></p>
+<h3 id="firefox-package">Firefox package</h3>
+<p>If you are running tests manually outside of a CI environment, you need to ensure you have the correct
+Firefox package installed for Selium. </p>
+<p>On Ubuntu: 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># Remove any old firefox packages
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>sudo apt remove --purge  firefox
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>sudo snap remove --purge firefox
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a># Add the Mozilla PPA 
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc &gt; /dev/null
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>echo &quot;deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main&quot; | sudo tee -a /etc/apt/sources.list.d/mozilla.list &gt; /dev/null
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a># Set firefox priority to ensure the Mozilla package is always preferred
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>echo &#39;
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>Package: *
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>Pin: origin packages.mozilla.org
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>Pin-Priority: 1000
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>&#39; | sudo tee /etc/apt/preferences.d/mozilla
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a># Install firefox
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>sudo apt update &amp;&amp; sudo apt install firefox
+</code></pre></div></p>
+<h3 id="credentials-for-executing-tests">Credentials for executing tests</h3>
+<p>The generated test suite uses an OpenStack application credential to authenticate with Azimuth,
+and this credential determines which project test platforms will be created in. This <em>can</em>
+be the same project that Azimuth is deployed in, but should ideally be a different project.</p>
+<div class="admonition danger">
+<p class="admonition-title">Application credential must be unrestricted</p>
+<p>Because Azimuth creates an application credential for each deployed platform, the
+application credential used to authenticate with Azimuth to create test platforms
+must be able to create and delete other application credentials.</p>
+<p>This is referred to as <strong>unrestricted</strong> in OpenStack (<strong>Unrestricted (dangerous)</strong>
+in the Horizon UI).</p>
+</div>
+<p>The application credential used for running tests should be appended to the
+<a href="../../configuration/01-prerequisites/#application-credential">same clouds.yaml as the credential used to deploy Azimuth</a>.</p>
+<div class="highlight"><span class="filename">environments/my-site/clouds.yaml</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">clouds</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="c1"># The main application credential used to deploy Azimuth</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">openstack</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">auth_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openstack.example-cloud.org:5000</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">application_credential_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;appcred</span><span class="nv"> </span><span class="s">id&gt;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">application_credential_secret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;appcred</span><span class="nv"> </span><span class="s">secret&gt;&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">region_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RegionOne&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">identity_api_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">auth_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v3applicationcredential&quot;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="c1"># The application credential used to create test platforms via Azimuth</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="nt">unrestricted</span><span class="p">:</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="nt">auth_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openstack.example-cloud.org:5000</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span><span class="nt">application_credential_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;appcred</span><span class="nv"> </span><span class="s">id&gt;&quot;</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span><span class="nt">application_credential_secret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;appcred</span><span class="nv"> </span><span class="s">secret&gt;&quot;</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="nt">region_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RegionOne&quot;</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public&quot;</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="nt">identity_api_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="nt">auth_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v3applicationcredential&quot;</span>
+</code></pre></div>
+<h2 id="generating-and-executing-tests">Generating and executing tests</h2>
+<p>Before tests can be generated and executed for an <a href="../../environments/">environment</a>, the
+environment must be successfully deployed either <a href="../">manually</a> or by
+<a href="../automation/">automation</a>.</p>
+<p>You must also have the Python dependencies installed on the machine that the tests will be
+run from. The easiest way to do this is using the
+<a href="../#python-dependencies">ensure-venv script</a>, however the <code>requirements.txt</code>
+can be used to install them into any Python environment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+<p>The integration test suite can then be generated and executed for the environment.</p>
+<p>Because the test generation connects to the Azimuth deployment to query the installed platform
+types, this must use the application credential that is used for deployment. The execution
+of the tests then uses the unrestricted application credential:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Activate the target environment</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">source</span><span class="w"> </span>./bin/activate<span class="w"> </span>my-site
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Make sure you have the correct version of the Ansible collection installed</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>ansible-galaxy<span class="w"> </span>install<span class="w"> </span>-f<span class="w"> </span>-r<span class="w"> </span>requirements.yml
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Generate the test suite</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>ansible-playbook<span class="w"> </span>stackhpc.azimuth_ops.generate_tests
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Execute the test suite (using the unrestricted credential)</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="nv">OS_CLOUD</span><span class="o">=</span>unrestricted<span class="w"> </span>./bin/run-tests
+</code></pre></div>
+<h2 id="configuring-test-generation">Configuring test generation</h2>
+<p>By default, tests cases are generated for:</p>
+<ul>
+<li>All installed CaaS cluster types</li>
+<li>All installed <strong>active</strong> (i.e. non-deprecated) Kubernetes cluster types</li>
+<li>All installed Kubernetes app templates</li>
+</ul>
+<p>The following sections describe how to enable, disable and configure tests for the
+different types of platform.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The
+<a href="https://github.com/stackhpc/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/">generate_tests</a>
+role of <code>azimuth-ops</code> is responsible for generating the test cases.</p>
+<p>It has a
+<a href="https://github.com/stackhpc/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/defaults/main.yml">large number of variables</a>
+that can be used to tune the test generation. This document only discusses the most
+frequently used variables.</p>
+</div>
+<h3 id="caas-cluster-types">CaaS cluster types</h3>
+<p>Test cases for CaaS cluster types perform the following steps:</p>
+<ol>
+<li>Build the cluster parameters using best-effort guesses plus overrides</li>
+<li>Create a cluster using the parameters</li>
+<li>Wait for the cluster to become <code>Ready</code></li>
+<li>Check that the Zenith services for the cluster are accessible</li>
+<li>(Optional) Verify that the page title for the Zenith service contains some expected content</li>
+<li>Delete the cluster</li>
+</ol>
+<div class="admonition info">
+<p class="admonition-title">Verification of Zenith service page titles</p>
+<p>Step 5 is used to verify that the Zenith authentication loop brings you back to the
+correct service.</p>
+<p>Currently, no other verification of the behaviour of the service is performed.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Best-effort guesses for parameter values</p>
+<p>Best-effort guesses for parameter values are produced in the following way:</p>
+<ul>
+<li>If the parameter has a default, use that.</li>
+<li>For <code>cloud.size</code> parameters, use the smallest size that satisfies the constraints.</li>
+<li>For <code>cloud.ip</code> parameters, find a free external IP or allocate one.</li>
+</ul>
+<p>All other parameters must be specified explicitly. Guesses can be overridden if not
+appropriate for the test environment.</p>
+</div>
+<p>The generation of tests for CaaS cluster types can be suppressed completely using the
+following variable:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">generate_tests_caas_suite_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>By default, a test case is generated for all cluster types except those that are explicitly
+disabled. This logic can be inverted, so that test cases are <strong>only</strong> generated for cluster
+types where they are <strong>explicitly enabled</strong>, using the following variable:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">generate_tests_caas_default_test_case_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>The following variables are available to affect the test generation for each cluster type:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Indicates if the test case for the cluster type should be enabled</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_caas_test_case_{cluster_type}_enabled</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Used to override the value of the named parameter</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_caas_test_case_{cluster_type}_param_{parameter_name}</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;&lt;parameter_value&gt;&quot;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Used to configure the expected title fragment for the named Zenith service</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_caas_test_case_{cluster_type}_service_{service_name}_expected_title</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;&lt;title</span><span class="nv"> </span><span class="s">fragment&gt;&quot;</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="c1"># If a cluster takes a long time to deploy, the verify timeout can be increased</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_caas_test_case_{cluster_type}_verify_timeout</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;45</span><span class="nv"> </span><span class="s">minutes&quot;</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the cluster type or service name contain dashes (<code>-</code>), they will be replaced with
+underscores (<code>_</code>).</p>
+</div>
+<h3 id="kubernetes-cluster-templates">Kubernetes cluster templates</h3>
+<p>For Kubernetes cluster templates, the generated test cases perform the following steps:</p>
+<ol>
+<li>Build the Kubernetes cluster configuration</li>
+<li>Create a Kubernetes cluster using the configuration</li>
+<li>Wait for the Kubernetes cluster to become <code>Ready</code></li>
+<li>Check that the Zenith service for the Kubernetes Dashboard is working, if configured</li>
+<li>Check that the Zenith service for the monitoring is working, if configured</li>
+<li>Delete the Kubernetes cluster</li>
+</ol>
+<div class="admonition info">
+<p class="admonition-title">Verification of Zenith services</p>
+<p>Steps 4 and 5 use the same title-based verification as for CaaS clusters.</p>
+<p>No validation of actual behaviour is currently performed.</p>
+</div>
+<p>The generation of tests for Kubernetes cluster templates can be suppressed completely using
+the following variable:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">generate_tests_kubernetes_suite_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>By default, a test case is generated for each <strong>active</strong>, i.e. non-deprecated, cluster template.</p>
+<p>The following variables are available to affect the test generation for Kubernetes cluster
+templates:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># When false (the default), test cases are generated for all</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># non-deprecated templates</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1">#</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># When true, test cases will only be generated for templates</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># that target the latest Kubernetes version</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nt">generate_tests_kubernetes_test_cases_latest_only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># The ID of the flavors to use for control plane and worker nodes respectively</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># By default, the smallest suitable size is used</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="nt">generate_tests_kubernetes_test_case_control_plane_size</span><span class="p">:</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="nt">generate_tests_kubernetes_test_case_worker_size</span><span class="p">:</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># The number of workers that should be deployed for each test case</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nt">generate_tests_kubernetes_test_case_worker_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="c1"># Indicates whether the dashboard and monitoring should be enabled for tests</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="nt">generate_tests_kubernetes_test_case_dashboard_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="nt">generate_tests_kubernetes_test_case_monitoring_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<h3 id="kubernetes-app-templates">Kubernetes app templates</h3>
+<p>For Kubernetes app templates, we first deploy a Kubernetes cluster to host the apps.
+Once this cluster becomes <code>Ready</code>, the following steps are performed for each app:</p>
+<ol>
+<li>Create the app with inferred configuration</li>
+<li>Wait for the app to become <code>Deployed</code></li>
+<li>For each specified Zenith service, check that it is accessible</li>
+<li>(Optional) Verify that the page title for the Zenith service contains some expected content</li>
+<li>Delete the app</li>
+</ol>
+<div class="admonition info">
+<p class="admonition-title">Verification of Zenith services</p>
+<p>As for other platform types, only title-based verification is performed for Zenith services.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Overridding inferred configuration</p>
+<p>Currently, it is not possible to override the inferred configuration for Kubernetes
+apps. This may mean it is not currently possible to test some Kubernetes apps that
+have required parameters.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Specifying Zenith services</p>
+<p>With Kubernetes apps, the expected Zenith services are not known up front as part
+of the app metadata, as they are for CaaS clusters.</p>
+<p>This means that the expected Zenith services for each app must be declared in config.</p>
+</div>
+<p>The generation of tests for Kubernetes app templates can be suppressed completely using the
+following variable:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">generate_tests_kubernetes_apps_suite_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>By default, a test case is generated for all app templates except those that are explicitly
+disabled. This logic can be inverted, so that test cases are <strong>only</strong> generated for app
+templates where they are <strong>explicitly enabled</strong>, using the following variable:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">generate_tests_kubernetes_apps_default_test_case_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>The Kubernetes cluster on which the apps will be deployed is configured using the
+following variables:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># The name of the Kubernetes cluster template to use</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1"># If not given, the latest Kubernetes cluster template is used</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nt">generate_tests_kubernetes_apps_k8s_template</span><span class="p">:</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># The ID of the flavors to use for control plane and worker nodes respectively</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="c1"># By default, the smallest suitable size is used</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="nt">generate_tests_kubernetes_apps_k8s_control_plane_size</span><span class="p">:</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="nt">generate_tests_kubernetes_apps_k8s_worker_size</span><span class="p">:</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="c1"># The number of workers that should be deployed for the cluster</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="nt">generate_tests_kubernetes_apps_k8s_worker_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+</code></pre></div>
+<p>The following variables are available to affect the test generation for each app template:</p>
+<div class="highlight"><span class="filename">environments/my-site/inventory/group_vars/all/tests.yml</span><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Indicates if the test case for the cluster type should be enabled</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_kubernetes_apps_test_case_{app_template}_enabled</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># The names of the expected Zenith services for the app</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_kubernetes_apps_test_case_{app_template}_services</span><span class="p p-Indicator">:</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service-1</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service-2</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="c1"># The expected title fragment for the named Zenith service</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="l l-Scalar l-Scalar-Plain">generate_tests_kubernetes_apps_test_case_{app_template}_service_{service_name}_expected_title</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;&lt;title</span><span class="nv"> </span><span class="s">fragment&gt;&quot;</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When used in variable names, dashes (<code>-</code>) in the app template name or Zenith service
+names will be replaced with underscores (<code>_</code>).</p>
+</div>
+<h2 id="automated-testing">Automated testing</h2>
+<p>If you are using <a href="../automation/">automated deployments</a>, you can also automate tests
+against your deployments.</p>
+<p>As an example, the
+<a href="https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample">sample GitLab CI/CD configuration file</a>
+includes jobs that run after each deployment to execute the configured tests against
+the deployment.</p>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 16, 2024</span>
+      
+        <br>
+        Created:
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 16, 2024</span>
+      
+    
+  </small>
+</div>
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../automation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Automated deployments" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Automated deployments
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../../debugging/" class="md-footer__link md-footer__link--next" aria-label="Next: Debugging Azimuth" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Debugging Azimuth
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; StackHPC 2022
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.indexes", "navigation.top"], "search": "../../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.0238f547.min.js"></script>
+      
+    
+  </body>
+</html>

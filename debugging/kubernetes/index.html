@@ -1,0 +1,1361 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/azimuth-logo-blue.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.8">
+    
+    
+      
+        <title>Debugging Kubernetes - Azimuth Operator Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#debugging-kubernetes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Azimuth Operator Documentation" class="md-header__button md-logo" aria-label="Azimuth Operator Documentation" data-md-component="logo">
+      
+  <img src="../../assets/azimuth-logo-white.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Azimuth Operator Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Debugging Kubernetes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/stackhpc/azimuth-config" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Azimuth Operator Documentation" class="md-nav__button md-logo" aria-label="Azimuth Operator Documentation" data-md-component="logo">
+      
+  <img src="../../assets/azimuth-logo-white.png" alt="logo">
+
+    </a>
+    Azimuth Operator Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/stackhpc/azimuth-config" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../try/" class="md-nav__link">
+        Try Azimuth
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../best-practice/" class="md-nav__link">
+        Best practice for production deployments
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../environments/" class="md-nav__link">
+        Environments
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../repository/">Repository</a>
+          
+            <label for="__nav_5">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Repository" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Repository
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../repository/secrets/" class="md-nav__link">
+        Managing secrets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../repository/opentofu/" class="md-nav__link">
+        OpenTofu state
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../configuration/">Configuration</a>
+          
+            <label for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Configuration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/01-prerequisites/" class="md-nav__link">
+        Prerequisites
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/02-deployment-method/" class="md-nav__link">
+        Deployment method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/03-kubernetes-config/" class="md-nav__link">
+        Kubernetes configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/04-target-cloud/" class="md-nav__link">
+        Target OpenStack cloud
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/05-secret-key/" class="md-nav__link">
+        Secret key
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/06-ingress/" class="md-nav__link">
+        Ingress
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/07-platform-identity/" class="md-nav__link">
+        Platform Identity
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/08-zenith/" class="md-nav__link">
+        Zenith Application Proxy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/09-community-images/" class="md-nav__link">
+        Community images
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/10-kubernetes-clusters/" class="md-nav__link">
+        Kubernetes clusters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/11-kubernetes-apps/" class="md-nav__link">
+        Kubernetes apps
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/12-caas/" class="md-nav__link">
+        Cluster-as-a-Service (CaaS)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/13-access-control/" class="md-nav__link">
+        Access control
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/14-monitoring/" class="md-nav__link">
+        Monitoring and alerting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/15-disaster-recovery/" class="md-nav__link">
+        Disaster Recovery
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/16-local-customisations/" class="md-nav__link">
+        Local customisations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../deployment/">Deployment</a>
+          
+            <label for="__nav_7">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Deployment" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Deployment
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/automation/" class="md-nav__link">
+        Automated deployments
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/testing/" class="md-nav__link">
+        Integration testing
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Debugging</a>
+          
+            <label for="__nav_8">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Debugging" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          Debugging
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-k3s/" class="md-nav__link">
+        Accessing the K3s cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-ha/" class="md-nav__link">
+        Accessing the HA cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-monitoring/" class="md-nav__link">
+        Accessing the monitoring
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zenith-services/" class="md-nav__link">
+        Debugging Zenith services
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../consul/" class="md-nav__link">
+        Debugging Consul
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Debugging Kubernetes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Debugging Kubernetes
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-resource-exists" class="md-nav__link">
+    Cluster resource exists
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helm-release-exists" class="md-nav__link">
+    Helm release exists
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-api-resource-status" class="md-nav__link">
+    Cluster API resource status
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-tenant-clusters" class="md-nav__link">
+    Accessing tenant clusters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zenith-service-issues" class="md-nav__link">
+    Zenith service issues
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caas/" class="md-nav__link">
+        Debugging Cluster-as-a-Service
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../developing/">Developing</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Developing" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          Developing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-resource-exists" class="md-nav__link">
+    Cluster resource exists
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helm-release-exists" class="md-nav__link">
+    Helm release exists
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-api-resource-status" class="md-nav__link">
+    Cluster API resource status
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-tenant-clusters" class="md-nav__link">
+    Accessing tenant clusters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zenith-service-issues" class="md-nav__link">
+    Zenith service issues
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="debugging-kubernetes">Debugging Kubernetes</h1>
+<p>As described in <a href="../../configuration/10-kubernetes-clusters/">Configuring Kubernetes</a>,
+Azimuth uses <a href="https://cluster-api.sigs.k8s.io/">Cluster API</a> to manage tenant Kubernetes
+clusters.</p>
+<p>Cluster API resources are managed by releases of the
+<a href="https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster">openstack-cluster Helm chart</a>,
+which in turn are managed by the
+<a href="https://github.com/stackhpc/azimuth-capi-operator">azimuth-capi-operator</a> in response
+to changes to instances of the <code>clusters.azimuth.stackhpc.com</code> custom resource.
+These instances are created, updated and deleted in Kubernetes by the Azimuth API in
+response to user actions.</p>
+<p>The Azimuth API creates a namespace for each project, in which cluster resources are
+created. These namespaces are of the form <code>az-&lt;sanitized project name&gt;</code>.</p>
+<p>It is also important to note that the Kubernetes API servers for tenant clusters do
+not use Octavia load balancers like the Azimuth HA cluster. Instead, the API servers
+for tenant clusters are exposed via Zenith.</p>
+<p>When issues occur with cluster provisioning, here are some things to try in order to
+locate the issue.</p>
+<h2 id="cluster-resource-exists">Cluster resource exists</h2>
+<p>First, check if the cluster resource exists in the tenant namespace:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ kubectl -n az-demo get cluster
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>NAME   LABEL  TEMPLATE      KUBERNETES VERSION   PHASE   NODE COUNT   AGE
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>demo   demo   kube-1-24-2   1.24.2               Ready   4            11d
+</code></pre></div>
+<p>If no cluster resource exists, check if the Kubernetes CRDs are installed:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$ kubectl get crd | grep azimuth
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>apptemplates.azimuth.stackhpc.com                            2022-11-02T11:11:13Z
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>clusters.azimuth.stackhpc.com                                2022-11-02T10:53:26Z
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>clustertemplates.azimuth.stackhpc.com                        2022-11-02T10:53:26Z
+</code></pre></div>
+<p>If they do not exist, check if the <code>azimuth-capi-operator</code> is running:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ kubectl -n azimuth get po -l app.kubernetes.io/instance=azimuth-capi-operator
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>NAME                                     READY   STATUS    RESTARTS   AGE
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>azimuth-capi-operator-5c65c4b598-h2thx   1/1     Running   0          10d
+</code></pre></div>
+<h2 id="helm-release-exists">Helm release exists</h2>
+<p>The first thing that the <code>azimuth-capi-operator</code> does when it sees a new cluster resource
+is make a Helm release:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$ helm -n az-demo list -a
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>NAME   NAMESPACE      REVISION        UPDATED                                 STATUS          CHART                                   APP VERSION
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>demo   az-demo        1               2022-07-07 13:26:22.94084961 +0000 UTC  deployed        openstack-cluster-0.1.0-dev.0.main.161  a0bcee5
+</code></pre></div>
+<p>If the Helm release does not exist, restart the <code>azimuth-capi-operator</code>:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>azimuth<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deploy/azimuth-capi-operator
+</code></pre></div>
+<p>If the Helm release does not get created, even after a restart, check the logs
+of the <code>azimuth-capi-operator</code> for any warnings or errors:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>azimuth<span class="w"> </span>logs<span class="w"> </span>deploy/azimuth-capi-operator<span class="w"> </span><span class="o">[</span>-f<span class="o">]</span>
+</code></pre></div>
+<h2 id="cluster-api-resource-status">Cluster API resource status</h2>
+<p>If the Helm release is in the <code>deployed</code> status, the next thing to check is the
+state of the Cluster API resources that were created:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$ kubectl -n az-demo get cluster-api
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>NAME                                                                  CLUSTER   BOOTSTRAP   TARGET NAMESPACE       RELEASE NAME                       PHASE      REVISION   AGE
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>manifests.addons.stackhpc.com/demo-cloud-config                       demo      true        openstack-system       cloud-config                       Deployed   1          11d
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>manifests.addons.stackhpc.com/demo-csi-cinder-storageclass            demo      true        openstack-system       csi-cinder-storageclass            Deployed   1          11d
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>manifests.addons.stackhpc.com/demo-kube-prometheus-stack-client       demo      true        monitoring-system      kube-prometheus-stack-client       Deployed   2          11d
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>manifests.addons.stackhpc.com/demo-kube-prometheus-stack-dashboards   demo      true        monitoring-system      kube-prometheus-stack-dashboards   Deployed   1          11d
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>manifests.addons.stackhpc.com/demo-kubernetes-dashboard-client        demo      true        kubernetes-dashboard   kubernetes-dashboard-client        Deployed   2          11d
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>manifests.addons.stackhpc.com/demo-loki-stack-dashboards              demo      true        monitoring-system      loki-stack-dashboards              Deployed   1          11d
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>NAME                                                             CLUSTER   BOOTSTRAP   TARGET NAMESPACE         RELEASE NAME                PHASE      REVISION   CHART NAME                           CHART VERSION         AGE
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>helmrelease.addons.stackhpc.com/dask-demo                        demo                  dask-demo                dask-demo                   Deployed   1          daskhub-azimuth                      0.1.0-dev.0.main.23   11d
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>helmrelease.addons.stackhpc.com/demo-ccm-openstack               demo      true        openstack-system         ccm-openstack               Deployed   1          openstack-cloud-controller-manager   1.3.0                 11d
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>helmrelease.addons.stackhpc.com/demo-cni-calico                  demo      true        tigera-operator          cni-calico                  Deployed   1          tigera-operator                      v3.23.3               11d
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>helmrelease.addons.stackhpc.com/demo-csi-cinder                  demo      true        openstack-system         csi-cinder                  Deployed   1          openstack-cinder-csi                 2.2.0                 11d
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>helmrelease.addons.stackhpc.com/demo-kube-prometheus-stack       demo      true        monitoring-system        kube-prometheus-stack       Deployed   1          kube-prometheus-stack                40.1.0                11d
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>helmrelease.addons.stackhpc.com/demo-kubernetes-dashboard        demo      true        kubernetes-dashboard     kubernetes-dashboard        Deployed   1          kubernetes-dashboard                 5.10.0                11d
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>helmrelease.addons.stackhpc.com/demo-loki-stack                  demo      true        monitoring-system        loki-stack                  Deployed   1          loki-stack                           2.8.2                 11d
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>helmrelease.addons.stackhpc.com/demo-mellanox-network-operator   demo      true        network-operator         mellanox-network-operator   Deployed   1          network-operator                     1.3.0                 11d
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>helmrelease.addons.stackhpc.com/demo-metrics-server              demo      true        kube-system              metrics-server              Deployed   1          metrics-server                       3.8.2                 11d
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>helmrelease.addons.stackhpc.com/demo-node-feature-discovery      demo      true        node-feature-discovery   node-feature-discovery      Deployed   1          node-feature-discovery               0.11.2                11d
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>helmrelease.addons.stackhpc.com/demo-nvidia-gpu-operator         demo      true        gpu-operator             nvidia-gpu-operator         Deployed   1          gpu-operator                         v1.11.1               11d
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>NAME                                                                CLUSTER   AGE
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-control-plane-5kjjt   demo     11d
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-control-plane-897r6   demo     11d
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-control-plane-x26zz   demo     11d
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>kubeadmconfig.bootstrap.cluster.x-k8s.io/demo-sm0-cc21616d-lddk6    demo     11d
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>NAME                                                                  AGE
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io/demo-sm0-cc21616d   11d
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>
+<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a>NAME                                                     CLUSTER  EXPECTEDMACHINES   MAXUNHEALTHY   CURRENTHEALTHY   AGE
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>machinehealthcheck.cluster.x-k8s.io/demo-control-plane   demo     3                  100%           3                11d
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>machinehealthcheck.cluster.x-k8s.io/demo-sm0             demo     1                  100%           1                11d
+<a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a>
+<a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a>NAME                                             CLUSTER  REPLICAS   READY   AVAILABLE   AGE   VERSION
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>machineset.cluster.x-k8s.io/demo-sm0-c99fb7798   demo     1          1       1           11d   v1.24.2
+<a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a>
+<a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a>NAME                                          CLUSTER  REPLICAS   READY   UPDATED   UNAVAILABLE   PHASE     AGE   VERSION
+<a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a>machinedeployment.cluster.x-k8s.io/demo-sm0   demo     1          1       1         0             Running   11d   v1.24.2
+<a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a>
+<a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a>NAME                            PHASE         AGE   VERSION
+<a id="__codelineno-6-43" name="__codelineno-6-43" href="#__codelineno-6-43"></a>cluster.cluster.x-k8s.io/demo   Provisioned   11d   
+<a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a>
+<a id="__codelineno-6-45" name="__codelineno-6-45" href="#__codelineno-6-45"></a>NAME                                                CLUSTER  NODENAME                            PROVIDERID                                          PHASE     AGE   VERSION
+<a id="__codelineno-6-46" name="__codelineno-6-46" href="#__codelineno-6-46"></a>machine.cluster.x-k8s.io/demo-control-plane-7p8zv   demo     demo-control-plane-7d76d0be-z6dm8   openstack:///f687f926-3cee-4550-91e5-32c2885708b0   Running   11d   v1.24.2
+<a id="__codelineno-6-47" name="__codelineno-6-47" href="#__codelineno-6-47"></a>machine.cluster.x-k8s.io/demo-control-plane-9skvh   demo     demo-control-plane-7d76d0be-d2mcr   openstack:///ea91f79a-8abb-4cb9-a2ea-8f772568e93c   Running   11d   v1.24.2
+<a id="__codelineno-6-48" name="__codelineno-6-48" href="#__codelineno-6-48"></a>machine.cluster.x-k8s.io/demo-control-plane-s8dhv   demo     demo-control-plane-7d76d0be-j64w6   openstack:///33a3a532-348a-4b93-ab19-d7d8cdb0daa4   Running   11d   v1.24.2
+<a id="__codelineno-6-49" name="__codelineno-6-49" href="#__codelineno-6-49"></a>machine.cluster.x-k8s.io/demo-sm0-c99fb7798-qqk4j   demo     demo-sm0-7d76d0be-gdjwv             openstack:///ef9ae59c-bf20-44e0-831f-3798d25b7a06   Running   11d   v1.24.2
+<a id="__codelineno-6-50" name="__codelineno-6-50" href="#__codelineno-6-50"></a>
+<a id="__codelineno-6-51" name="__codelineno-6-51" href="#__codelineno-6-51"></a>NAME                                                                   CLUSTER  INITIALIZED   API SERVER AVAILABLE   REPLICAS   READY   UPDATED   UNAVAILABLE   AGE   VERSION
+<a id="__codelineno-6-52" name="__codelineno-6-52" href="#__codelineno-6-52"></a>kubeadmcontrolplane.controlplane.cluster.x-k8s.io/demo-control-plane   demo     true          true                   3          3       3         0             11d   v1.24.2
+<a id="__codelineno-6-53" name="__codelineno-6-53" href="#__codelineno-6-53"></a>
+<a id="__codelineno-6-54" name="__codelineno-6-54" href="#__codelineno-6-54"></a>NAME                                                    CLUSTER  READY   NETWORK                                SUBNET                                 BASTION IP
+<a id="__codelineno-6-55" name="__codelineno-6-55" href="#__codelineno-6-55"></a>openstackcluster.infrastructure.cluster.x-k8s.io/demo   demo     true    4b6b2722-ee5b-40ec-8e52-a6610e14cc51   73e22c49-10b8-4763-af2f-4c0cce007c82   
+<a id="__codelineno-6-56" name="__codelineno-6-56" href="#__codelineno-6-56"></a>
+<a id="__codelineno-6-57" name="__codelineno-6-57" href="#__codelineno-6-57"></a>NAME                                                                                 CLUSTER  INSTANCESTATE   READY   PROVIDERID                                          MACHINE
+<a id="__codelineno-6-58" name="__codelineno-6-58" href="#__codelineno-6-58"></a>openstackmachine.infrastructure.cluster.x-k8s.io/demo-control-plane-7d76d0be-d2mcr   demo     ACTIVE          true    openstack:///ea91f79a-8abb-4cb9-a2ea-8f772568e93c   demo-control-plane-9skvh
+<a id="__codelineno-6-59" name="__codelineno-6-59" href="#__codelineno-6-59"></a>openstackmachine.infrastructure.cluster.x-k8s.io/demo-control-plane-7d76d0be-j64w6   demo     ACTIVE          true    openstack:///33a3a532-348a-4b93-ab19-d7d8cdb0daa4   demo-control-plane-s8dhv
+<a id="__codelineno-6-60" name="__codelineno-6-60" href="#__codelineno-6-60"></a>openstackmachine.infrastructure.cluster.x-k8s.io/demo-control-plane-7d76d0be-z6dm8   demo     ACTIVE          true    openstack:///f687f926-3cee-4550-91e5-32c2885708b0   demo-control-plane-7p8zv
+<a id="__codelineno-6-61" name="__codelineno-6-61" href="#__codelineno-6-61"></a>openstackmachine.infrastructure.cluster.x-k8s.io/demo-sm0-7d76d0be-gdjwv             demo     ACTIVE          true    openstack:///ef9ae59c-bf20-44e0-831f-3798d25b7a06   demo-sm0-c99fb7798-qqk4j
+<a id="__codelineno-6-62" name="__codelineno-6-62" href="#__codelineno-6-62"></a>
+<a id="__codelineno-6-63" name="__codelineno-6-63" href="#__codelineno-6-63"></a>NAME                                                                                   AGE
+<a id="__codelineno-6-64" name="__codelineno-6-64" href="#__codelineno-6-64"></a>openstackmachinetemplate.infrastructure.cluster.x-k8s.io/demo-control-plane-7d76d0be   11d
+<a id="__codelineno-6-65" name="__codelineno-6-65" href="#__codelineno-6-65"></a>openstackmachinetemplate.infrastructure.cluster.x-k8s.io/demo-sm0-7d76d0be             11d
+</code></pre></div>
+<p>The <code>cluster.cluster.x-k8s.io</code> resource should be <code>Provisioned</code>, the <code>machine.cluster.x-k8s.io</code>
+resources should be <code>Running</code> with an associated <code>NODENAME</code>, the
+<code>openstackmachine.infrastructure.cluster.x-k8s.io</code> resources should be <code>ACTIVE</code> and the
+<code>{manifests,helmrelease}.addons.stackhpc.com</code> resources should all be <code>Deployed</code>.</p>
+<p>If this is not the case, first check the interactive console of the cluster nodes in Horizon
+to see if the nodes had any problems joining the cluster. Also
+<a href="../zenith-services/">check to see if the Zenith service</a> for the API server was created
+correctly - once all control plane nodes have registered correctly the <code>Endpoints</code> resource
+for the service should have an entry for each control plane node (usually three).</p>
+<p>If these all look OK, check the logs of the Cluster API providers for any errors:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>capi-system<span class="w"> </span>logs<span class="w"> </span>deploy/capi-controller-manager
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>capi-kubeadm-bootstrap-system<span class="w"> </span>logs<span class="w"> </span>deploy/capi-kubeadm-bootstrap-controller-manager
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>capi-kubeadm-control-plane-system<span class="w"> </span>logs<span class="w"> </span>deploy/capi-kubeadm-control-plane-controller-manager
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>capo-system<span class="w"> </span>logs<span class="w"> </span>deploy/capo-controller-manager
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>capi-addon-system<span class="w"> </span>logs<span class="w"> </span>deploy/cluster-api-addon-provider
+</code></pre></div>
+<h2 id="accessing-tenant-clusters">Accessing tenant clusters</h2>
+<p>The kubeconfigs for all tenant clusters are stored as secrets. First, you need
+to find the name and namespace of the cluster you want to debug. This can be
+seen from the list of clusters:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$ kubectl get cluster -A
+</code></pre></div>
+<p>Then, you can retrieve and decode the kubeconfig with the following:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>$ kubectl -n &lt;namespace&gt; get secret &lt;clustername&gt;-kubeconfig -o json | \
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    jq -r &#39;.data.value&#39; | \
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    base64 -d \
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    &gt; kubeconfig-tenant.yaml
+</code></pre></div>
+<p>This can now be used by exporting the path to this file:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$ export KUBECONFIG=kubeconfig-tenant.yaml
+</code></pre></div>
+<h2 id="zenith-service-issues">Zenith service issues</h2>
+<p>Zenith services are enabled on Kubernetes clusters using the
+<a href="https://github.com/stackhpc/zenith/tree/main/operator">Zenith operator</a>. Each tenant
+Kubernetes cluster gets an instance of the operator that runs on the Azimuth cluster,
+where it can reach the Zenith registrar to allocate subdomains, but watches the tenant
+cluster for instances of the <code>reservation.zenith.stackhpc.com</code> and
+<code>client.zenith.stackhpc.com</code> custom resources.</p>
+<p>By creating instances of these resources in the tenant cluster, Kubernetes <code>Services</code> in
+the target cluster can be exposed via Zenith.</p>
+<p>If Zenith services are not becoming available for Kubernetes cluster services,
+first follow the procedure for
+<a href="../zenith-services/">debugging a Zenith service</a>, including checking that the clients
+were created correctly and that the pods are running:</p>
+<div class="highlight"><span class="filename">Targetting the tenant cluster</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$ kubectl get zenith -A
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>NAMESPACE              NAME                                               PHASE       UPSTREAM SERVICE                MITM ENABLED   MITM AUTH        AGE
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>kubernetes-dashboard   client.zenith.stackhpc.com/kubernetes-dashboard    Available   kubernetes-dashboard            true           ServiceAccount   4d19h
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>monitoring-system      client.zenith.stackhpc.com/kube-prometheus-stack   Available   kube-prometheus-stack-grafana   true           Basic            4d19h
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>NAMESPACE              NAME                                                    SECRET                                    PHASE   FQDN                                                                AGE
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>kubernetes-dashboard   reservation.zenith.stackhpc.com/kubernetes-dashboard    kubernetes-dashboard-zenith-credential    Ready   mwqgcdrk77nva18uzcct3g7jlo7obi7zlbcgemuhk6nhk.azimuth.example.org   4d19h
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>monitoring-system      reservation.zenith.stackhpc.com/kube-prometheus-stack   kube-prometheus-stack-zenith-credential   Ready   zovdsnnesww2hiw074mvufvcfgczfbd2yhmuhsf3p59xa.azimuth.example.org   4d19h
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>$ kubectl get deploy,po -A -l app.kubernetes.io/managed-by=zenith-operator
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>NAMESPACE              NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>kubernetes-dashboard   deployment.apps/kubernetes-dashboard-zenith-client    1/1     1            1           4d19h
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>monitoring-system      deployment.apps/kube-prometheus-stack-zenith-client   1/1     1            1           4d19h
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>NAMESPACE              NAME                                                      READY   STATUS    RESTARTS   AGE
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>kubernetes-dashboard   pod/kubernetes-dashboard-zenith-client-86c5fd9bd-2jfdb    2/2     Running   0          4d19h
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>monitoring-system      pod/kube-prometheus-stack-zenith-client-b9986579d-qgp82   2/2     Running   0          9h
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The kubeconfig for a tenant cluster is available in a secret in the tenant namespace:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$ kubectl -n az-demo get secret | grep kubeconfig
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>demo-kubeconfig                                   cluster.x-k8s.io/secret               1      11d
+</code></pre></div>
+</div>
+<p>If everything looks OK, try restarting the Zenith operator for the cluster:</p>
+<div class="highlight"><span class="filename">On the K3s node, targetting the HA cluster if deployed</span><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>$ kubectl -n az-demo rollout restart deploy/demo-zenith-operator
+</code></pre></div>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 16, 2024</span>
+      
+        <br>
+        Created:
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 16, 2024</span>
+      
+    
+  </small>
+</div>
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../consul/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Debugging Consul" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Debugging Consul
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../caas/" class="md-footer__link md-footer__link--next" aria-label="Next: Debugging Cluster-as-a-Service" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Debugging Cluster-as-a-Service
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; StackHPC 2022
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.indexes", "navigation.top"], "search": "../../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.0238f547.min.js"></script>
+      
+    
+  </body>
+</html>
