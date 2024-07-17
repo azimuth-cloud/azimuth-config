@@ -39,6 +39,11 @@ COMPONENTS = [
         "version_key": "azimuth_identity_operator_chart_version",
     },
     {
+        "name": "azimuth-schedule-operator",
+        "path": "roles/azimuth_schedule_operator/defaults/main.yml",
+        "version_key": "azimuth_schedule_operator_chart_version",
+    },
+    {
         "name": "zenith",
         "path": "roles/zenith/defaults/main.yml",
         "version_key": "zenith_chart_version",
@@ -232,6 +237,9 @@ def main():
     )
     parser.add_argument("tag", help = "The tag to generate release notes for.")
     args = parser.parse_args()
+
+    # Make sure that the YAML SafeLoader respects Ansible's !unsafe tag
+    yaml.SafeLoader.add_constructor("!unsafe", yaml.SafeLoader.construct_scalar)
 
     session = github_session(args.token)
 
