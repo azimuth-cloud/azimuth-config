@@ -153,8 +153,9 @@ runs:
         ansible_var() {
             ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
             ANSIBLE_STDOUT_CALLBACK=json \
+            ANSIBLE_JSON_INDENT=0 \
             ansible -m debug -a "var=$1" -e @extra-vars.yml all | \
-              jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+               jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
         }
 
         EXTNET_ID="$(ansible_var infra_external_network_id)"
