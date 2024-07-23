@@ -6,14 +6,14 @@ deployment rather than running deployment commands manually. Using this approach
 configuration changes are automatically deployed to test, staging and production
 environments, although deployments to production typically include a manual approval.
 
-!!! note "Continuous delivery vs continuous deployment"
+!!! note  "Continuous delivery vs continuous deployment"
 
     Continuous delivery is very similar to
     [Continuous Deployment](https://en.wikipedia.org/wiki/Continuous_deployment) with
     the exception that in continuous deployment, production deployments are also fully
     automated with no manual intervention or approval.
 
-!!! tip "Using a site mixin"
+!!! tip  "Using a site mixin"
 
     To get the maximum benefit from automated deployments and the
     [feature branch workflow](../repository/index.md#making-changes-to-your-environment),
