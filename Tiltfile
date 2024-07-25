@@ -6,7 +6,7 @@ TILT_IMAGES_UNAPPLY = os.path.abspath("./bin/tilt-images-unapply")
 
 
 # Allow the use of the azimuth-dev context
-allow_k8s_contexts("azimuth-dev")
+allow_k8s_contexts("azimuth")
 
 
 def deep_merge(dict1, dict2):
