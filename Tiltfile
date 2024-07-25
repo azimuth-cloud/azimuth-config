@@ -62,6 +62,9 @@ settings = deep_merge(
             "azimuth-identity-operator": {
                 "release_namespace": "azimuth",
             },
+            "azimuth-schedule-operator": {
+                "release_namespace": "azimuth",
+            },
             "cluster-api-addon-provider": {
                 "release_namespace": "capi-addon-system",
             },
