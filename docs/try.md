@@ -2,7 +2,7 @@
 
 If you have access to a project on an OpenStack cloud, you can try Azimuth!
 
-The [azimuth-config repository](https://github.com/stackhpc/azimuth-config)
+The [azimuth-config repository](https://github.com/azimuth-cloud/azimuth-config)
 contains a special [environment](./environments.md) called `demo` that will
 provision a short-lived Azimuth deployment **for demonstration purposes
 only**. This environment attempts to infer all required configuration from
@@ -34,7 +34,7 @@ export OS_CLOUD=openstack
 export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
 
 # Clone the azimuth-config repository
-git clone https://github.com/stackhpc/azimuth-config
+git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
 
 # Set up the virtual environment
@@ -47,7 +47,7 @@ source ./bin/activate demo
 ansible-galaxy install -f -r requirements.yml
 
 # Deploy Azimuth
-ansible-playbook stackhpc.azimuth_ops.provision
+ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 
 The URL for the Azimuth UI is printed at the end of the playbook run. The

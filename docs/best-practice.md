@@ -116,7 +116,7 @@ deployment. It is recommended that this is configured to run automatically for a
 long as the tests are configured to target an isolated project.
 
 A
-[sample GitLab CI/CD configuration](https://github.com/stackhpc/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
+[sample GitLab CI/CD configuration](https://github.com/azimuth-cloud/azimuth-config/tree/stable/.gitlab-ci.yml.sample)
 is provided that implements this workflow for GitLab-hosted repositories.
 
 ## Monitoring

@@ -4,7 +4,7 @@ inputs:
   repository:
     description: The repository to use for the Azimuth configuration.
     required: true
-    default: stackhpc/azimuth-config
+    default: azimuth-cloud/azimuth-config
   ref:
     description: The ref to use for the Azimuth configuration.
     required: true
@@ -75,7 +75,7 @@ runs:
         REQUIREMENTS_CONTENT: |
           ---
           collections:
-            - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
+            - name: https://github.com/azimuth-cloud/ansible-collection-azimuth-ops.git
               type: git
               version: ${{ inputs.azimuth-ops-version }}
       if: ${{ inputs.azimuth-ops-version != '' }}
@@ -134,7 +134,7 @@ runs:
         echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
 
     - name: Acquire S3 lock
-      uses: stackhpc/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@master
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}

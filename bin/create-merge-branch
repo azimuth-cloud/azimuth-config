@@ -18,7 +18,7 @@ if [ -n "$(git status --short)" ]; then
   exit 1
 fi
 
-UPSTREAM_REPO="${UPSTREAM_REPO:-"stackhpc/azimuth-config"}"
+UPSTREAM_REPO="${UPSTREAM_REPO:-"azimuth-cloud/azimuth-config"}"
 echo "[INFO] Using upstream repo - $UPSTREAM_REPO"
 
 # Fetch the tag for the latest release from the upstream repository

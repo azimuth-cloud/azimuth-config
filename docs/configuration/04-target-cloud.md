@@ -114,7 +114,7 @@ If it cannot find a tagged internal network, the default behaviour is for Azimut
 internal network to use (and the corresponding router to attach it to the external network).
 
 The discovery and auto-creation process is described in detail in
-[Network discovery and auto-creation](https://github.com/stackhpc/azimuth/tree/master/docs/architecture.md#network-discovery-and-auto-creation).
+[Network discovery and auto-creation](https://github.com/azimuth-cloud/azimuth/tree/master/docs/architecture.md#network-discovery-and-auto-creation).
 
 To disable the auto-creation of internal networks, use the following:
 

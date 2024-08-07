@@ -3,11 +3,11 @@
 Kubernetes support in Azimuth is implemented using [Cluster API](https://cluster-api.sigs.k8s.io/)
 with the [OpenStack provider](https://github.com/kubernetes-sigs/cluster-api-provider-openstack).
 Support for cluster addons is provided by the
-[Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider), which
+[Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider), which
 provides functionality for installing [Helm](https://helm.sh/) charts and additional manifests.
 
 Azimuth provides an opinionated interface on top of Cluster API by implementing
-[its own Kubernetes operator](https://github.com/stackhpc/azimuth-capi-operator).
+[its own Kubernetes operator](https://github.com/azimuth-cloud/azimuth-capi-operator).
 This operator exposes two
 [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 which are used by the Azimuth API to manage Kubernetes clusters:
@@ -26,7 +26,7 @@ which are used by the Azimuth API to manage Kubernetes clusters:
   auto-healing and whether the monitoring stack is deployed on the cluster.
 
 For each `Cluster`, the operator manages a release of the
-[openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster).
+[openstack-cluster Helm chart](https://github.com/azimuth-cloud/capi-helm-charts/tree/main/charts/openstack-cluster).
 The Helm release in turn manages Cluster API resources for the cluster, including addons.
 
 To get the values for the release, the operator first derives some values from the `Cluster`

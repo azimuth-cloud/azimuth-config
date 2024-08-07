@@ -89,7 +89,7 @@ Once you have the name of the backup to restore, run the following command with 
 activated (similar to a provision):
 
 ```bash
-ansible-playbook stackhpc.azimuth_ops.restore \
+ansible-playbook azimuth_cloud.azimuth_ops.restore \
   -e velero_restore_backup_name=<backup name>
 ```
 

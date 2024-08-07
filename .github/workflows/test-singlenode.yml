@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code under test must be from a branch in the azimuth-config repo
-        run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
+        run: exit ${{ github.repository == 'azimuth-cloud/azimuth-config' && '0' || '1' }}
 
   run_azimuth_tests:
     needs: [fail_on_remote]
