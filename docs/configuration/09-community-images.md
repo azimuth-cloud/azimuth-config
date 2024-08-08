@@ -5,11 +5,11 @@ Cluster-as-a-Service appliances and Kubernetes clusters.
 
 Images for Kubernetes and CaaS appliances, with the exception of Slurm, are built using
 [Packer](https://www.packer.io/) from the definitions in the
-[azimuth-images repository](https://github.com/stackhpc/azimuth-images). For Kubernetes,
+[azimuth-images repository](https://github.com/azimuth-cloud/azimuth-images). For Kubernetes,
 we make use of the recipes from the upstream
 [Cluster API image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/capi).
 
-Each [release of azimuth-images](https://github.com/stackhpc/azimuth-images/releases) has
+Each [release of azimuth-images](https://github.com/azimuth-cloud/azimuth-images/releases) has
 an associated manifest that describes the images in the release and where to download them
 from, along with some additional metadata. The Azimuth deployment playbooks are able to
 consume these manifests.
@@ -71,7 +71,7 @@ community_images: {}
     If community images are disabled you will need to ensure suitable images are
     uploaded via another mechanism, and the correct variables populated with the
     image IDs in your Azimuth configuration. See the
-    [azimuth-ops roles](https://github.com/stackhpc/ansible-collection-azimuth-ops/tree/main/roles)
+    [azimuth-ops roles](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles)
     for more details.
 
 ## Custom images
