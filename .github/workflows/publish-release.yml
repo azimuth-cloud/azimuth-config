@@ -15,22 +15,3 @@ jobs:
 
       - name: Generate and update release notes
         uses: ./.github/actions/release-notes
-
-
-  publish_docs:
-    name: Publish docs to GitHub pages
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install docs requirements
-        run: pip install -r requirements-docs.txt
-
-      - name: Publish docs
-        run: mkdocs gh-deploy --force
