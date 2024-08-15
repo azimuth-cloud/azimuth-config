@@ -28,7 +28,7 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+        ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e @extra-vars.yml
 
     - name: Run test suite
       shell: bash

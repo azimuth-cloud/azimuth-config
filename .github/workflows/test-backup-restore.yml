@@ -63,7 +63,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+          ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e @extra-vars.yml
 
       - name: Create test platforms
         id: tests-create
@@ -115,7 +115,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml
+          ansible-playbook azimuth_cloud.azimuth_ops.destroy -e @extra-vars.yml
         if: ${{ !cancelled() && steps.backup-create.conclusion == 'success' }}
 
       - name: Restore from backup
@@ -124,7 +124,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.restore \
+          ansible-playbook azimuth_cloud.azimuth_ops.restore \
             -e @extra-vars.yml \
             -e velero_restore_backup_name=$AZIMUTH_ENVIRONMENT
         if: ${{ !cancelled() && steps.azimuth-destroy.conclusion == 'success' }}

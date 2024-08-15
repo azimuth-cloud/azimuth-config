@@ -1,14 +1,14 @@
 # Azimuth Operator Documentation
 
 This documentation describes how to manage deployments of
-[Azimuth](https://github.com/stackhpc/azimuth), including all the required dependencies.
+[Azimuth](https://github.com/azimuth-cloud/azimuth), including all the required dependencies.
 
 ## Deploying Azimuth
 
 Azimuth is deployed using [Ansible](https://www.ansible.com/) with playbooks from the
-[azimuth-ops Ansible collection](https://github.com/stackhpc/ansible-collection-azimuth-ops),
+[azimuth-ops Ansible collection](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops),
 driven by configuration derived from the
-[azimuth-config reference configuration](https://github.com/stackhpc/azimuth-config).
+[azimuth-config reference configuration](https://github.com/azimuth-cloud/azimuth-config).
 
 The `azimuth-config` repository is designed to be forked for a specific site and is structured
 into multiple [environments](#environments). This structure allows common configuration to be
@@ -23,8 +23,8 @@ For a production-ready deployment, you should follow the steps in the
 ## Structure of an Azimuth deployment
 
 A fully-featured Azimuth deployment consists of many components, such as
-[Zenith](https://github.com/stackhpc/zenith), [Cluster API](https://cluster-api.sigs.k8s.io/)
-and the [CaaS operator](https://github.com/stackhpc/azimuth-caas-operator), which
+[Zenith](https://github.com/azimuth-cloud/zenith), [Cluster API](https://cluster-api.sigs.k8s.io/)
+and the [CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator), which
 require a [Kubernetes](https://kubernetes.io/) cluster to run.
 
 However when you consider an Azimuth deployment as a whole, the only _real_ dependency is

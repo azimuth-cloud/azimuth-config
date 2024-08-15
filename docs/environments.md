@@ -50,7 +50,7 @@ By keeping the `azimuth-config` repository as an upstream of your site configura
 you can rebase onto or merge the latest configuration to pick up changes to these mixins.
 
 The `azimuth-config` repository contains an example of a concrete environment in
-[environments/example](https://github.com/stackhpc/azimuth-config/tree/stable/environments/example)
+[environments/example](https://github.com/azimuth-cloud/azimuth-config/tree/stable/environments/example)
 that should be used as a basis for your own concrete environment(s).
 
 Depending how many concrete environments you have, you may wish to define mixin environments
@@ -76,7 +76,7 @@ MY_VAR="some value"
 ```
 
 The
-[azimuth-config activate script](https://github.com/stackhpc/azimuth-config/tree/stable/bin/activate)
+[azimuth-config activate script](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/activate)
 exports environment variables defined in the following files:
 
 `env` and `env.secret`

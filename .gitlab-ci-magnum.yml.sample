@@ -113,7 +113,7 @@ deploy_staging:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.provision_capi_mgmt
+    - ansible-playbook azimuth_cloud.azimuth_ops.provision_capi_mgmt
 
 #####
 # This job deploys the Magnum CAPI management cluster to the production environment
@@ -154,4 +154,4 @@ deploy_production:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.provision_capi_mgmt
+    - ansible-playbook azimuth_cloud.azimuth_ops.provision_capi_mgmt
