@@ -172,6 +172,7 @@ runs:
             echo "waiting for ingress IP to become available"
             sleep 60
         done
+        echo "assigned $INGRESS_IP for ingress"
         cat >> ci.env <<EOF
         export INGRESS_IP="$INGRESS_IP"
         EOF
@@ -188,6 +189,7 @@ runs:
                 echo "waiting for Zenith SSHD IP to become available"
                 sleep 60
             done
+            echo "assigned $ZENITH_SSHD_IP for Zenith SSHD"
             cat >> ci.env <<EOF
         export ZENITH_SSHD_IP="$ZENITH_SSHD_IP"
         EOF
