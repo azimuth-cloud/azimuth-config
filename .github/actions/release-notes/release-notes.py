@@ -66,17 +66,26 @@ COMPONENTS = [
     {
         "name": "caas-workstation",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_workstation_default_git_version",
+        "version_key": [
+            "azimuth_caas_workstation_default_git_version",
+            "azimuth_caas_stackhpc_workstation_git_version",
+        ],
     },
     {
         "name": "caas-repo2docker",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_repo2docker_default_git_version",
+        "version_key": [
+            "azimuth_caas_repo2docker_default_git_version",
+            "azimuth_caas_stackhpc_repo2docker_git_version",
+        ],
     },
     {
         "name": "caas-r-studio-server",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_rstudio_default_git_version",
+        "version_key": [
+            "azimuth_caas_rstudio_default_git_version",
+            "azimuth_caas_stackhpc_rstudio_git_version",
+        ],
     },
     {
         "name": "ansible-slurm-appliance",
@@ -186,7 +195,14 @@ def fetch_component_version_for_ops_tag(session, tag, component):
     )
     response.raise_for_status()
     content = base64.b64decode(response.json()["content"])
-    return yaml.safe_load(content)[component["version_key"]]
+    data = yaml.safe_load(content)
+    # In order to allow version keys to change between azimuth-ops versions, we support
+    # specifying a list of keys which we try in order
+    if isinstance(component["version_key"], list):
+        version_keys = component["version_key"]
+    else:
+        version_keys = [component["version_key"]]
+    return next(data[key] for key in version_keys if key in data)
 
 
 def release_notes_for_component(session, name, org, from_version, to_version):
