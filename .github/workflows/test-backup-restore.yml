@@ -1,0 +1,191 @@
+name: Backup and restore test
+
+on:
+  # Allow manual execution on any branch
+  workflow_dispatch:
+    inputs:
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
+
+jobs:
+  # Tests that a backup and restore re-adopts all the existing platforms correctly
+  #
+  # Note that success() and failure() consider *all previous steps*, and continue-on-failure
+  # prevents the job from being marked as failed if that step fails
+  # This means that in order to get the execution flow that we want while still resulting in a
+  # failed job when required, we need to use step ids and the conclusions of specific steps
+  test_backup_restore:
+    runs-on: ubuntu-latest
+    steps:
+      # We need to check out the code under test first in order to use local actions
+      - name: Checkout code under test
+        uses: actions/checkout@v3
+
+      - name: Set up Azimuth environment
+        uses: ./.github/actions/setup
+        with:
+          os-clouds: ${{ secrets.OS_CLOUDS }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          install-mode: ha
+          environment-prefix: ci-restore
+        # GitHub terminates jobs after 6 hours
+        # We don't want jobs to acquire the lock then get timed out before they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        timeout-minutes: 180
+
+      - name: Generate S3 credentials for Velero
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          VELERO_S3_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
+          VELERO_S3_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $VELERO_S3_ACCESS_KEY)"
+          cat >> ci.env <<EOF
+          export VELERO_S3_ACCESS_KEY="$VELERO_S3_ACCESS_KEY"
+          export VELERO_S3_SECRET_KEY="$VELERO_S3_SECRET_KEY"
+          EOF
+
+      - name: Provision Azimuth
+        uses: ./.github/actions/provision
+
+      - name: Generate test suite
+        id: generate-tests
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+
+      - name: Create test platforms
+        id: tests-create
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/run-tests --include create --outputdir reports/create
+
+      - name: Verify test platforms
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/run-tests --include verify --outputdir reports/verify-create
+        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
+
+      - name: Create a backup
+        id: backup-create
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/seed-ssh -- \
+            velero backup create $AZIMUTH_ENVIRONMENT \
+              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
+              --from-schedule default \
+              --wait
+        if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
+
+      - name: Create pre-restore debug bundle
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/create-debug-bundle
+        if: ${{ !cancelled() }}
+
+      - name: Upload pre-restore debug bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: azimuth-pre-restore-debug-bundle
+          path: debug-bundle.tar.gz
+        if: ${{ !cancelled() }}
+
+      - name: Destroy Azimuth
+        id: azimuth-destroy
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml
+        if: ${{ !cancelled() && steps.backup-create.conclusion == 'success' }}
+
+      - name: Restore from backup
+        id: backup-restore
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ansible-playbook stackhpc.azimuth_ops.restore \
+            -e @extra-vars.yml \
+            -e velero_restore_backup_name=$AZIMUTH_ENVIRONMENT
+        if: ${{ !cancelled() && steps.azimuth-destroy.conclusion == 'success' }}
+
+      - name: Verify test platforms post restore
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/run-tests --include verify --outputdir reports/verify-post-restore
+        if: ${{ !cancelled() && steps.backup-restore.conclusion == 'success' }}
+
+      - name: Delete test platforms
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/run-tests --include delete --outputdir reports/delete
+        if: ${{ always() }}
+
+      - name: Delete backup
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/seed-ssh -- \
+            velero backup delete $AZIMUTH_ENVIRONMENT \
+              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
+              --confirm
+        if: ${{ always() }}
+
+      - name: Upload test report artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: azimuth-restore-test-reports
+          path: reports/*
+        if: ${{ always() }}
+
+      - name: Create debug bundle
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/create-debug-bundle
+        if: ${{ always() }}
+
+      - name: Upload debug bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: azimuth-restore-debug-bundle
+          path: debug-bundle.tar.gz
+        if: ${{ always() }}
+
+      - name: Destroy Azimuth
+        uses: ./.github/actions/destroy
+        if: ${{ always() }}
+
+      - name: Delete Velero S3 credentials
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          openstack ec2 credentials delete $VELERO_S3_ACCESS_KEY
+        if: ${{ always() }}

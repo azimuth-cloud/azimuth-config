@@ -4,6 +4,77 @@ An Azimuth deployment consists of several interdependent components, some of whi
 Azimuth-specific and some of which are third-party components. Plugging code under
 development into such a system can be tricky, making development difficult and slow.
 
+## Deploying a dev instance
+
+In order to develop Azimuth, you first need a running Azimuth instance.
+
+Each developer should have their own independent instance of Azimuth for development,
+as during development they will make changes to the running Azimuth components that may
+conflict with or break things for others.
+
+### Creating a dev environment
+
+Azimuth supports using a single [configuration environment](../environments.md) to deploy multiple
+independent Azimuth instances. When
+[activating an environment](../deployment/#activating-an-environment), a unique instance name
+can be given as a second argument to the `activate` script, e.g.:
+
+```bash
+# Activating an environment with a unique instance name
+source ./bin/activate my-environment jbloggs
+```
+
+In order for an environment to be used in this way, it must be specially prepared to be more
+dynamic than an environment that you would use for staging or production. In particular, only
+[single node deployments](../configuration/02-deployment-method.md#single-node) are usable in
+this way, as HA deployments do not support dynamically allocating a floating IP for the ingress
+controller.
+
+It is recommended that you create an environment in your Azimuth configuration repository
+for doing Azimuth development on your cloud. This environment should include any site-specific
+customisations that are required, usually by building on a
+[site mixin](../environments.md#using-mixin-environments). The
+[demo environment](https://github.com/stackhpc/azimuth-config/tree/devel/environments/demo)
+is a good starting point for this, as it is designed to be flexible and dynamic.
+
+!!! tip  "Producing unique values in your Azimuth configuration"
+
+    The Ansible variable `azimuth_environment` contains the unique instance name, and
+    can be used in other variables in your configuration where a unique value is required
+    for each developer environment.
+
+!!! warning  "Developers should use their own application credential"
+
+    You should not include an application credential in your development environment.
+    Instead, each developer can use their own application credential as described in the
+    next section.
+
+### Using the dev environment
+
+The following instructions assume that your Azimuth configuration contains a developer environment
+called `dev`. It is assumed that you have your Azimuth configuration checked out and that you have
+an [application credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
+for the target cloud.
+
+To stand up your developer-specific Azimuth instance, using the `dev` environment, use the
+following:
+
+```bash
+# Set OpenStack configuration variables
+export OS_CLOUD=openstack
+export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
+
+# Activate the dev config environment with a specific instance name
+#
+# This means that resources created for the instance will not collide
+# with other deployments that use the dev environment
+source ./bin/activate dev jbloggs-dev
+
+# Install Azimuth as usual
+ansible-galaxy install -f -r requirements.yml
+ansible-playbook stackhpc.azimuth_ops.provision
+```
+
 ## Developing Azimuth components
 
 Azimuth has a number of components, mostly written in Python:
@@ -12,6 +83,7 @@ Azimuth has a number of components, mostly written in Python:
   * [Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
   * [Azimuth CAPI operator](https://github.com/stackhpc/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
   * [Azimuth identity operator](https://github.com/stackhpc/azimuth-identity-operator) - Kubernetes operator implementing platform identity
+  * [Azimuth schedule operator](https://github.com/stackhpc/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
   * [Zenith](https://github.com/stackhpc/zenith) - secure, tunnelling application proxy used to expose platform services
   * [Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider) - addons for Cluster API clusters
   * [Cluster API janitor for OpenStack](https://github.com/stackhpc/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
@@ -40,46 +112,6 @@ For developing the Azimuth UI, the following are also required:
 
   * [node.js](https://nodejs.org)
   * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
-
-### Deploying a dev instance
-
-To use Tilt for developing Azimuth components, you first need a running Azimuth instance.
-    
-Each developer should have their own independent instance of Azimuth as Tilt will make
-changes to the running Azimuth components, based on the code under development, that may
-disrupt or break things for others.
-
-!!! tip
-
-    A single node deployment, e.g. a [demo deployment](../try.md), is sufficient for developing
-    the Azimuth components.
-
-    You may wish to maintain a [development environment](../environments.md) containing
-    site-specific customisations.
-
-The following instructions assume that your Azimuth configuration contains a developer environment
-called `dev`. It is assumed that you have your Azimuth configuration checked out and that you have
-an [application credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
-for the target cloud.
-
-To stand up your developer-specific Azimuth instance, using the `dev` environment, use the
-following:
-
-```bash
-# Set OpenStack configuration variables
-export OS_CLOUD=openstack
-export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
-
-# Activate the dev config environment with a specific instance name
-#
-# This means that resources created for the instance will not collide
-# with other deployments that use the dev environment
-source ./bin/activate dev jbloggs-dev
-
-# Install Azimuth as usual
-ansible-galaxy install -f -r requirements.yml
-ansible-playbook stackhpc.azimuth_ops.provision
-```
 
 ### Configuring a container registry
 

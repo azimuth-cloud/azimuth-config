@@ -143,25 +143,41 @@ runs:
         action: acquire
       if: ${{ steps.s3-lock-config.outputs.host != '' }}
 
-    - name: Allocate floating IP for ingress
+    - name: Allocate floating IPs
       shell: bash
       run: |
         set -eo pipefail
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        EXTNET_ID="$(
-          ansible -m debug -a "var=infra_external_network_id" -e @extra-vars.yml all |
-            jq -r ".plays[0].tasks[0].hosts.localhost.infra_external_network_id"
-        )"
-        IP_ADDRESS="$(
+
+        ansible_var() {
+            ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+            ANSIBLE_STDOUT_CALLBACK=json \
+            ansible -m debug -a "var=$1" -e @extra-vars.yml all | \
+              jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+        }
+
+        EXTNET_ID="$(ansible_var infra_external_network_id)"
+        INSTALL_MODE="$(ansible_var install_mode)"
+
+        INGRESS_IP="$(
           openstack floating ip create $EXTNET_ID \
             --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
             --format value \
             --column floating_ip_address
         )"
         cat >> ci.env <<EOF
-        export INGRESS_IP="$IP_ADDRESS"
+        export INGRESS_IP="$INGRESS_IP"
         EOF
-      env:
-        ANSIBLE_LOAD_CALLBACK_PLUGINS: "true"
-        ANSIBLE_STDOUT_CALLBACK: json
+
+        if [ "$INSTALL_MODE" = "ha" ]; then
+            ZENITH_SSHD_IP="$(
+              openstack floating ip create $EXTNET_ID \
+                --description "Zenith SSHD IP for $AZIMUTH_ENVIRONMENT" \
+                --format value \
+                --column floating_ip_address
+            )"
+            cat >> ci.env <<EOF
+        export ZENITH_SSHD_IP="$ZENITH_SSHD_IP"
+        EOF
+        fi

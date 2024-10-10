@@ -1,4 +1,4 @@
-name: Full test suite
+name: Upgrade test
 
 on:
   # Allow manual execution on any branch
@@ -15,47 +15,14 @@ on:
           - leafcloud
 
 jobs:
-  # Tests a clean HA deployment + all appliances
-  test_clean_ha:
-    runs-on: ubuntu-latest
-    steps:
-      # We need to check out the code under test first in order to use local actions
-      - name: Checkout code under test
-        uses: actions/checkout@v3
-
-      - name: Set up Azimuth environment
-        uses: ./.github/actions/setup
-        with:
-          os-clouds: ${{ secrets.OS_CLOUDS }}
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
-          target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
-          install-mode: ha
-          environment-prefix: ci-ha
-        # GitHub terminates jobs after 6 hours
-        # We don't want jobs to acquire the lock then get timed out before they can finish
-        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
-        timeout-minutes: 180
-
-      - name: Provision Azimuth
-        uses: ./.github/actions/provision
-
-      - name: Run Azimuth tests
-        uses: ./.github/actions/test
-
-      - name: Destroy Azimuth
-        uses: ./.github/actions/destroy
-        if: ${{ always() }}
-
   # Tests an Azimuth upgrade from the current latest release to the code under test
   #
   # Note that success() and failure() consider *all previous steps*, and continue-on-failure
   # prevents the job from being marked as failed if that step fails
   # This means that in order to get the execution flow that we want while still resulting in a
   # failed job when required, we need to use step ids and the conclusions of specific steps
-  test_azimuth_upgrade:
+  test_upgrade:
     runs-on: ubuntu-latest
-    needs: [test_clean_ha]
     steps:
       - name: Get latest tag
         id: latest-tag
@@ -99,7 +66,9 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.generate_tests -e @extra-vars.yml
+          ansible-playbook stackhpc.azimuth_ops.generate_tests \
+            -e @extra-vars.yml \
+            -e generate_tests_include_upgrade_tests=true
 
       - name: Create test platforms
         id: tests-create
@@ -148,17 +117,40 @@ jobs:
         uses: ./.actions/.github/actions/provision
         if: ${{ !cancelled() && steps.update-ansible.conclusion == 'success' }}
 
-      - name: Verify test platforms post upgrade
+      - name: Regenerate test suite
+        id: regenerate-tests
         run: |
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-upgrade
+          ansible-playbook stackhpc.azimuth_ops.generate_tests \
+            -e @extra-vars.yml \
+            -e generate_tests_include_upgrade_tests=true
         if: ${{ !cancelled() && steps.upgrade-azimuth.conclusion == 'success' }}
 
-      # TODO(mkjpryor) patch/upgrade not implemented in test generation yet
-      # - name: Upgrade test platforms
-      # - name: Verify test platforms
+      - name: Verify test platforms post Azimuth upgrade
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-azimuth-upgrade
+        if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
+
+      - name: Upgrade test platforms
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include upgrade --outputdir reports/upgrade
+        if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
+
+      - name: Verify test platforms post platform upgrade
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-platform-upgrade
+        if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
 
       - name: Delete test platforms
         run: |
