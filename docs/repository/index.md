@@ -14,7 +14,7 @@ repository:
 
 ```sh
 # Clone the azimuth-config repository
-git clone https://github.com/stackhpc/azimuth-config.git my-azimuth-config
+git clone https://github.com/azimuth-cloud/azimuth-config.git my-azimuth-config
 cd my-azimuth-config
 
 # Maintain the existing origin remote as upstream
@@ -23,10 +23,7 @@ git remote rename origin upstream
 # Create a new origin remote for the repository location
 git remote add origin git@<repo location>/my-azimuth-config.git
 
-# Checkout stable to get the latest release
-git checkout stable
-
-# Create a new main branch from stable
+# Create a new main branch from devel
 # This will be the branch that is deployed into production
 git checkout -b main
 
@@ -100,7 +97,7 @@ component versions, upgraded dependencies and new images.
 !!! info  "Choosing a release"
 
     The available releases, with associated release notes, can be reviewed on the
-    [Azimuth releases page](https://github.com/stackhpc/azimuth-config/releases).
+    [Azimuth releases page](https://github.com/azimuth-cloud/azimuth-config/releases).
 
 !!! tip  "Automating upgrades"
 

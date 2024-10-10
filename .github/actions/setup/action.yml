@@ -4,7 +4,7 @@ inputs:
   repository:
     description: The repository to use for the Azimuth configuration.
     required: true
-    default: stackhpc/azimuth-config
+    default: azimuth-cloud/azimuth-config
   ref:
     description: The ref to use for the Azimuth configuration.
     required: true
@@ -75,7 +75,7 @@ runs:
         REQUIREMENTS_CONTENT: |
           ---
           collections:
-            - name: https://github.com/stackhpc/ansible-collection-azimuth-ops.git
+            - name: https://github.com/azimuth-cloud/ansible-collection-azimuth-ops.git
               type: git
               version: ${{ inputs.azimuth-ops-version }}
       if: ${{ inputs.azimuth-ops-version != '' }}
@@ -134,7 +134,7 @@ runs:
         echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
 
     - name: Acquire S3 lock
-      uses: stackhpc/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@master
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}
@@ -153,30 +153,43 @@ runs:
         ansible_var() {
             ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
             ANSIBLE_STDOUT_CALLBACK=json \
+            ANSIBLE_JSON_INDENT=0 \
             ansible -m debug -a "var=$1" -e @extra-vars.yml all | \
-              jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+               jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
         }
 
         EXTNET_ID="$(ansible_var infra_external_network_id)"
         INSTALL_MODE="$(ansible_var install_mode)"
 
-        INGRESS_IP="$(
-          openstack floating ip create $EXTNET_ID \
-            --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
-            --format value \
-            --column floating_ip_address
-        )"
+        until \
+          INGRESS_IP="$(
+            openstack floating ip create $EXTNET_ID \
+              --description "ingress IP for $AZIMUTH_ENVIRONMENT" \
+              --format value \
+              --column floating_ip_address
+          )"
+        do
+            echo "waiting for ingress IP to become available"
+            sleep 60
+        done
+        echo "assigned $INGRESS_IP for ingress"
         cat >> ci.env <<EOF
         export INGRESS_IP="$INGRESS_IP"
         EOF
 
         if [ "$INSTALL_MODE" = "ha" ]; then
-            ZENITH_SSHD_IP="$(
-              openstack floating ip create $EXTNET_ID \
-                --description "Zenith SSHD IP for $AZIMUTH_ENVIRONMENT" \
-                --format value \
-                --column floating_ip_address
-            )"
+            until \
+              ZENITH_SSHD_IP="$(
+                openstack floating ip create $EXTNET_ID \
+                  --description "Zenith SSHD IP for $AZIMUTH_ENVIRONMENT" \
+                  --format value \
+                  --column floating_ip_address
+              )"
+            do
+                echo "waiting for Zenith SSHD IP to become available"
+                sleep 60
+            done
+            echo "assigned $ZENITH_SSHD_IP for Zenith SSHD"
             cat >> ci.env <<EOF
         export ZENITH_SSHD_IP="$ZENITH_SSHD_IP"
         EOF

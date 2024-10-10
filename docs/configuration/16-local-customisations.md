@@ -6,7 +6,7 @@ Azimuth allows a few site-specific customisations to be made to the user interfa
 
 The Azimuth UI includes a documentation link in the navigation bar at the top of the page.
 By default, this link points to the
-[generic Azimuth user documentation](https://stackhpc.github.io/azimuth-user-docs/) that
+[generic Azimuth user documentation](https://azimuth-cloud.github.io/azimuth-user-docs/) that
 covers usage of the reference appliances.
 
 However it is recommended to change this link to point at local documentation that is specific
@@ -64,7 +64,7 @@ azimuth_theme_custom_css: |
     background-repeat: no-repeat;
     text-indent: -9999px;
 
-    background-image: url('https://raw.githubusercontent.com/stackhpc/azimuth/master/branding/azimuth-logo-white-text.png');
+    background-image: url('https://raw.githubusercontent.com/azimuth-cloud/azimuth/master/branding/azimuth-logo-white-text.png');
     height: 60px;
     width: 220px;
   }
@@ -89,5 +89,5 @@ azimuth_theme_custom_css: |
 
     This is because Azimuth has some Pulse-specific tweaks that you will need to keep.
     For more details, see the
-    [CSS file](https://github.com/stackhpc/azimuth/blob/master/ui/assets/pulse-overrides.css),
+    [CSS file](https://github.com/azimuth-cloud/azimuth/blob/master/ui/assets/pulse-overrides.css),
     which has comments indicating why these are necessary.

@@ -34,7 +34,7 @@ It is recommended that you create an environment in your Azimuth configuration r
 for doing Azimuth development on your cloud. This environment should include any site-specific
 customisations that are required, usually by building on a
 [site mixin](../environments.md#using-mixin-environments). The
-[demo environment](https://github.com/stackhpc/azimuth-config/tree/devel/environments/demo)
+[demo environment](https://github.com/azimuth-cloud/azimuth-config/tree/devel/environments/demo)
 is a good starting point for this, as it is designed to be flexible and dynamic.
 
 !!! tip  "Producing unique values in your Azimuth configuration"
@@ -72,21 +72,21 @@ source ./bin/activate dev jbloggs-dev
 
 # Install Azimuth as usual
 ansible-galaxy install -f -r requirements.yml
-ansible-playbook stackhpc.azimuth_ops.provision
+ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 
 ## Developing Azimuth components
 
 Azimuth has a number of components, mostly written in Python:
 
-  * [Azimuth API and UI](https://github.com/stackhpc/azimuth) - user-facing API and UI
-  * [Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
-  * [Azimuth CAPI operator](https://github.com/stackhpc/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
-  * [Azimuth identity operator](https://github.com/stackhpc/azimuth-identity-operator) - Kubernetes operator implementing platform identity
-  * [Azimuth schedule operator](https://github.com/stackhpc/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
-  * [Zenith](https://github.com/stackhpc/zenith) - secure, tunnelling application proxy used to expose platform services
-  * [Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider) - addons for Cluster API clusters
-  * [Cluster API janitor for OpenStack](https://github.com/stackhpc/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
+  * [Azimuth API and UI](https://github.com/azimuth-cloud/azimuth) - user-facing API and UI
+  * [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
+  * [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
+  * [Azimuth identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) - Kubernetes operator implementing platform identity
+  * [Azimuth schedule operator](https://github.com/azimuth-cloud/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
+  * [Zenith](https://github.com/azimuth-cloud/zenith) - secure, tunnelling application proxy used to expose platform services
+  * [Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider) - addons for Cluster API clusters
+  * [Cluster API janitor for OpenStack](https://github.com/azimuth-cloud/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
 
 It is useful to develop these components in the context of a running Azimuth installation,
 as they have dependencies on each other.

@@ -108,7 +108,7 @@ variables respectively.
 
 If you are [using GitLab CI/CD to automate deployments](../deployment/automation.md#gitlab-cicd),
 then the pipeline will be issued with a suitable token. The
-[sample configuration](https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
+[sample configuration](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
 includes configuration to populate these variables using this token.
 
 If you are not using automation but your GitLab installation has

@@ -24,76 +24,49 @@ fi
 ansible_variable() {
     ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
+    ANSIBLE_JSON_INDENT=0 \
     ansible -m debug -a "var=$1" all | \
-      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
 
-# Variables to hold the PIDs of the SSH connection and tilt
-ssh_pid=
 tilt_pid=
 work_dir=
 
+
 # Function to terminate background processes when the script exits
-terminate_bg_pids() {
+terminate_bg_processes() {
     set +e
     # Make sure tilt up is dead
     test -n "$tilt_pid" && kill -0 "$tilt_pid" >/dev/null 2>&1 && kill "$tilt_pid"
     # Run tilt down
     tilt down
-    # Kill the SSH tunnel
-    test -n "$ssh_pid" && kill -0 "$ssh_pid" >/dev/null 2>&1 && kill "$ssh_pid"
+    # Disconnect from Kubernetes
+    "$AZIMUTH_CONFIG_ROOT/bin/kube-connect" --terminate
     # Clean up the working directory
     test -n "$work_dir" && rm -rf "$work_dir"
 }
-trap 'terminate_bg_pids' EXIT
+trap 'terminate_bg_processes' EXIT
+
 
 # The SOCKS port is the only input
 socks_port="${1:-1080}"
 
+
 # Make a working directory for tilt related stuff
 echo "Creating working directory..."
-work_dir="$(ansible_variable work_directory)/tilt"
-mkdir -p "$work_dir"
-KUBECONFIG="$work_dir/kubeconfig"
+export AZIMUTH_TILT_WORK_DIR="$(ansible_variable work_directory)/tilt"
+mkdir -p "$AZIMUTH_TILT_WORK_DIR"
 
 
-echo "Fetching kubeconfig for Azimuth Kubernetes cluster..."
-install_mode="$(ansible_variable install_mode)"
-if [ "$install_mode" = "ha" ]; then
-    cluster_name="$(ansible_variable capi_cluster_release_name)"
-    kubeconfig_arg="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
-fi
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" \
-  $kubeconfig_arg \
-  kubectl config view --raw > "$KUBECONFIG"
+# Connect to the Azimuth Kubernetes cluster
+echo "Connecting to Azimuth Kubernetes cluster..."
+eval "$("$AZIMUTH_CONFIG_ROOT/bin/kube-connect" -p "$socks_port")"
 
 
-echo "Updating kubeconfig with SOCKS proxy..."
-export KUBECONFIG
-ctx="$(kubectl config current-context)"
-cluster="$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")"
-kubectl config set-cluster $cluster --proxy-url="socks5://localhost:$socks_port"
-
-echo "Renaming context to azimuth-dev..."
-kubectl config rename-context $ctx azimuth-dev
-
-
-echo "Starting SOCKS proxy..."
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -D $socks_port -N &
-ssh_pid="$!"
-# Wait a few seconds and check that the process is running
-sleep 5
-if ! kill -0 "$ssh_pid" >/dev/null 2>&1; then
-    echo "[ERROR] Failed to connect to Azimuth cluster" 1>&2
-    exit 1
-fi
-
-# Use the working directory as TMP for tilt
-export AZIMUTH_TILT_WORK_DIR="$work_dir"
-
+# Run tilt
 echo "Running 'tilt up'..."
 tilt up &
 tilt_pid="$!"
-# Spin until one of the processes exits
-wait $ssh_pid $tilt_pid
+# Spin until tilt exits
+wait $tilt_pid

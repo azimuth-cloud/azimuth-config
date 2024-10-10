@@ -6,7 +6,7 @@ TILT_IMAGES_UNAPPLY = os.path.abspath("./bin/tilt-images-unapply")
 
 
 # Allow the use of the azimuth-dev context
-allow_k8s_contexts("azimuth-dev")
+allow_k8s_contexts("azimuth")
 
 
 def deep_merge(dict1, dict2):
@@ -60,6 +60,9 @@ settings = deep_merge(
                 "release_namespace": "azimuth",
             },
             "azimuth-identity-operator": {
+                "release_namespace": "azimuth",
+            },
+            "azimuth-schedule-operator": {
                 "release_namespace": "azimuth",
             },
             "cluster-api-addon-provider": {

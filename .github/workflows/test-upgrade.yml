@@ -36,15 +36,8 @@ jobs:
         with:
           ref: ${{ steps.latest-tag.outputs.tag-name }}
 
-      # We want to use the actions as defined in the code under test
-      # So check them out separately
-      - name: Checkout code under test into .actions directory
-        uses: actions/checkout@v3
-        with:
-          path: .actions
-
       - name: Set up Azimuth environment
-        uses: ./.actions/.github/actions/setup
+        uses: ./.github/actions/setup
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
@@ -58,7 +51,7 @@ jobs:
         timeout-minutes: 180
 
       - name: Provision Azimuth at latest tag
-        uses: ./.actions/.github/actions/provision
+        uses: ./.github/actions/provision
 
       - name: Generate test suite
         id: generate-tests
@@ -66,7 +59,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.generate_tests \
+          ansible-playbook azimuth_cloud.azimuth_ops.generate_tests \
             -e @extra-vars.yml \
             -e generate_tests_include_upgrade_tests=true
 
@@ -76,14 +69,14 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include create --outputdir reports/create
+          ./bin/run-tests --include create --outputdir reports/create
 
       - name: Verify test platforms
         run: |
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include verify --outputdir reports/verify-create
+          ./bin/run-tests --include verify --outputdir reports/verify-create
         if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
 
       - name: Checkout code under test
@@ -114,7 +107,7 @@ jobs:
 
       - name: Upgrade Azimuth
         id: upgrade-azimuth
-        uses: ./.actions/.github/actions/provision
+        uses: ./.github/actions/provision
         if: ${{ !cancelled() && steps.update-ansible.conclusion == 'success' }}
 
       - name: Regenerate test suite
@@ -123,7 +116,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ansible-playbook stackhpc.azimuth_ops.generate_tests \
+          ansible-playbook azimuth_cloud.azimuth_ops.generate_tests \
             -e @extra-vars.yml \
             -e generate_tests_include_upgrade_tests=true
         if: ${{ !cancelled() && steps.upgrade-azimuth.conclusion == 'success' }}
@@ -133,7 +126,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-azimuth-upgrade
+          ./bin/run-tests --include verify --outputdir reports/verify-post-azimuth-upgrade
         if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
 
       - name: Upgrade test platforms
@@ -141,7 +134,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include upgrade --outputdir reports/upgrade
+          ./bin/run-tests --include upgrade --outputdir reports/upgrade
         if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
 
       - name: Verify test platforms post platform upgrade
@@ -149,7 +142,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include verify --outputdir reports/verify-post-platform-upgrade
+          ./bin/run-tests --include verify --outputdir reports/verify-post-platform-upgrade
         if: ${{ !cancelled() && steps.regenerate-tests.conclusion == 'success' }}
 
       - name: Delete test platforms
@@ -157,7 +150,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/run-tests --include delete --outputdir reports/delete
+          ./bin/run-tests --include delete --outputdir reports/delete
         if: ${{ always() }}
 
       - name: Upload test report artifacts
@@ -172,7 +165,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./.actions/bin/create-debug-bundle
+          ./bin/create-debug-bundle
         if: ${{ always() }}
 
       - name: Upload debug bundle
@@ -183,5 +176,5 @@ jobs:
         if: ${{ always() }}
 
       - name: Destroy Azimuth
-        uses: ./.actions/.github/actions/destroy
+        uses: ./.github/actions/destroy
         if: ${{ always() }}

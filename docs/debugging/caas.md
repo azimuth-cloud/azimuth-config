@@ -1,7 +1,7 @@
 # Debugging Cluster-as-a-Service
 
 As described in [configuring CaaS](../configuration/12-caas.md), Azimuth uses
-the [Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator) to
+the [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) to
 manage clusters.
 
 The Azimuth API creates a namespace for each project in which instances of the
