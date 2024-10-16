@@ -76,7 +76,58 @@ community_images: {}
 
 ## Custom images
 
-If you want to upload custom images as part of your Azimuth installation, for example to support
+### Modifying existing images
+
+Building custom images is supported in Azimuth. For introductory purposes this guide will focus on only adding a single program to a custom image. There will also be a brief introduction to upstreaming images and 'Continuous Integration' at the end of this guide.
+
+To begin building custom images for Azimuth, the ideal starting point is using the 'azimuth-images' repository as a base. To begin exploring, clone the repository as below:
+
+```git clone https://github.com/stackhpc/azimuth-images.git```
+
+The first point of focus will be on the ``ansible`` directory. This directory contains playbooks that add configuration and packages to the 'base' images. In the case of a Workstation appliance, base images will typically be an empty Ubuntu image, these playbooks are used to add VNC/Guacamole configuration, Podman and Zenith support allowing these images to be used in the Azimuth ecosystem.
+
+In the ``roles`` directory the indivdual components are modularised as Ansible roles, in this architecture it is possible to re-purpose code that may be used on multiple different applicances/images (e.g. Zenith). To make a direct change to the Workstation appliance, the ``linux-webconsole`` role can be edited to include new packages. To have Ansible install 'GNU Octave' as an example, the `main.yml` playbook can be modified as below:
+
+```
+- name: Install Octave
+  apt:
+    name: octave
+    state: present
+```
+Now the playbook has been modified to install another package, 'Packer' can now be used to generate the new image. Using Packer requires access to a cloud with a floating IP. Assuming cloud access, a Packer configuration file is addtionally required for Packer to have information about the cloud it's constructing the image on. The configuration file used for building images on Sausage Cloud (sausage.pkvars.hcl) looks like this:
+
+```
+source_image_name = "packer-d32bd27c-3b34-4fab-b8ad-e491147a60da"
+
+network = "4ca2399f-3040-4686-82fa-e99bd50d215a"
+floating_ip = "842fd1f3-0e6f-42e2-aa42-045cf58535b9"
+security_groups = ["default"]
+
+flavor = "cumberland"
+distro_name = "ubuntu-jammy"
+ssh_username = "ubuntu"
+volume_size = 20
+```
+To begin the Packer build process for the Workstation image,the following command can be run where $PATH_TO_VARS_FILE is the location of the Packer configuration file:
+
+```
+packer build --on-error=ask -var-file=$PATH_TO_VARS_FILE packer/linux-desktop.pkr.hcl
+```
+The build process should be visible in the console log, eventually during runtime the Ansible task added to the webconsole role earlier should be visible in the logs completing successfully. Installing the desktop environment will take a long time, expect this build process to take over 30 minutes depending on the cloud hardware. After build completion, the OpenStack image ID will be printed to the console by Packer. To use this in an Azimuth configuration, the ``azimuth_caas_stackhpc_workstation_image`` variable will need to be assigned with the image id generated from Packer and declared in the ``azimuth-config`` enviornment.
+
+### Upstream contributions
+
+ Upstream contributions can be directed to the StackHPC Community Images [repository](https://github.com/stackhpc/azimuth-images). To do this, you will need to commit, push and create a pull request. (Hint: If you've followed the guide this far, your changes are already in the correct repository and ready to be pushed!)
+
+### The role of Continuous Integration
+
+You may have wondered during this guide how changes you push to GitHub are built, tested and distributed. GitHub Actions are utilised in the community images repoistory for building, testing and publishing new images continuously on new changes. The ``.github`` directory in the community images repository contains all the CI configuration used. The ``pr.yml`` GitHub workflow is the most relevent workflow for our particular use case. Following the upstream guide above, if you made a pull request you'll notice a new workflow being initialised, this workflow will build images relevent to the Ansible modified to ensure your changes do not contain fatal Ansible syntax errors. (Note: This stage of the CI may not always pick up broken changes, such as the case of broken packages).
+
+If your changes were approved and passed the build workflow, you can now merge it into the 'main' branch and new build workflow will be triggered on merging. Following a successful build workflow, the image created will not be deleted as it is in the pull request workflow. To make this image public, it is required to create a GitHub tag, which will trigger the ``tag.yml`` workflow and the manifest for the new images built will be made public for new deployments.
+
+### Applying external images
+
+If you want to upload external images as part of your Azimuth installation, for example to support
 a custom Cluster-as-a-Service appliance or for older Kubernetes versions, you can use the
 `community_images_extra` variable:
 
