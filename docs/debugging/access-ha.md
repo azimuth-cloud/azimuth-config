@@ -5,12 +5,19 @@ HA cluster is not accessible to the internet, so the K3s node is used to access 
 
 On the K3s node, a kubeconfig file for the HA cluster is created in the `$HOME` directory
 of the `ubuntu` user. You can activate this kubeconfig by setting the `KUBECONFIG` environment
-variable, which allows you to access the HA cluster using `kubectl`:
-
+variable, which allows you to access the HA cluster using `kubectl`. 
+First SSH onto the node:
 ```
 $ ./bin/seed-ssh
-ubuntu@azimuth-staging-seed:~$ export KUBECONFIG=./kubeconfig-azimuth-staging.yaml
-ubuntu@azimuth-staging-seed:~$ kubectl get po -n azimuth
+```
+Then export the kubeconfig (replacing `my-site` with your azimuth site name ):
+```
+$ kubectl get secret azimuth-my-site-kubeconfig -o go-template='{{.data.value|base64decode}}' > kubeconfig
+$ export KUBECONFIG=./kubeconfig
+```
+You can then access the cluster information using kubectl:
+```
+$ kubectl get po -n azimuth
 NAME                                                          READY   STATUS    RESTARTS   AGE
 azimuth-api-6847fcd6c8-746pc                                  1/1     Running   0          55m
 azimuth-caas-operator-ara-79bcd7c5dd-k6zf5                    1/1     Running   0          55m
