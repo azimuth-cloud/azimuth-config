@@ -182,7 +182,7 @@ terraform_s3_skip_credentials_validation: "true"
 
 # Tell OpenTofu to use path-style URLs, e.g. <host>/<bucket>, instead of
 # subdomain-style URLs, e.g. <bucket>.<host>
-terraform_s3_force_path_style: "true"
+terraform_s3_use_path_style: "true"
 
 terraform_backend_config:
   endpoint: "{{ terraform_s3_endpoint }}"
@@ -190,7 +190,7 @@ terraform_backend_config:
   bucket: "{{ terraform_s3_bucket }}"
   key: "{{ terraform_s3_key }}"
   skip_credentials_validation: "{{ terraform_s3_skip_credentials_validation }}"
-  force_path_style: "{{ terraform_s3_force_path_style }}"
+  use_path_style: "{{ terraform_s3_use_path_style }}"
   skip_region_validation: "{{ terraform_s3_skip_region_validation }}"  
 ```
 
