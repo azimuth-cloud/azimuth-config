@@ -1,7 +1,7 @@
 # This example workflow can be adapted to perform automated Azimuth deployments targeting staging or test environments.
 # The `azimuth-config-env-name` variable in the `env` section below should be set to name of the Azimuth config environment
 # to be deployed.
-# 
+#
 # The site-specific config repo must also define a repository secret named GIT_CRYPT_KEY_B64 which contains the base64 encoded
 # git-crypt key which was used to encrypt the repository's secrets. This can be obtained by running `git-crypt export-key - | base64`
 # from within an unlocked checkout of the repository. For information on defining GitHub repo secrets, see:
@@ -30,6 +30,8 @@ jobs:
 
       - name: Deploy Azimuth
         shell: bash
+        env:
+          ANSIBLE_FORCE_COLOR: True
         # Here we just decrypt the repo checkout then follow the steps from the Azimuth deployment docs.
         run: |
           set -e
