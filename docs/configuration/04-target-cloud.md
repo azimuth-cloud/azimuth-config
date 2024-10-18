@@ -27,13 +27,35 @@ trustroots, TLS verification must be disabled:
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_openstack_verify_ssl: false
 ```
+## Password authenticators
 
-If you are using the password authenticator and use a domain other than `default`,
-you will also need to tell Azimuth the name of the domain to use when authenticating:
+If you are, for example, using further OpenStack password authenticators in addition to the ```Default```
+domain, you can set any number of additional authenticators by configuring the
+```azimuth_authenticators_extra``` variable in your Azimuth environment's ```variables.yml``` file.
+
+The default OpenStack Keystone password authenticator configuration can be used as a template for
+additional password authenticators. For example, to add an authenticator for the ```my-domain``` domain:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_openstack_domain: my-domain
+azimuth_authenticators_extra:
+  - hidden: false
+      label: "What shows up on login dropdown menu"
+      name: a_unique_name
+      type: openstack-password
+      openstackPassword:
+        authUrl: https://keystone.openstack.{domain}/v3
+        domain: my-domain
+        verifySsl: true
 ```
+
+Note that at the moment there isn't a check implemented to make sure that all necessary fields have been provided.
+Therefore if adding any extra authenticators you should include all fields listed above.
+
+Due to the nature of ```azimuth_authenticators_extra``` it is possible to add any type of compatible authenticator,
+just provide the necessary fields for the authenticator type you are adding.
+
+To apply the changes, run ```ansible-playbook azimuth_cloud.azimuth_ops.provision``` from
+your Azimuth config directory.
 
 ## Cloud name
 
