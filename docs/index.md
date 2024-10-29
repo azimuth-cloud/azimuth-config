@@ -11,7 +11,7 @@ driven by configuration derived from the
 [azimuth-config reference configuration](https://github.com/azimuth-cloud/azimuth-config).
 
 The `azimuth-config` repository is designed to be forked for a specific site and is structured
-into multiple [environments](environments.md). This structure allows common configuration to be
+into multiple [environments](./environments.md). This structure allows common configuration to be
 shared but overridden where required using composition of environments.
 
 To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
