@@ -88,7 +88,7 @@ sequenceDiagram
       alt User selects Azimuth IDP
         R -->> U: Redirect to Azimuth Portal
         U ->> A: Authenticate with Azimuth Portal
-        A ->> A: Verify user belongs to tenancy for realm
+        A ->> A: Verify user belongs<br/>to tenancy for realm
         A -->> U: Redirect to Keycloak realm
         U ->> R: Complete authentication
       else User selects another authentication method
