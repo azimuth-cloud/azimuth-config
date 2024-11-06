@@ -53,10 +53,14 @@ fi
 work_dir="$(ansible_variable work_directory)/seed-ssh"
 mkdir -p "$work_dir"
 
-# If -q (quiet) is passed to ssh then also suppress terraform / tofu output
+# Check if quiet mode (-q) was passed to SSH command
+# so that we can suppress other output elsewhere too
 QUIET_MODE=false
 for arg in $@; do
   if [[ ! $arg == -* ]]; then
+    # Break if we encounter a non-flag arg since
+    # this is likely a command to run within the SSH
+    # session instead of an arg intended for SSH client
     break
   elif [[ $arg == "-q" ]]; then
     QUIET_MODE=true
@@ -78,6 +82,7 @@ terraform {
   backend "${terraform_backend_type}" {}
 }
 EOF
+  # If -q (quiet) is passed to ssh then also suppress terraform / tofu output
   if [[ $QUIET_MODE == "true" ]]; then
     tf_init > /dev/null
   else
