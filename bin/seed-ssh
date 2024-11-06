@@ -13,7 +13,6 @@ if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; t
     exit 1
 fi
 
-
 ansible_variable() {
     ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
@@ -22,6 +21,15 @@ ansible_variable() {
        jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
+tf_init() {
+    ansible_variable terraform_backend_config > "$terraform_dir/backend_config.json"
+    $terraform_binary_path \
+      -chdir="$terraform_dir" \
+      init \
+      -input=false \
+      -reconfigure \
+      -backend-config=$terraform_dir/backend_config.json
+}
 
 # Add the Terraform binary directory to the PATH, so we can use it if it was
 # downloaded as part of a provision
@@ -45,6 +53,16 @@ fi
 work_dir="$(ansible_variable work_directory)/seed-ssh"
 mkdir -p "$work_dir"
 
+# If -q (quiet) is passed to ssh then also suppress terraform / tofu output
+QUIET_MODE=false
+for arg in $@; do
+  if [[ ! $arg == -* ]]; then
+    break
+  elif [[ $arg == "-q" ]]; then
+    QUIET_MODE=true
+  fi
+done
+
 # Initialise the OpenTofu backend
 terraform_backend_type="$(ansible_variable terraform_backend_type)"
 if [ "$terraform_backend_type" = "local" ]; then
@@ -60,13 +78,11 @@ terraform {
   backend "${terraform_backend_type}" {}
 }
 EOF
-    ansible_variable terraform_backend_config > "$terraform_dir/backend_config.json"
-    $terraform_binary_path \
-      -chdir="$terraform_dir" \
-      init \
-      -input=false \
-      -reconfigure \
-      -backend-config=$terraform_dir/backend_config.json
+  if [[ $QUIET_MODE == "true" ]]; then
+    tf_init > /dev/null
+  else
+    tf_init
+  fi
 fi
 
 # Read the required variables from the Terraform state

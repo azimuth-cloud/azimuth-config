@@ -80,7 +80,7 @@ if [ "$install_mode" = "ha" ]; then
     cluster_name="$(ansible_variable capi_cluster_release_name)"
     kubeconfig_arg="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
 fi
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" \
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -q \
   $kubeconfig_arg \
   kubectl config view --raw > "$kubeconfig"
 
@@ -104,7 +104,7 @@ kubectl config rename-context $ctx azimuth --kubeconfig $kubeconfig >/dev/null
 
 # Launch the SOCKS proxy and store the PID
 echo "Starting SOCKS proxy..." >&2
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -D $socks_port -N &
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -q -D $socks_port -N &
 socks_pid="$!"
 # Wait a few seconds and check that the process is running
 sleep 5
