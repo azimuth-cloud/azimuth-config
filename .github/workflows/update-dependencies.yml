@@ -11,6 +11,7 @@ on:
 jobs:
   propose_github_release_updates:
     runs-on: ubuntu-latest
+    if: github.repository == 'azimuth-cloud/azimuth-config'
     strategy:
       matrix:
         include:
