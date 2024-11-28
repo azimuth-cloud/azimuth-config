@@ -34,8 +34,12 @@ if not os.path.exists(SETTINGS_FILE):
 # Load the settings
 settings = deep_merge(
     {
+        # The engine that will be used to build container images for your changes
+        # Supported options are docker, podman
         "build_engine": "docker",
-        # Mirror engine defaults to build_engine
+        # The engine that will be used to mirror container images when required
+        # Supported options are skopeo (recommended), docker, podman
+        # Defaults to the build engine
         # "mirror_engine": "skopeo",
         # The components that will be managed by Tilt, if locally available
         # By default, we search for local checkouts as siblings of this checkout
@@ -129,7 +133,7 @@ def mirror_image(name, source_image):
     Defines a mirrored image and returns the image name.
     """
     image = image_name(name)
-    mirror_engine = settings.get("mirror_engine", settings["build_engine"])
+    mirror_engine = settings.get("mirror_engine") or settings["build_engine"]
     if mirror_engine in ["docker", "podman"]:
         mirror_command = (
             "%s pull --platform linux/amd64 %s && " % (mirror_engine, source_image) +

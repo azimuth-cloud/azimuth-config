@@ -108,20 +108,24 @@ In order to use Tilt to develop Azimuth, the following tools must be available o
 development machine (in addition to those required to install Azimuth itself):
 
   * The [Tilt CLI](https://docs.tilt.dev/install.html)
-  * A `docker` command, e.g. [Docker Desktop](https://docs.docker.com/desktop/)
+  * A `docker` or `podman` command,
+    e.g. [Docker Desktop](https://docs.docker.com/desktop/) or [Podman Desktop](https://podman-desktop.io/)
   * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
   * The [Helm CLI](https://helm.sh/docs/intro/install/)
+  * The [skopeo CLI](https://github.com/containers/skopeo) (optional)
 
 For developing the Azimuth UI, the following are also required:
 
   * [node.js](https://nodejs.org)
   * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
 
-### Configuring a container registry
+### Tilt settings
 
 Azimuth's Tilt configuration looks for a file called `tilt-settings.yaml` that defines settings
 for the development environment. This file is specific to you and should not be added to version
 control (it is specified in `.gitignore`).
+
+#### Configuring a container registry
 
 In order to get the code under development into your running Azimuth instance, Tilt must have
 access to a container registry that is accessible to both your development machine and the
@@ -149,6 +153,31 @@ image_prefix: ghcr.io/jbloggs
     for the first time will be private. You must log into GitHub and make them public before
     your Azimuth instance can use them. Until you do this, you will see image pull errors in
     the Tilt interface.
+
+#### Using Podman for builds
+
+In situations where using Docker is not viable, e.g. due to licensing constraints, Azimuth's
+Tilt configuration also supports using [Podman](https://podman.io/) to build and push container
+images.
+
+To configure Tilt to use `podman` to build container images, use the following setting:
+
+```yaml  title="tilt-settings.yaml"
+build_engine: podman
+```
+
+#### Using skopeo to mirror images
+
+Some Azimuth components require images to be mirrored. By default, Azimuth's Tilt configuration
+uses the configured build engine for this by pulling, re-tagging and pushing the specified image.
+
+[skopeo](https://github.com/containers/skopeo) is a tool that is built for performing operations
+on container images, such as efficiently copying an image from one repository to another, and
+Azimuth's Tilt configuration supports using this to mirror images:
+
+```yaml  title="tilt-settings.yaml"
+mirror_engine: skopeo
+```
 
 ### Using the Tilt environment
 

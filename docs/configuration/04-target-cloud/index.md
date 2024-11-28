@@ -63,7 +63,7 @@ First, the Keystone configuration of the target cloud must be modified to add Az
 [trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
 otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
 trusted dashboard, you must specify the URL that will receive token data, where the portal domain
-depends on the [ingress configuration](./06-ingress.md):
+depends on the [ingress configuration](../06-ingress.md):
 
 ```ini  title="Keystone configuration"
 [federation]
