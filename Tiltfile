@@ -34,6 +34,9 @@ if not os.path.exists(SETTINGS_FILE):
 # Load the settings
 settings = deep_merge(
     {
+        "build_engine": "docker",
+        # Mirror engine defaults to build_engine
+        # "mirror_engine": "skopeo",
         # The components that will be managed by Tilt, if locally available
         # By default, we search for local checkouts as siblings of this checkout
         "components": {
@@ -101,27 +104,23 @@ def build_image(name, context, build_args = None):
     """
     Defines an image build and returns the image name.
     """
+    build_engine = settings["build_engine"]
+    if build_engine not in ["docker", "podman"]:
+        fail("unknown build engine - %s" % build_engine)
     image = image_name(name)
-    # The Azimuth CaaS operator relies on the .git folder to be in the Docker build context
-    # This is because it uses pbr for versioning
-    # Unfortunately, Tilt's docker_build function _always_ ignores the .git directory :-(
+    # Some of the Azimuth components rely on the .git folder to be in the build context (pbr)
+    # Unfortunately, Tilt's {docker,podman}_build functions _always_ ignores the .git directory
     # So we use a custom build command
-    build_command = [
-        "docker",
-        "build",
-        "-t",
-        "$EXPECTED_REF",
-        "--platform",
-        "linux/amd64",
-        context,
-    ]
-    if build_args:
-        for arg_name, arg_value in build_args.items():
-            build_command.extend([
-                "--build-arg",
-                "'%s=%s'" % (arg_name, arg_value),
-            ])
-    custom_build(image, " ".join(build_command), [context])
+    build_args = " ".join([
+        item
+        for arg_name, arg_value in (build_args or {}).items()
+        for item in ["--build-arg", "'%s=%s'" % (arg_name, arg_value)]
+    ])
+    build_command = (
+        "%s build -t $EXPECTED_REF --platform linux/amd64 %s %s && " % (build_engine, build_args, context) +
+        "%s push $EXPECTED_REF" % build_engine
+    )
+    custom_build(image, build_command, [context], skips_local_docker = True)
     return image
 
 
@@ -130,14 +129,18 @@ def mirror_image(name, source_image):
     Defines a mirrored image and returns the image name.
     """
     image = image_name(name)
-    custom_build(
-        image,
-        (
-            "docker pull --platform linux/amd64 {source_image} && " +
-            "docker tag {source_image} $EXPECTED_REF"
-        ).format(source_image = source_image),
-        []
-    )
+    mirror_engine = settings.get("mirror_engine", settings["build_engine"])
+    if mirror_engine in ["docker", "podman"]:
+        mirror_command = (
+            "%s pull --platform linux/amd64 %s && " % (mirror_engine, source_image) +
+            "%s tag %s $EXPECTED_REF && " % (mirror_engine, source_image) +
+            "%s push $EXPECTED_REF" % mirror_engine
+        )
+    elif mirror_engine == "skopeo":
+        mirror_command = "skopeo copy --all docker://%s docker://$EXPECTED_REF" % source_image
+    else:
+        fail("unrecognised mirror engine - %s" % mirror_engine)
+    custom_build(image, mirror_command, [], skips_local_docker = True)
     return image
 
 
