@@ -8,6 +8,8 @@ TILT_IMAGES_UNAPPLY = os.path.abspath("./bin/tilt-images-unapply")
 # Allow the use of the azimuth-dev context
 allow_k8s_contexts("azimuth")
 
+# Increase the timeout for applying to Kubernetes
+update_settings(k8s_upsert_timeout_secs = 600)
 
 def deep_merge(dict1, dict2):
     """
