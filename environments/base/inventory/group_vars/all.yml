@@ -94,6 +94,10 @@ ingress_ara_subdomain: ara
 ingress_helm_dashboard_subdomain: helm
 # The subdomain that should be used for the Kubernetes dashboard
 ingress_kubernetes_dashboard_subdomain: kubernetes
+# The subdomain that should be used for the operator docs
+ingress_operator_docs_subdomain: admin.docs
+# The subdomain that should be used for the user docs
+ingress_user_docs_subdomain: user.docs
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
@@ -205,3 +209,6 @@ capi_cluster_addons_openstack_loadbalancer_provider: >-
   {{- openstack_loadbalancer_provider }}
 azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
   {{- openstack_loadbalancer_provider }}
+
+# The URL for the user documentation link in the Azimuth UI
+azimuth_documentation_url: "{{ 'http' if ingress_tls_enabled else 'https' }}://{{ ingress_user_docs_subdomain }}.{{ ingress_base_domain }}"
