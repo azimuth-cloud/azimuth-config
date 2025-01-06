@@ -46,18 +46,6 @@ case "$1" in
     service="azimuth-caas-operator-ara"
     remote_port="8000"
     ;;
-  awx)
-    name="AWX"
-    namespace="azimuth"
-    service="awx-service"
-    remote_port="80"
-    ;;
-  consul)
-    name="Consul"
-    namespace="azimuth"
-    service="consul-ui"
-    remote_port="80"
-    ;;
   grafana)
     name="Grafana"
     namespace="monitoring-system"
@@ -74,6 +62,18 @@ case "$1" in
     name="Zenith registrar"
     namespace="azimuth"
     service="zenith-server-registrar"
+    remote_port="80"
+    ;;
+  azimuth-api)
+    name="Azimuth API"
+    namespace="azimuth"
+    service="azimuth-api"
+    remote_port="80"
+    ;;
+  azimuth-docs)
+    name="Azimuth Docs"
+    namespace="mkdocs"
+    service="mkdocs-mkdocs-helm"
     remote_port="80"
     ;;
   *)
