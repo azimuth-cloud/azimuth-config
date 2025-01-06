@@ -4,33 +4,19 @@ Azimuth allows a few site-specific customisations to be made, if required.
 
 ## User and Operator Documentation
 
-The Azimuth UI includes a documentation link in the navigation bar at the top of the page.
-By default, this link points to the
-[generic Azimuth user documentation](https://azimuth-cloud.github.io/azimuth-user-docs/) that
-covers usage of the reference appliances.
-
-However it is recommended to change this link to point at local documentation that is specific
-to your site, where possible. This documentation can include additional information, e.g.
-how to get an account to use with Azimuth, which is out-of-scope for the generic documentation.
-
-To change the documentation link, use the following variable:
-
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_documentation_url: https://docs.example.org/azimuth
-```
-
 As part of the standard Azimuth deployment procedure, a copy of the generic user and operator
 documentation sites are published on separate subdomains of the Azimuth ingress URL. For an Azimuth
-hosted at `portal.azimuth.example.com`, the documentation can be accessed at `user.docs.azimuth.example.com`
-and `admin.docs.azimuth.example.com` respectively. The operator documentation is protected by the same
-username and password as the [admin dashboards](../debugging/access-monitoring.md).
+instance hosted at `portal.azimuth.example.com`, the documentation can be accessed at
+`user.docs.azimuth.example.com` and `admin.docs.azimuth.example.com` respectively. The operator
+documentation is protected by the same username and password as the
+[admin dashboards](../debugging/access-monitoring.md).
 
 ### Site-specific documentation
 
-The default configuration for the user and operator documentation will build a local copy of the
-[upstream documentation](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs); however,
-the following configuration can be used to instead build the documentation from a downstream azimuth-config
-repository:
+The default configuration for the user and operator documentation will build a local copy
+of the [upstream documentation](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs);
+however, the following configuration can be used to instead build the documentation from a
+downstream azimuth-config repository:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 mkdocs_operator_docs_repo: https://<your-github-or-gitlab-repo>
@@ -39,6 +25,33 @@ mkdocs_user_docs_repo: https://<your-github-or-gitlab-repo>
 mkdocs_user_docs_branch: <optional-non-default-branch>
 ```
 
+If the downstream configuration is hosted in a private repository, then SSH-based authentication
+must be used to allow the documentation build process *read-only* access to the repository. To set
+up this authentication, an SSH keypair must first be created using (a command similar to):
+
+```sh
+ssh-keygen -t ed25519 -f azimuth-docs-key -N "" -C "-- Azimuth config repository deploy key"
+```
+
+The generated *private* key should then be stored as an encrypted secret inside the environment's
+`secrets.yml` file:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
+mkdocs_deploy_ssh_private_key: |
+  <private-key>
+```
+
+and the public key must be added to the config repository as a *deploy key* (see relevant
+[GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys)
+or [GitLab](https://docs.gitlab.com/ee/user/project/deploy_keys/) docs for more details).
+
+Finally, the target repository URL(s) should be updated to use an SSH-based git remote address e.g. `git@github.com:my-org/azimuth-config` instead of `https://github.com/my-org/azimuth-config`.
+
+!!! tip
+
+    The documentation publishing feature works by checking out a local copy of the repository inside a Kubernetes
+    init container and then running `mkdocs`. To debug authentication or build issues, start by checking the logs
+    of the relevant `operator_docs` or `user_docs` init container on the Azimuth management cluster.
 
 ## User Interface Theming
 
