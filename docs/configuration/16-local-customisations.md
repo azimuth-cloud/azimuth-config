@@ -1,8 +1,8 @@
 # Local customisations
 
-Azimuth allows a few site-specific customisations to be made to the user interface, if required.
+Azimuth allows a few site-specific customisations to be made, if required.
 
-## Documentation link
+## User and Operator Documentation
 
 The Azimuth UI includes a documentation link in the navigation bar at the top of the page.
 By default, this link points to the
@@ -19,7 +19,28 @@ To change the documentation link, use the following variable:
 azimuth_documentation_url: https://docs.example.org/azimuth
 ```
 
-## Theming
+As part of the standard Azimuth deployment procedure, a copy of the generic user and operator
+documentation sites are published on separate subdomains of the Azimuth ingress URL. For an Azimuth
+hosted at `portal.azimuth.example.com`, the documentation can be accessed at `user.docs.azimuth.example.com`
+and `admin.docs.azimuth.example.com` respectively. The operator documentation is protected by the same
+username and password as the [admin dashboards](../debugging/access-monitoring.md).
+
+### Site-specific documentation
+
+The default configuration for the user and operator documentation will build a local copy of the
+[upstream documentation](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs); however,
+the following configuration can be used to instead build the documentation from a downstream azimuth-config
+repository:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+mkdocs_operator_docs_repo: https://<your-github-or-gitlab-repo>
+mkdocs_operator_docs_branch: <optional-non-default-branch>
+mkdocs_user_docs_repo: https://<your-github-or-gitlab-repo>
+mkdocs_user_docs_branch: <optional-non-default-branch>
+```
+
+
+## User Interface Theming
 
 The Azimuth UI is built using the [Bootstrap frontend toolkit](https://getbootstrap.com/),
 which provides a grid system and several built-in components.
@@ -41,7 +62,7 @@ azimuth_theme_bootstrap_css_url: https://bootswatch.com/5/zephyr/bootstrap.css
 ```
 !!! tip
 
-    In order for the theming changes to take effect you may need to do a hard refresh of 
+    In order for the theming changes to take effect you may need to do a hard refresh of
     the page due to the aggressive nature of CSS caching.
 
     Mac: <kbd>⇧ Shift</kbd> + <kbd>⌘ Command</kbd> + <kbd>R</kbd>
