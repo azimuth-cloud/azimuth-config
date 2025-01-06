@@ -53,6 +53,8 @@ Finally, the target repository URL(s) should be updated to use an SSH-based git 
     init container and then running `mkdocs`. To debug authentication or build issues, start by checking the logs
     of the relevant `operator_docs` or `user_docs` init container on the Azimuth management cluster.
 
+When working with site-specific documentation for deployments managed via GitLab [CI/CD](../deployment/automation.md) it is also advisable to edit the `.gitlab-ci.yml` workflow file to include the `docs/` directory in the list of watched files for the production deployment job (i.e. the `changes` list in the `deploy_production` section). This ensures that any changes made to site-specific documentation will be automatically incorporated into the published documentation pages.
+
 ## User Interface Theming
 
 The Azimuth UI is built using the [Bootstrap frontend toolkit](https://getbootstrap.com/),

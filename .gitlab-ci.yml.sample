@@ -277,6 +277,8 @@ deploy_production:
         - environments/site/**/*
         - environments/site-ha/**/*
         - environments/production/**/*
+        # Uncomment when using custom self-hosted docs
+        # - docs/
       when: manual
   environment:
     name: production
