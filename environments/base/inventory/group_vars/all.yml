@@ -211,4 +211,4 @@ azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
   {{- openstack_loadbalancer_provider }}
 
 # The URL for the user documentation link in the Azimuth UI
-azimuth_documentation_url: "{{ 'http' if ingress_tls_enabled else 'https' }}://{{ ingress_user_docs_subdomain }}.{{ ingress_base_domain }}"
+azimuth_documentation_url: "{{ 'https' if ingress_tls_enabled else 'http' }}://{{ ingress_user_docs_subdomain }}.{{ ingress_base_domain }}"
