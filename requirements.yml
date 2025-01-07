@@ -3,7 +3,7 @@
 collections:
   - name: https://github.com/azimuth-cloud/ansible-collection-azimuth-ops.git
     type: git
-    version: 0.13.1
+    version: 0.13.2
   # For local development
   # - type: dir
   #   source: ../ansible-collection-azimuth-ops
