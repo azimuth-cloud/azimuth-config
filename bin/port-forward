@@ -70,12 +70,6 @@ case "$1" in
     service="azimuth-api"
     remote_port="80"
     ;;
-  azimuth-docs)
-    name="Azimuth Docs"
-    namespace="mkdocs"
-    service="mkdocs-mkdocs-helm"
-    remote_port="80"
-    ;;
   *)
     echo "Unrecognised service: $1" 1>&2
     exit 1
