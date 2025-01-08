@@ -95,9 +95,9 @@ ingress_helm_dashboard_subdomain: helm
 # The subdomain that should be used for the Kubernetes dashboard
 ingress_kubernetes_dashboard_subdomain: kubernetes
 # The subdomain that should be used for the operator docs
-ingress_operator_docs_subdomain: admin.docs
+ingress_operator_docs_subdomain: admin-guide
 # The subdomain that should be used for the user docs
-ingress_user_docs_subdomain: user.docs
+ingress_user_docs_subdomain: user-guide
 
 # Annotations for Azimuth ingress resources
 ingress_annotations:
