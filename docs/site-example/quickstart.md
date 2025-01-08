@@ -14,18 +14,18 @@ repository and have it reviewed by another team member. Once the change has been
 pull request will trigger an automatic deployment of the updated configuration to the Azimuth staging
 environment. Once a change has been deployed and tested in staging, the equivalent CI job for deploying
 the change to the production Azimuth environment should be triggered manually by an operator via the
-<GitLab-or-GitHub> UI.
+**_GitLab-or-GitHub_** UI.
 
 ## Useful links
 
 The **_example-cloud_** Azimuth includes a useful set of monitoring dashboards and tools for operators.
 A general overview of the available tools can be found
 [here](https://azimuth-config.readthedocs.io/en/stable/configuration/14-monitoring/) and the
-_example-cloud_ instances
+_example-cloud_ instances can be accessed using the following links:
 
 - _Insert list of links to Grafana, Alert Manager etc._
 
-For an introduction to the available configuration options for an Azimuth deployment, see
+For an introduction to the available configuration options within an Azimuth deployment, see
 [here](https://azimuth-config.readthedocs.io/en/stable/configuration/).
 
 ## Custom **_example-cloud_** Azimuth Apps

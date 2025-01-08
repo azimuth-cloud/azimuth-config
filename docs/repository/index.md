@@ -103,7 +103,7 @@ for it where the result of the changes can be verified before the merge takes pl
 ## Documenting your configuration
 
 See [local customisations](../configuration/16-local-customisations.md#site-specific-documentation) for
-information on how to create and publish site-specific operator ducmentation as part of your Azimuth
+information on how to create and publish site-specific operator documentation as part of your Azimuth
 deployment.
 
 ## Upgrading to a new Azimuth release
