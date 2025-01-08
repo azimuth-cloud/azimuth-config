@@ -27,12 +27,19 @@ mkdocs_user_docs_branch: <optional-non-default-branch>
 
 This allows Azimuth operators to build up their own set of internal documentation pages specific to
 their Azimuth deployment. A set of
-[example files](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs/site-template/)
+[example files](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs/site-example/)
 are provided as part of the upstream repository as a starting point for structuring your site-specific
 operator documentation. You will also need to uncomment (or add your own items to) the relevant `nav`
 entries in your local [mkdocs.yml](https://github.com/azimuth-cloud/azimuth-config/tree/stable/mkdocs.yml)
 file. For more information on how to customise your local documentation see the official
 [MkDocs website](https://www.mkdocs.org).
+
+!!! tip
+
+    In order to minimise the potential for merge conflicts when synchronising the latest upstream changes
+    into a downstream azimuth-config repository, it is recommended that any site specific docs are placed
+    in a separate set of files / folders under the `docs` directory. An example structure is provided
+    [here](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs/site-example/).
 
 If the downstream configuration is hosted in a private repository, then SSH-based authentication
 must be used to allow the documentation build process *read-only* access to the repository. To set
