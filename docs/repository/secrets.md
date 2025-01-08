@@ -98,7 +98,7 @@ explicit in the repository who has access.
 A full discussion of the use of GPG is beyond the scope of this documentation, including
 the generation of keys, as it differs substantially depending on your operating system.
 
-To add a GPG key to your repository, use the following command:
+To add a _signed_ GPG key to your repository, use the following command:
 
 ```sh
 git-crypt add-gpg-user USER_ID

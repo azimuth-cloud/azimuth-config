@@ -2,6 +2,8 @@ site_name: Azimuth Operator Documentation
 repo_url: https://github.com/azimuth-cloud/azimuth-config
 copyright: Copyright &copy; StackHPC 2022
 edit_uri: ''
+# TODO: Make separate standalone CAPI docs
+# docs_dir: docs/azimuth
 
 nav:
   - Home: index.md
@@ -48,6 +50,9 @@ nav:
       - debugging/caas.md
   - Developing:
       - developing/index.md
+#   - example-cloud Azimuth Operators:
+#       - site-example/index.md
+#       - site-example/quickstart.md
 
 theme:
   name: material

@@ -9,7 +9,7 @@ documentation sites are published on separate subdomains of the Azimuth ingress 
 instance hosted at `portal.azimuth.example.com`, the documentation can be accessed at
 `user.docs.azimuth.example.com` and `admin.docs.azimuth.example.com` respectively. The operator
 documentation is protected by the same username and password as the
-[admin dashboards](../debugging/access-monitoring.md).
+[admin dashboards](../configuration/14-monitoring.md#accessing-web-interfaces).
 
 ### Site-specific documentation
 
@@ -25,6 +25,15 @@ mkdocs_user_docs_repo: https://<your-github-or-gitlab-repo>
 mkdocs_user_docs_branch: <optional-non-default-branch>
 ```
 
+This allows Azimuth operators to build up their own set of internal documentation pages specific to
+their Azimuth deployment. A set of
+[example files](https://github.com/azimuth-cloud/azimuth-config/tree/stable/docs/site-template/)
+are provided as part of the upstream repository as a starting point for structuring your site-specific
+operator documentation. You will also need to uncomment (or add your own items to) the relevant `nav`
+entries in your local [mkdocs.yml](https://github.com/azimuth-cloud/azimuth-config/tree/stable/mkdocs.yml)
+file. For more information on how to customise your local documentation see the official
+[MkDocs website](https://www.mkdocs.org).
+
 If the downstream configuration is hosted in a private repository, then SSH-based authentication
 must be used to allow the documentation build process *read-only* access to the repository. To set
 up this authentication, an SSH keypair must first be created using (a command similar to):
@@ -33,7 +42,7 @@ up this authentication, an SSH keypair must first be created using (a command si
 ssh-keygen -t ed25519 -f azimuth-docs-key -N "" -C "-- Azimuth config repository deploy key"
 ```
 
-The generated *private* key should then be stored as an encrypted secret inside the environment's
+The generated private key should then be stored as an encrypted secret inside the environment's
 `secrets.yml` file:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
@@ -41,7 +50,7 @@ mkdocs_deploy_ssh_private_key: |
   <private-key>
 ```
 
-and the public key must be added to the config repository as a *deploy key* (see relevant
+and the public key must be added to the config repository as a 'deploy key' (see relevant
 [GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys)
 or [GitLab](https://docs.gitlab.com/ee/user/project/deploy_keys/) docs for more details).
 

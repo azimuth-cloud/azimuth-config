@@ -100,6 +100,12 @@ changes to `main`. These changes can then be reviewed before being merged to `ma
 If you have automated deployments, the branch may even get a dynamic environment created
 for it where the result of the changes can be verified before the merge takes place.
 
+## Documenting your configuration
+
+See [local customisations](../configuration/16-local-customisations.md#site-specific-documentation) for
+information on how to create and publish site-specific operator ducmentation as part of your Azimuth
+deployment.
+
 ## Upgrading to a new Azimuth release
 
 When a new Azimuth release becomes available, you will need to synchronise the changes
