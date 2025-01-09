@@ -24,28 +24,28 @@ infra_flavor_id: >-
 # Upload the Kubernetes image we need for the HA cluster as a private image
 # By default, we get the image from the azimuth-images version
 community_images_default:
-  kube_1_28:
-    name: "{{ community_images_azimuth_images_manifest['kubernetes-1-28-jammy'].name }}"
-    source_url: "{{ community_images_azimuth_images_manifest['kubernetes-1-28-jammy'].url }}"
-    checksum: "{{ community_images_azimuth_images_manifest['kubernetes-1-28-jammy'].checksum }}"
+  kube_1_29:
+    name: "{{ community_images_azimuth_images_manifest['kubernetes-1-29-jammy'].name }}"
+    source_url: "{{ community_images_azimuth_images_manifest['kubernetes-1-29-jammy'].url }}"
+    checksum: "{{ community_images_azimuth_images_manifest['kubernetes-1-29-jammy'].checksum }}"
     source_disk_format: "qcow2"
     container_format: "bare"
-    kubernetes_version: "{{ community_images_azimuth_images_manifest['kubernetes-1-28-jammy'].kubernetes_version }}"
+    kubernetes_version: "{{ community_images_azimuth_images_manifest['kubernetes-1-29-jammy'].kubernetes_version }}"
 community_images_default_visibility: private
 community_images_update_existing_visibility: false
 
 capi_cluster_kubernetes_version: >-
   {{-
-    community_images.kube_1_28.kubernetes_version
-    if community_images is defined and 'kube_1_28' in community_images
+    community_images.kube_1_29.kubernetes_version
+    if community_images is defined and 'kube_1_29' in community_images
     else undef(hint = 'capi_cluster_kubernetes_version is required')
   }}
 capi_cluster_machine_image_id: >-
   {{-
-    community_images_image_ids.kube_1_28
+    community_images_image_ids.kube_1_29
     if (
       community_images_image_ids is defined and
-      'kube_1_28' in community_images_image_ids
+      'kube_1_29' in community_images_image_ids
     )
     else undef(hint = 'capi_cluster_machine_image_id is required')
   }}

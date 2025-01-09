@@ -33,7 +33,7 @@
 
 # The Kubernetes version that will be used for the HA cluster
 # This should match the image specified image
-# capi_cluster_kubernetes_version: 1.28.11
+# capi_cluster_kubernetes_version: 1.29.11
 
 # The name of the flavor to use for control plane nodes
 # At least 2 CPUs and 8GB RAM is required
