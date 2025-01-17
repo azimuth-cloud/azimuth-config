@@ -21,7 +21,7 @@ jobs:
     steps:
       # We need to check out the code under test first in order to use local actions
       - name: Checkout code under test
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup

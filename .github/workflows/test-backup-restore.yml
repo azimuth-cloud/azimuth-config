@@ -26,7 +26,7 @@ jobs:
     steps:
       # We need to check out the code under test first in order to use local actions
       - name: Checkout code under test
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
@@ -103,7 +103,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Upload pre-restore debug bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: azimuth-pre-restore-debug-bundle
           path: debug-bundle.tar.gz
@@ -157,7 +157,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload test report artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: azimuth-restore-test-reports
           path: reports/*
@@ -172,7 +172,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload debug bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: azimuth-restore-debug-bundle
           path: debug-bundle.tar.gz

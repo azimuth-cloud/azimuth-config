@@ -32,7 +32,7 @@ jobs:
           echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout latest tag
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.latest-tag.outputs.tag-name }}
 
@@ -105,7 +105,7 @@ jobs:
 
       - name: Checkout code under test
         id: checkout-latest
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Make sure not to remove working directories
           clean: false
@@ -178,7 +178,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload test report artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: azimuth-upgrade-test-reports
           path: reports/*
@@ -193,7 +193,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload debug bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: azimuth-upgrade-debug-bundle
           path: debug-bundle.tar.gz

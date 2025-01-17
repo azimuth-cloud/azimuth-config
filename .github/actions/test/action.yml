@@ -39,7 +39,7 @@ runs:
         ./bin/run-tests
 
     - name: Upload test report artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.test-report-artifact-name }}
         path: |
@@ -67,7 +67,7 @@ runs:
       if: ${{ always() }}
 
     - name: Upload debug bundle
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.debug-bundle-artifact-name }}
         path: debug-bundle.tar.gz

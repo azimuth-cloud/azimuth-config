@@ -44,7 +44,7 @@ runs:
   using: composite
   steps:
     - name: Checkout azimuth-config repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
@@ -89,10 +89,10 @@ runs:
           this_variable_is_never_used: ever
           ${{ inputs.extra-vars }}
 
-    - name: Ensure Python 3.9
-      uses: actions/setup-python@v4
+    - name: Ensure Python 3.10
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.10"
         check-latest: true
 
     - name: Set up Python virtual environment
