@@ -42,8 +42,15 @@ certmanager_enabled: yes
 # By default, only enable the cluster issuer when not using a wildcard certificate
 certmanager_acmehttp01issuer_enabled: "{{ not ingress_tls_wildcard_certificate }}"
 
+# By default, we use the OpenStack cloud provider
+azimuth_cloud_provider_type: openstack
+
+# Community images are not used when the null provider is configured
+community_images_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
+
+# Harbor is not used when the null provider is configured
+harbor_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 # Create a mirror registry in Harbor for public Docker Hub images by default
-harbor_enabled: yes
 harbor_proxy_cache_default_projects:
   docker.io:
     name: dockerhub-public
@@ -63,9 +70,11 @@ velero_enabled: no
 coral_credits_enabled: no
 
 # Azimuth features to enable
+# Apps (Kubernetes apps + Zenith) are always enabled
 azimuth_apps_enabled: yes
-azimuth_kubernetes_enabled: yes
-azimuth_clusters_enabled: yes
+# Kubernetes and CaaS will not work with the null cloud provider
+azimuth_kubernetes_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
+azimuth_clusters_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 
 # The base domain for Azimuth ingress resources
 # This should be set by the concrete environment
