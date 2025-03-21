@@ -7,7 +7,7 @@ be installed on the same Kubernetes cluster, and each app gets its own namespace
 A Kubernetes app in Azimuth essentially consists of a
 [Helm chart](https://helm.sh/docs/topics/charts/). Azimuth manages specially annotated instances
 of the `HelmRelease` resource from the
-[Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider) to install
+[Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider) to install
 and upgrade apps on the target cluster. These apps can be [integrated with Zenith](#zenith-integration)
 to expose services to the user without requiring the use of
 [LoadBalancer services](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer)
@@ -16,7 +16,7 @@ or [Kubernetes ingress](https://kubernetes.io/docs/concepts/services-networking/
 The available apps and the available versions of those apps are determined by instances of a
 [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 provided by the
-[Azimuth Kubernetes operator](https://github.com/stackhpc/azimuth-capi-operator) -
+[Azimuth Kubernetes operator](https://github.com/azimuth-cloud/azimuth-capi-operator) -
 `apptemplates.azimuth.stackhpc.com` - which references a chart in a
 [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). Azimuth uses the
 [chart metadata](https://helm.sh/docs/topics/charts/#the-chartyaml-file) to generate the user
@@ -35,7 +35,7 @@ file in the user interface, so this can be used to describe how to consume the a
 
     In addition, a file called `azimuth-ui.schema.yaml` can be included to apply some small
     customisations to the generated form, like selecting different controls. See the
-    [azimuth-charts](https://github.com/stackhpc/azimuth-charts) for examples.
+    [azimuth-charts](https://github.com/azimuth-cloud/azimuth-charts) for examples.
 
 ## Default app templates
 
@@ -167,7 +167,7 @@ This behaviour can be customised for each app template using the following optio
 ## Zenith integration
 
 When [Zenith is enabled](./08-zenith.md), every Kubernetes cluster created by Azimuth has an
-instance of the [Zenith operator](https://github.com/stackhpc/zenith/tree/main/operator) watching
+instance of the [Zenith operator](https://github.com/azimuth-cloud/zenith/tree/main/operator) watching
 it. This operator makes two Kubernetes custom resources available that can be used to expose a
 [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to users
 without using `type: NodePort`, `type: LoadBalancer` or
@@ -199,5 +199,5 @@ with the existing chart as a [dependency](https://helm.sh/docs/chart_best_practi
 You can define templates for the Zenith resources in the parent chart, pointing at services
 created by the child chart.
 
-This is the approach taken by the [azimuth-charts](https://github.com/stackhpc/azimuth-charts)
+This is the approach taken by the [azimuth-charts](https://github.com/azimuth-cloud/azimuth-charts)
 that provide the default `jupyterhub` and `daskhub` apps.

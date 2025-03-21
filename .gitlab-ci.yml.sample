@@ -115,7 +115,7 @@ deploy_aio:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.provision
+    - ansible-playbook azimuth_cloud.azimuth_ops.provision
 
 #####
 # This job executes tests against dynamic review environments each time they are deployed
@@ -137,7 +137,7 @@ test_aio:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests
 
@@ -177,7 +177,7 @@ stop_aio:
     - git checkout ${CI_COMMIT_SHA} || git checkout main
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.destroy
+    - ansible-playbook azimuth_cloud.azimuth_ops.destroy
 
 #####
 # This job deploys Azimuth to the staging environment
@@ -212,7 +212,7 @@ deploy_staging:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.provision
+    - ansible-playbook azimuth_cloud.azimuth_ops.provision
 
 #####
 # This job executes tests against the staging environment each time it is deployed
@@ -244,7 +244,7 @@ test_staging:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests
 
@@ -285,7 +285,7 @@ deploy_production:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.provision
+    - ansible-playbook azimuth_cloud.azimuth_ops.provision
 
 #####
 # This job executes tests against the production environment each time it is deployed
@@ -313,6 +313,6 @@ test_production:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook stackhpc.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests

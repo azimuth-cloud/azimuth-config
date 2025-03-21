@@ -63,7 +63,7 @@ First, the Keystone configuration of the target cloud must be modified to add Az
 [trusted dashboard](https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html#add-a-trusted-dashboard-websso),
 otherwise it will be unable to retrieve a token via the federated flow. When configuring Azimuth as a
 trusted dashboard, you must specify the URL that will receive token data, where the portal domain
-depends on the [ingress configuration](./06-ingress.md):
+depends on the [ingress configuration](../06-ingress.md):
 
 ```ini  title="Keystone configuration"
 [federation]
@@ -110,11 +110,17 @@ to discover the networks it should use, and the tags it looks for are `portal-in
 `portal-external` for the internal and external networks respectively. These tags must be applied
 by the cloud operator.
 
+!!! tip
+
+    It is strongly recommended that you set the `portal-external` tag on an appropriate external network,
+    even if you only have one external network, to avoid issues if new external networks are added to the
+    cloud at a later date.
+
 If it cannot find a tagged internal network, the default behaviour is for Azimuth to create an
 internal network to use (and the corresponding router to attach it to the external network).
 
 The discovery and auto-creation process is described in detail in
-[Network discovery and auto-creation](https://github.com/stackhpc/azimuth/tree/master/docs/architecture.md#network-discovery-and-auto-creation).
+[Network discovery and auto-creation](https://github.com/azimuth-cloud/azimuth/tree/master/docs/architecture.md#network-discovery-and-auto-creation).
 
 To disable the auto-creation of internal networks, use the following:
 

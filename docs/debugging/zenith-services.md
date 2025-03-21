@@ -91,7 +91,7 @@ reported by the client.
 ## OIDC credentials not created
 
 Keycloak OIDC credentials for Zenith services for platforms deployed using Azimuth are created
-by the [azimuth-identity-operator](https://github.com/stackhpc/azimuth-identity-operator).
+by the [azimuth-identity-operator](https://github.com/azimuth-cloud/azimuth-identity-operator).
 
 To see if this step has happened, check the status of the `realm` and `platform` resources
 created by the identity operator. They should all be in the `Ready` phase:

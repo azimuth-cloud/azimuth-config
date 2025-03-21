@@ -39,6 +39,11 @@ COMPONENTS = [
         "version_key": "azimuth_identity_operator_chart_version",
     },
     {
+        "name": "azimuth-schedule-operator",
+        "path": "roles/azimuth_schedule_operator/defaults/main.yml",
+        "version_key": "azimuth_schedule_operator_chart_version",
+    },
+    {
         "name": "zenith",
         "path": "roles/zenith/defaults/main.yml",
         "version_key": "zenith_chart_version",
@@ -61,20 +66,30 @@ COMPONENTS = [
     {
         "name": "caas-workstation",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_stackhpc_workstation_git_version",
+        "version_key": [
+            "azimuth_caas_workstation_default_git_version",
+            "azimuth_caas_stackhpc_workstation_git_version",
+        ],
     },
     {
         "name": "caas-repo2docker",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_stackhpc_repo2docker_git_version",
+        "version_key": [
+            "azimuth_caas_repo2docker_default_git_version",
+            "azimuth_caas_stackhpc_repo2docker_git_version",
+        ],
     },
     {
         "name": "caas-r-studio-server",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
-        "version_key": "azimuth_caas_stackhpc_rstudio_git_version",
+        "version_key": [
+            "azimuth_caas_rstudio_default_git_version",
+            "azimuth_caas_stackhpc_rstudio_git_version",
+        ],
     },
     {
         "name": "ansible-slurm-appliance",
+        "org": "stackhpc",
         "path": "roles/azimuth_caas_operator/defaults/main.yml",
         "version_key": "azimuth_caas_stackhpc_slurm_appliance_git_version",
     },
@@ -174,16 +189,23 @@ def fetch_component_version_for_ops_tag(session, tag, component):
     Returns the version of the specified component that is used in the specified azimuth-ops tag.
     """
     response = session.get(
-        f"{API_URL}/repos/stackhpc/ansible-collection-azimuth-ops/contents/{component['path']}",
+        f"{API_URL}/repos/azimuth-cloud/ansible-collection-azimuth-ops/contents/{component['path']}",
         params = { "ref": tag },
         headers = { "Content-Type": "application/vnd.github.raw+json" }
     )
     response.raise_for_status()
     content = base64.b64decode(response.json()["content"])
-    return yaml.safe_load(content)[component["version_key"]]
+    data = yaml.safe_load(content)
+    # In order to allow version keys to change between azimuth-ops versions, we support
+    # specifying a list of keys which we try in order
+    if isinstance(component["version_key"], list):
+        version_keys = component["version_key"]
+    else:
+        version_keys = [component["version_key"]]
+    return next(data[key] for key in version_keys if key in data)
 
 
-def release_notes_for_component(session, name, from_version, to_version):
+def release_notes_for_component(session, name, org, from_version, to_version):
     """
     Produces the release notes for a component between the specified versions.
     """
@@ -191,7 +213,7 @@ def release_notes_for_component(session, name, from_version, to_version):
     release_notes = []
     for release in fetch_releases(
         session,
-        f"stackhpc/{name}",
+        f"{org}/{name}",
         min = from_version,
         inclusive_min = False,
         max = to_version,
@@ -228,10 +250,13 @@ def main():
     parser.add_argument(
         "--repo",
         help = "The config repository to target.",
-        default = "stackhpc/azimuth-config"
+        default = "azimuth-cloud/azimuth-config"
     )
     parser.add_argument("tag", help = "The tag to generate release notes for.")
     args = parser.parse_args()
+
+    # Make sure that the YAML SafeLoader respects Ansible's !unsafe tag
+    yaml.SafeLoader.add_constructor("!unsafe", yaml.SafeLoader.construct_scalar)
 
     session = github_session(args.token)
 
@@ -267,6 +292,7 @@ def main():
             release_notes_for_component(
                 session,
                 "ansible-collection-azimuth-ops",
+                "azimuth-cloud",
                 previous_ops_tag,
                 current_ops_tag
             )
@@ -290,6 +316,7 @@ def main():
                 release_notes_for_component(
                     session,
                     component['name'],
+                    component.get('org', 'azimuth-cloud'),
                     component_vn_previous,
                     component_vn_current
                 )

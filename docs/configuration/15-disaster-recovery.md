@@ -24,23 +24,46 @@ implemented for OpenStack by the
 
 ## Configuration
 
-To enable backup and restore functionality, the following variables should be set in your environment:
+To enable backup and restore functionality, the following variables must be set in your environment:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+# Enable Velero
 velero_enabled: true
+
+# The URL of the S3 storage endpoint
 velero_s3_url: <object-store-endpoint-url>
-velero_bucket_name: <name-of-an-existing-bucket>
+
+# The name of the bucket to use for backups
+velero_bucket_name: <bucket-name>
 ```
 
+!!! warning  "Bucket must already exist"
+
+    The specified bucket must already exist - neither azimuth-ops nor Velero will create it.
+
+You will also need to consult the documentation for your S3 provider to obtain S3 credentials for
+the bucket, and add the access key ID and secret to the following variables:
+
 ```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
-velero_aws_access_key_id: <S3-access-key-id>
-velero_aws_secret_access_key: <S3-secret-value>
+# Access key ID and secret for accessing the S3 bucket
+velero_aws_access_key_id: <s3-access-key-id>
+velero_aws_secret_access_key: <s3-secret-value>
 ```
+
+!!! tip  "Generating credentials for Keystone-integrated Ceph Object Gateway"
+
+    If the S3 target is
+    [Ceph Object Gateway integrated with Keystone](https://docs.ceph.com/en/latest/radosgw/keystone/),
+    a common configuration with OpenStack clouds, S3 credentials can be generated using the following:
+
+    ```sh
+    openstack ec2 credentials create
+    ```
 
 !!! danger
 
     The S3 credentials should be kept secret. If you want to keep them in Git - which is recommended -
-    then it [must be encrypted](../repository/secrets.md).
+    then they [must be encrypted](../repository/secrets.md).
 
 ## Velero CLI
 
@@ -66,7 +89,7 @@ Once you have the name of the backup to restore, run the following command with 
 activated (similar to a provision):
 
 ```bash
-ansible-playbook stackhpc.azimuth_ops.restore \
+ansible-playbook azimuth_cloud.azimuth_ops.restore \
   -e velero_restore_backup_name=<backup name>
 ```
 
@@ -101,10 +124,10 @@ velero_backup_schedule_enabled: true
 velero_backup_schedule_name: default
 # Schedule to use for backups (defaults to every day at midnight)
 # See https://en.wikipedia.org/wiki/Cron for format options
-velero_backup_schedule_timings: "0 0 * * *"
+velero_backup_schedule: "0 0 * * *"
 # Time-to-live for existing backups (defaults to 1 week)
 # See https://pkg.go.dev/time#ParseDuration for duration format options
-velero_backup_schedule_ttl: "168h"
+velero_backup_ttl: "168h"
 ```
 
 !!! note

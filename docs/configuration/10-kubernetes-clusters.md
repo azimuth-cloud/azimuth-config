@@ -3,11 +3,11 @@
 Kubernetes support in Azimuth is implemented using [Cluster API](https://cluster-api.sigs.k8s.io/)
 with the [OpenStack provider](https://github.com/kubernetes-sigs/cluster-api-provider-openstack).
 Support for cluster addons is provided by the
-[Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider), which
+[Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider), which
 provides functionality for installing [Helm](https://helm.sh/) charts and additional manifests.
 
 Azimuth provides an opinionated interface on top of Cluster API by implementing
-[its own Kubernetes operator](https://github.com/stackhpc/azimuth-capi-operator).
+[its own Kubernetes operator](https://github.com/azimuth-cloud/azimuth-capi-operator).
 This operator exposes two
 [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 which are used by the Azimuth API to manage Kubernetes clusters:
@@ -26,7 +26,7 @@ which are used by the Azimuth API to manage Kubernetes clusters:
   auto-healing and whether the monitoring stack is deployed on the cluster.
 
 For each `Cluster`, the operator manages a release of the
-[openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster).
+[openstack-cluster Helm chart](https://github.com/azimuth-cloud/capi-helm-charts/tree/main/charts/openstack-cluster).
 The Helm release in turn manages Cluster API resources for the cluster, including addons.
 
 To get the values for the release, the operator first derives some values from the `Cluster`
@@ -75,45 +75,46 @@ azimuth_capi_operator_cluster_templates_default: {}
 ### Custom cluster templates
 
 If you want to include custom cluster templates in addition to the default templates,
-e.g. for advanced networking configurations, you can specify them using the variable
-`azimuth_capi_operator_cluster_templates_extra`.
+e.g. for
+[accessing Manila shares](./04-target-cloud/02-openstack-manila.md#storage-network-automation),
+you can specify them using the variable `azimuth_capi_operator_cluster_templates_extra`.
 
 For example, the following demonstrates how to configure a template where the cluster
 worker nodes have two networks attached - the control plane nodes and workers are all
 attached to the Azimuth internal network but the workers are attached to an additional
-SR-IOV capable network:
+SR-IOV capable storage network:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_cluster_templates_extra:
   # The index in the dict is the template name
-  kube-1-24-2-multinet:
+  kube-1-31-2-multinet:
     # Access control annotations
     annotations: {}
     # The cluster template specification
     spec:
       # A human-readable label for the template
-      label: v1.24.2 / multinet
+      label: v1.31.2 / multinet
       # A brief description of the template
       description: >-
-        Kubernetes 1.24.2 with HA control plane and high-performance networking.
+        Kubernetes 1.31.2 with HA control plane and high-performance networking.
       # Values for the openstack-cluster Helm chart
       values:
         # Specify the image and version for the cluster
         # These are the only required values
-        kubernetesVersion: 1.24.2
-        machineImageId: "{{ community_images_image_ids.kube_1_24 }}"
+        kubernetesVersion: 1.31.2
+        machineImageId: "{{ community_images_image_ids.kube_1_31 }}"
         # Use the portal-internal network as the main cluster network
         clusterNetworking:
           internalNetwork:
             networkFilter:
               tags: portal-internal
-        # Configure an extra SR-IOV port on worker nodes using an SR-IOV capable network
+        # Configure an extra SR-IOV port on worker nodes on the storage network
         nodeGroupDefaults:
           machineNetworking:
             ports:
               - {}
               - network:
-                  tags: sriov-vlan
+                  tags: portal-storage
                 securityGroups: []
                 vnicType: direct
 ```
@@ -158,6 +159,14 @@ harbor_admin_password: "<secure password>"
 # This MUST be exactly 16 alphanumeric characters
 harbor_secret_key: "<secure secret key>"
 ```
+
+!!! tip
+
+    `azimuth-config` includes a utility for generating secrets for an environment:
+
+    ```sh
+    ./bin/generate-secrets [--force] <environment-name>
+    ```
 
 !!! danger
 

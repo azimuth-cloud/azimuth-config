@@ -29,15 +29,18 @@ on:
       - requirements.txt
       - requirements.yml
       - .github/actions/**
+      - .github/environments/common
+      - .github/environments/arcus
+      - .github/environments/leafcloud
       - .github/workflows/test-singlenode.yml
       - bin/**
-      - "!bin/ci-exec"
+      - "!bin/ci-setup"
       - "!bin/create-merge-branch"
+      - "!bin/port-forward"
       - "!bin/tilt-*"
       - environments/base/**
       - environments/singlenode/**
       - environments/demo/**
-      - environments/ci/**
 
 # Use the head ref for workflow concurrency, with cancellation
 # This should mean that any previous runs of this workflow for the same PR
@@ -52,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code under test must be from a branch in the azimuth-config repo
-        run: exit ${{ github.repository == 'stackhpc/azimuth-config' && '0' || '1' }}
+        run: exit ${{ github.repository == 'azimuth-cloud/azimuth-config' && '0' || '1' }}
 
   run_azimuth_tests:
     needs: [fail_on_remote]
@@ -60,7 +63,7 @@ jobs:
     steps:
       # We need to check out the code under test first in order to use local actions
       - name: Checkout code under test
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup

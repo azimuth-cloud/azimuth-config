@@ -6,7 +6,7 @@ users that are deployed and configured using a combination of [Ansible](https://
 a [git](https://git-scm.com/) repository.
 
 CaaS support in Azimuth is implemented by the
-[Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator).
+[Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator).
 The operator executes Ansible playbooks using
 [ansible-runner](https://ansible.readthedocs.io/projects/runner/en/stable/) in response
 to Azimuth creating and modifying instances of the
@@ -43,17 +43,17 @@ To remove AWX components, an additional variable must be set when the `provision
 is executed:
 
 ```sh
-ansible-playbook stackhpc.azimuth_ops.provision -e awx_purge=yes
+ansible-playbook azimuth_cloud.azimuth_ops.provision -e awx_purge=yes
 ```
 
-## StackHPC Appliances
+## Standard Appliances
 
-By default, three appliances maintained by StackHPC are made available - the
-[Slurm appliance](https://github.com/stackhpc/caas-slurm-appliance), the
-[Linux Workstation appliance](https://github.com/stackhpc/caas-workstation) and the
-[repo2docker appliance](https://github.com/stackhpc/caas-repo2docker).
+By default, three standard appliances are made available - the
+[StackHPC Slurm appliance](https://github.com/stackhpc/ansible-slurm-appliance), the
+[Linux Workstation appliance](https://github.com/azimuth-cloud/caas-workstation) and the
+[repo2docker appliance](https://github.com/azimuth-cloud/caas-repo2docker).
 
-### Slurm appliance
+### StackHPC Slurm appliance
 
 The Slurm appliance allows users to deploy [Slurm](https://slurm.schedmd.com/documentation.html)
 clusters for running batch workloads. The clusters include the [Open OnDemand](https://openondemand.org/)
@@ -76,7 +76,7 @@ stack is also available, exposed via Zenith.
 To disable the Linux Workstation appliance, use the following:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_caas_stackhpc_workstation_enabled: no
+azimuth_caas_workstation_enabled: no
 ```
 
 ### repo2docker appliance
@@ -88,7 +88,7 @@ compliant repository. A simple monitoring stack is also available, exposed via Z
 To disable the repo2docker appliance, use the following:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_caas_stackhpc_repo2docker_enabled: no
+azimuth_caas_repo2docker_enabled: no
 ```
 
 ### R-studio appliance
@@ -101,14 +101,14 @@ with both the R-studio and monitoring services exposed via Zenith.
 To disable the R-studio appliance, use the following:
 
 ```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_caas_stackhpc_rstudio_enabled: no
+azimuth_caas_rstudio_enabled: no
 ```
 
 ## Custom appliances
 
 It is possible to make custom appliances available in the Azimuth interface for users to deploy.
 For more information on building a CaaS-compatible appliance, please see the
-[sample appliance](https://github.com/stackhpc/azimuth-sample-appliance).
+[sample appliance](https://github.com/azimuth-cloud/azimuth-sample-appliance).
 
 Custom appliances can be easily specified in your Azimuth configuration. For example,
 the following will configure the sample appliance as an available cluster type:
@@ -121,14 +121,14 @@ azimuth_caas_cluster_templates_overrides:
     # The cluster type specification
     spec:
       # The git URL of the appliance
-      gitUrl: https://github.com/stackhpc/azimuth-sample-appliance.git
+      gitUrl: https://github.com/azimuth-cloud/azimuth-sample-appliance.git
       # The branch, tag or commit id to use
       # For production, it is recommended to use a fixed tag or commit ID
       gitVersion: main
       # The name of the playbook to use
       playbook: sample-appliance.yml
       # The URL of the metadata file
-      uiMetaUrl: https://raw.githubusercontent.com/stackhpc/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
+      uiMetaUrl: https://raw.githubusercontent.com/azimuth-cloud/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
       # Dict of extra variables for the appliance
       extraVars:
         # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload

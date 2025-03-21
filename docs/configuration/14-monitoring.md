@@ -51,6 +51,14 @@ admin_dashboard_ingress_basic_auth_password: "<secure password>"
     As such you should ensure that a strong password is used, and take care when sharing
     it.
 
+!!! tip
+
+    `azimuth-config` includes a utility for generating secrets for an environment:
+
+    ```sh
+    ./bin/generate-secrets [--force] <environment-name>
+    ```
+
 !!! danger
 
     This password should be kept secret. If you want to keep the password in Git - which is

@@ -33,6 +33,7 @@ pgo_kustomization_directory: "{{ (work_directory, 'postgres-operator') | path_jo
 keycloak_operator_kustomization_directory: "{{ (work_directory, 'keycloak-operator') | path_join }}"
 awx_operator_directory: "{{ (work_directory, 'awx-operator') | path_join }}"
 # Use the configured work directory for the test suite
+generate_tests_vars_file: "{{ (work_directory, 'testvars.yaml') | path_join }}"
 generate_tests_suite_directory: "{{ (work_directory, 'test-suite') | path_join }}"
 
 # Enable cert-manager by default
@@ -57,6 +58,9 @@ cloud_metrics_enabled: no
 
 # Indicates whether to enable Velero for backup and restore
 velero_enabled: no
+
+# Indicates whether to install coral credits
+coral_credits_enabled: no
 
 # Azimuth features to enable
 azimuth_apps_enabled: yes

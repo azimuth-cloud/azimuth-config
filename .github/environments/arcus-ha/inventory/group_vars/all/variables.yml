@@ -24,13 +24,12 @@ capi_cluster_worker_count: 2
 # The risk of failed upgrades is too great, and it is going away soon
 consul_server_replicas: 1
 
-# Enable Velero just to check that installation works
-velero_enabled: true
-velero_s3_url: https://required-but-not-used.com
-velero_bucket_name: not-used
-velero_backup_schedule_enabled: true
-velero_backup_schedule_name: default
-velero_backup_schedule_timings: "0 0 * * *"
-velero_backup_schedule_ttl: "168h"
-velero_aws_access_key_id: required-but-not-used
-velero_aws_secret_access_key : required-but-not-used
+# Pick up the reserved IP for the Zenith SSHD LB
+zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
+
+# Configure Velero backups
+velero_enabled: "{{ not (not velero_aws_access_key_id) }}"
+velero_s3_url: https://object.arcus.openstack.hpc.cam.ac.uk
+velero_bucket_name: azimuth-ci-backups
+velero_aws_access_key_id: "{{ lookup('env', 'VELERO_S3_ACCESS_KEY') }}"
+velero_aws_secret_access_key: "{{ lookup('env', 'VELERO_S3_SECRET_KEY') }}"

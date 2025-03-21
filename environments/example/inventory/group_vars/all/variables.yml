@@ -2,16 +2,16 @@
 # This file, combined with secrets.yml, shows an example configuration for a
 # minimal, but still best-practice, Azimuth deployment on a "well-behaved" cloud
 #
-# https://stackhpc.github.io/azimuth-config/best-practice/
+# https://azimuth-config.readthedocs.io/en/stable/best-practice/
 #
 # It is recommended to read the "Configuration" section of the Azimuth Operator
 # Documentation in full to understand all the available options
 #
-# https://stackhpc.github.io/azimuth-config/configuration/
+# https://azimuth-config.readthedocs.io/en/stable/configuration/
 #####
 
 ## Configuration for OpenTofu state
-## https://stackhpc.github.io/azimuth-config/repository/opentofu/
+## https://azimuth-config.readthedocs.io/en/stable/repository/opentofu/
 
 # The Terraform backend type to use (HTTP and S3 supported)
 terraform_backend_type: "<http or s3>"
@@ -21,11 +21,11 @@ terraform_backend_config: {}
 
 
 ## Configuration for the seed node (HA) or single node deployment
-## https://stackhpc.github.io/azimuth-config/configuration/02-deployment-method/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/02-deployment-method/
 
 # The ID of the external network to use
 # This network must provide _egress_ to the internet
-# https://stackhpc.github.io/azimuth-config/configuration/01-prerequisites/#networking
+# https://azimuth-config.readthedocs.io/en/stable/configuration/01-prerequisites/#networking
 infra_external_network_id: "<network id>"
 
 # The id of the flavor to use for the node
@@ -43,8 +43,8 @@ infra_data_volume_size: 100
 
 
 ## Configuration for the HA cluster
-## https://stackhpc.github.io/azimuth-config/configuration/02-deployment-method/
-## https://stackhpc.github.io/azimuth-config/configuration/03-kubernetes-config/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/02-deployment-method/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/03-kubernetes-config/
 
 # The name of the flavor to use for control plane nodes
 # A flavor with at least 2 CPUs, 8GB RAM and 100GB root disk is recommended
@@ -62,7 +62,7 @@ capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
 
 
 ## Target cloud configuration
-## https://stackhpc.github.io/azimuth-config/configuration/04-target-cloud/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/04-target-cloud/
 
 # The name of the current cloud
 azimuth_current_cloud_name: example
@@ -72,14 +72,14 @@ azimuth_current_cloud_label: Example
 
 
 ## Ingress configuration
-## https://stackhpc.github.io/azimuth-config/configuration/06-ingress/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/06-ingress/
 
 # The base domain to use for ingress resources
 ingress_base_domain: "<base domain>"
 
 
 ## Persistence and retention for monitoring (HA only)
-## https://stackhpc.github.io/azimuth-config/configuration/14-monitoring/#persistence-and-retention
+## https://azimuth-config.readthedocs.io/en/stable/configuration/14-monitoring/#persistence-and-retention
 
 # Prometheus retention and volume size
 capi_cluster_addons_monitoring_prometheus_retention: 90d
@@ -91,7 +91,7 @@ capi_cluster_addons_monitoring_loki_volume_size: 50Gi
 
 
 ## Disaster recovery
-## https://stackhpc.github.io/azimuth-config/configuration/15-disaster-recovery/
+## https://azimuth-config.readthedocs.io/en/stable/configuration/15-disaster-recovery/
 
 # Enable Velero for backup
 velero_enabled: true

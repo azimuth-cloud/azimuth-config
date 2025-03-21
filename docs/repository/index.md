@@ -14,7 +14,7 @@ repository:
 
 ```sh
 # Clone the azimuth-config repository
-git clone https://github.com/stackhpc/azimuth-config.git my-azimuth-config
+git clone https://github.com/azimuth-cloud/azimuth-config.git my-azimuth-config
 cd my-azimuth-config
 
 # Maintain the existing origin remote as upstream
@@ -23,10 +23,7 @@ git remote rename origin upstream
 # Create a new origin remote for the repository location
 git remote add origin git@<repo location>/my-azimuth-config.git
 
-# Checkout stable to get the latest release
-git checkout stable
-
-# Create a new main branch from stable
+# Create a new main branch from devel
 # This will be the branch that is deployed into production
 git checkout -b main
 
@@ -57,13 +54,25 @@ to do this is to copy the `example` environment as a starting point:
 cp -r ./environments/example ./environments/my-site
 ```
 
-!!! tip
+!!! tip  "Copy instead of rename"
 
     Copying the `example` environment, rather than just renaming it, avoids conflicts
     when synchronising changes from the `azimuth-config` repository where the `example`
     environment has changed.
 
 Once you have your new environment, you can make the required changes for your site.
+
+!!! tip  "Generating secrets"
+
+    `azimuth-config` includes a utility that can be used to generate secrets for your
+    environment:
+
+    ```sh
+    ./bin/generate-secrets --force my-site
+    ```
+
+    `--force` is required because the `example` environment includes an example secrets
+    file that we want to overwrite with the generated secrets.
 
 As you make changes to your environment, remember to commit and push them regularly:
 
@@ -100,7 +109,7 @@ component versions, upgraded dependencies and new images.
 !!! info  "Choosing a release"
 
     The available releases, with associated release notes, can be reviewed on the
-    [Azimuth releases page](https://github.com/stackhpc/azimuth-config/releases).
+    [Azimuth releases page](https://github.com/azimuth-cloud/azimuth-config/releases).
 
 !!! tip  "Automating upgrades"
 

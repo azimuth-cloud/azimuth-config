@@ -1,5 +1,5 @@
 site_name: Azimuth Operator Documentation
-repo_url: https://github.com/stackhpc/azimuth-config
+repo_url: https://github.com/azimuth-cloud/azimuth-config
 copyright: Copyright &copy; StackHPC 2022
 edit_uri: ''
 
@@ -17,7 +17,10 @@ nav:
       - configuration/01-prerequisites.md
       - configuration/02-deployment-method.md
       - configuration/03-kubernetes-config.md
-      - configuration/04-target-cloud.md
+      - 'Target OpenStack cloud':
+          - configuration/04-target-cloud/index.md
+          - configuration/04-target-cloud/01-openstack-blazar.md
+          - configuration/04-target-cloud/02-openstack-manila.md
       - configuration/05-secret-key.md
       - configuration/06-ingress.md
       - configuration/07-platform-identity.md

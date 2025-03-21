@@ -81,6 +81,9 @@ capi_cluster_worker_flavor: "<flavor name>"
 # The number of worker nodes
 capi_cluster_worker_count: 3
 
-# The floating IP to which to wildcard DNS entry has been assigned
+# The pre-allocated floating IP to which to wildcard DNS entry has been assigned
 capi_cluster_addons_ingress_load_balancer_ip: "<pre-allocated floating ip>"
+
+# The pre-allocated floating IP for the Zenith SSHD server
+zenith_sshd_service_load_balancer_ip: "<pre-allocated floating ip>"
 ```

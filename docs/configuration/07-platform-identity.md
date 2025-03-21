@@ -79,6 +79,14 @@ The only required configuration for platform identity is to set the admin passwo
 keycloak_admin_password: "<secure password>"
 ```
 
+!!! tip
+
+    `azimuth-config` includes a utility for generating secrets for an environment:
+
+    ```sh
+    ./bin/generate-secrets [--force] <environment-name>
+    ```
+
 !!! danger
 
     This password should be kept secret. If you want to keep the password in Git - which is

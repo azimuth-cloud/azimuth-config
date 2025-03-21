@@ -1,7 +1,7 @@
 # Customising the Azimuth configuration
 
 The
-[roles in the azimuth-ops collection](https://github.com/stackhpc/ansible-collection-azimuth-ops/tree/main/roles)
+[roles in the azimuth-ops collection](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles)
 support a vast array of variables to customise an Azimuth deployment. However `azimuth-ops`
 endeavours to pick sensible defaults where appropriate, so this documentation focuses on
 configuration that is required or commonly changed.
@@ -12,9 +12,9 @@ consulted directly.
 !!! note
 
     Make sure you are familiar with the
-    [Azimuth](https://github.com/stackhpc/azimuth/blob/master/docs/architecture.md)
+    [Azimuth](https://github.com/azimuth-cloud/azimuth/blob/master/docs/architecture.md)
     and
-    [Zenith](https://github.com/stackhpc/zenith/blob/main/docs/architecture.md)
+    [Zenith](https://github.com/azimuth-cloud/zenith/blob/main/docs/architecture.md)
     architectures before continuing.
 
     It is assumed that you have already followed the steps in

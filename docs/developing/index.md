@@ -4,58 +4,52 @@ An Azimuth deployment consists of several interdependent components, some of whi
 Azimuth-specific and some of which are third-party components. Plugging code under
 development into such a system can be tricky, making development difficult and slow.
 
-## Developing Azimuth components
+## Deploying a dev instance
 
-Azimuth has a number of components, mostly written in Python:
+In order to develop Azimuth, you first need a running Azimuth instance.
 
-  * [Azimuth API and UI](https://github.com/stackhpc/azimuth) - user-facing API and UI
-  * [Azimuth CaaS operator](https://github.com/stackhpc/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
-  * [Azimuth CAPI operator](https://github.com/stackhpc/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
-  * [Azimuth identity operator](https://github.com/stackhpc/azimuth-identity-operator) - Kubernetes operator implementing platform identity
-  * [Zenith](https://github.com/stackhpc/zenith) - secure, tunnelling application proxy used to expose platform services
-  * [Cluster API addon provider](https://github.com/stackhpc/cluster-api-addon-provider) - addons for Cluster API clusters
-  * [Cluster API janitor for OpenStack](https://github.com/stackhpc/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
+Each developer should have their own independent instance of Azimuth for development,
+as during development they will make changes to the running Azimuth components that may
+conflict with or break things for others.
 
-It is useful to develop these components in the context of a running Azimuth installation,
-as they have dependencies on each other.
+### Creating a dev environment
 
-To enable this, Azimuth uses [Tilt](https://tilt.dev/) to provide a developer environment
-where code under development is automatically built and injected into a live system that
-you can interact with. Tilt provides a dashboard that can be used to drill down into
-build failures and the logs of the components under development.
+Azimuth supports using a single [configuration environment](../environments.md) to deploy multiple
+independent Azimuth instances. When
+[activating an environment](../deployment/#activating-an-environment), a unique instance name
+can be given as a second argument to the `activate` script, e.g.:
 
-![Azimuth in Tilt](tilt-interface.png)
+```bash
+# Activating an environment with a unique instance name
+source ./bin/activate my-environment jbloggs
+```
 
-### Prerequisites
+In order for an environment to be used in this way, it must be specially prepared to be more
+dynamic than an environment that you would use for staging or production. In particular, only
+[single node deployments](../configuration/02-deployment-method.md#single-node) are usable in
+this way, as HA deployments do not support dynamically allocating a floating IP for the ingress
+controller.
 
-In order to use Tilt to develop Azimuth, the following tools must be available on your
-development machine (in addition to those required to install Azimuth itself):
+It is recommended that you create an environment in your Azimuth configuration repository
+for doing Azimuth development on your cloud. This environment should include any site-specific
+customisations that are required, usually by building on a
+[site mixin](../environments.md#using-mixin-environments). The
+[demo environment](https://github.com/azimuth-cloud/azimuth-config/tree/devel/environments/demo)
+is a good starting point for this, as it is designed to be flexible and dynamic.
 
-  * The [Tilt CLI](https://docs.tilt.dev/install.html)
-  * A `docker` command, e.g. [Docker Desktop](https://docs.docker.com/desktop/)
-  * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
-  * The [Helm CLI](https://helm.sh/docs/intro/install/)
+!!! tip  "Producing unique values in your Azimuth configuration"
 
-For developing the Azimuth UI, the following are also required:
+    The Ansible variable `azimuth_environment` contains the unique instance name, and
+    can be used in other variables in your configuration where a unique value is required
+    for each developer environment.
 
-  * [node.js](https://nodejs.org)
-  * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
+!!! warning  "Developers should use their own application credential"
 
-### Deploying a dev instance
+    You should not include an application credential in your development environment.
+    Instead, each developer can use their own application credential as described in the
+    next section.
 
-To use Tilt for developing Azimuth components, you first need a running Azimuth instance.
-    
-Each developer should have their own independent instance of Azimuth as Tilt will make
-changes to the running Azimuth components, based on the code under development, that may
-disrupt or break things for others.
-
-!!! tip
-
-    A single node deployment, e.g. a [demo deployment](../try.md), is sufficient for developing
-    the Azimuth components.
-
-    You may wish to maintain a [development environment](../environments.md) containing
-    site-specific customisations.
+### Using the dev environment
 
 The following instructions assume that your Azimuth configuration contains a developer environment
 called `dev`. It is assumed that you have your Azimuth configuration checked out and that you have
@@ -76,16 +70,62 @@ export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
 # with other deployments that use the dev environment
 source ./bin/activate dev jbloggs-dev
 
+# Generate secrets locally for the active environment, if required
+# DO NOT COMMIT THE GENERATED FILE TO GIT
+./bin/generate-secrets
+
 # Install Azimuth as usual
 ansible-galaxy install -f -r requirements.yml
-ansible-playbook stackhpc.azimuth_ops.provision
+ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 
-### Configuring a container registry
+## Developing Azimuth components
+
+Azimuth has a number of components, mostly written in Python:
+
+  * [Azimuth API and UI](https://github.com/azimuth-cloud/azimuth) - user-facing API and UI
+  * [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
+  * [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
+  * [Azimuth identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) - Kubernetes operator implementing platform identity
+  * [Azimuth schedule operator](https://github.com/azimuth-cloud/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
+  * [Zenith](https://github.com/azimuth-cloud/zenith) - secure, tunnelling application proxy used to expose platform services
+  * [Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider) - addons for Cluster API clusters
+  * [Cluster API janitor for OpenStack](https://github.com/azimuth-cloud/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
+
+It is useful to develop these components in the context of a running Azimuth installation,
+as they have dependencies on each other.
+
+To enable this, Azimuth uses [Tilt](https://tilt.dev/) to provide a developer environment
+where code under development is automatically built and injected into a live system that
+you can interact with. Tilt provides a dashboard that can be used to drill down into
+build failures and the logs of the components under development.
+
+![Azimuth in Tilt](tilt-interface.png)
+
+### Prerequisites
+
+In order to use Tilt to develop Azimuth, the following tools must be available on your
+development machine (in addition to those required to install Azimuth itself):
+
+  * The [Tilt CLI](https://docs.tilt.dev/install.html)
+  * A `docker` or `podman` command,
+    e.g. [Docker Desktop](https://docs.docker.com/desktop/) or [Podman Desktop](https://podman-desktop.io/)
+  * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
+  * The [Helm CLI](https://helm.sh/docs/intro/install/)
+  * The [skopeo CLI](https://github.com/containers/skopeo) (optional)
+
+For developing the Azimuth UI, the following are also required:
+
+  * [node.js](https://nodejs.org)
+  * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
+
+### Tilt settings
 
 Azimuth's Tilt configuration looks for a file called `tilt-settings.yaml` that defines settings
 for the development environment. This file is specific to you and should not be added to version
 control (it is specified in `.gitignore`).
+
+#### Configuring a container registry
 
 In order to get the code under development into your running Azimuth instance, Tilt must have
 access to a container registry that is accessible to both your development machine and the
@@ -113,6 +153,31 @@ image_prefix: ghcr.io/jbloggs
     for the first time will be private. You must log into GitHub and make them public before
     your Azimuth instance can use them. Until you do this, you will see image pull errors in
     the Tilt interface.
+
+#### Using Podman for builds
+
+In situations where using Docker is not viable, e.g. due to licensing constraints, Azimuth's
+Tilt configuration also supports using [Podman](https://podman.io/) to build and push container
+images.
+
+To configure Tilt to use `podman` to build container images, use the following setting:
+
+```yaml  title="tilt-settings.yaml"
+build_engine: podman
+```
+
+#### Using skopeo to mirror images
+
+Some Azimuth components require images to be mirrored. By default, Azimuth's Tilt configuration
+uses the configured build engine for this by pulling, re-tagging and pushing the specified image.
+
+[skopeo](https://github.com/containers/skopeo) is a tool that is built for performing operations
+on container images, such as efficiently copying an image from one repository to another, and
+Azimuth's Tilt configuration supports using this to mirror images:
+
+```yaml  title="tilt-settings.yaml"
+mirror_engine: skopeo
+```
 
 ### Using the Tilt environment
 

@@ -5,9 +5,9 @@ Azimuth uses [Cluster API](https://cluster-api.sigs.k8s.io/) to manage tenant Ku
 clusters.
 
 Cluster API resources are managed by releases of the
-[openstack-cluster Helm chart](https://github.com/stackhpc/capi-helm-charts/tree/main/charts/openstack-cluster),
+[openstack-cluster Helm chart](https://github.com/azimuth-cloud/capi-helm-charts/tree/main/charts/openstack-cluster),
 which in turn are managed by the
-[azimuth-capi-operator](https://github.com/stackhpc/azimuth-capi-operator) in response
+[azimuth-capi-operator](https://github.com/azimuth-cloud/azimuth-capi-operator) in response
 to changes to instances of the `clusters.azimuth.stackhpc.com` custom resource.
 These instances are created, updated and deleted in Kubernetes by the Azimuth API in
 response to user actions.
@@ -195,7 +195,7 @@ $ export KUBECONFIG=kubeconfig-tenant.yaml
 ## Zenith service issues
 
 Zenith services are enabled on Kubernetes clusters using the
-[Zenith operator](https://github.com/stackhpc/zenith/tree/main/operator). Each tenant
+[Zenith operator](https://github.com/azimuth-cloud/zenith/tree/main/operator). Each tenant
 Kubernetes cluster gets an instance of the operator that runs on the Azimuth cluster,
 where it can reach the Zenith registrar to allocate subdomains, but watches the tenant
 cluster for instances of the `reservation.zenith.stackhpc.com` and

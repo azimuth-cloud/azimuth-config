@@ -4,7 +4,7 @@
 
 The Python requirements for an Azimuth deployment host, including Ansible itself,
 are contained in
-[requirements.txt](https://github.com/stackhpc/azimuth-config/blob/stable/requirements.txt)
+[requirements.txt](https://github.com/azimuth-cloud/azimuth-config/blob/stable/requirements.txt)
 and must be installed before you can proceed with a deployment. It is recommended
 to use a [virtual environment](https://docs.python.org/3/library/venv.html) in order
 to keep the dependencies isolated from other Python applications on the host.
@@ -55,7 +55,7 @@ ansible-galaxy install -f -r ./requirements.yml
 
 # Run the provision playbook from the azimuth-ops collection
 # The inventory is picked up from the ansible.cfg file in the environment
-ansible-playbook stackhpc.azimuth_ops.provision
+ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 
 ## Tearing down an environment
@@ -66,5 +66,5 @@ K3s and HA Kubernetes clusters as required.
 After activating the environment that you want to tear down, run the following:
 
 ```sh
-ansible-playbook stackhpc.azimuth_ops.destroy
+ansible-playbook azimuth_cloud.azimuth_ops.destroy
 ```

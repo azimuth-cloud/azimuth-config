@@ -89,17 +89,15 @@ azimuth_capi_operator_cluster_template_tenancy_allow_list:
 azimuth_capi_operator_cluster_template_tenancy_deny_regex:
 azimuth_capi_operator_cluster_template_tenancy_allow_regex:
 
-# Each Kubernetes app has specific variables
-#   Replace 'jupyterhub' with the required app template
+# Each Kubernetes app has specific variables, e.g.:
 azimuth_capi_operator_app_templates_jupyterhub_tenancy_deny_list:
 azimuth_capi_operator_app_templates_jupyterhub_tenancy_allow_list:
 azimuth_capi_operator_app_templates_jupyterhub_tenancy_deny_regex:
 azimuth_capi_operator_app_templates_jupyterhub_tenancy_allow_regex:
 
-# Each CaaS cluster type has specific variables
-#   Replace 'slurm' with the required cluster type
-azimuth_caas_stackhpc_slurm_appliance_tenancy_deny_list:
-azimuth_caas_stackhpc_slurm_appliance_tenancy_allow_list:
-azimuth_caas_stackhpc_slurm_appliance_tenancy_deny_regex:
-azimuth_caas_stackhpc_slurm_appliance_tenancy_allow_regex:
+# Each CaaS cluster type has specific variables, e.g.:
+azimuth_caas_workstation_tenancy_deny_list:
+azimuth_caas_workstation_tenancy_allow_list:
+azimuth_caas_workstation_tenancy_deny_regex:
+azimuth_caas_workstation_tenancy_allow_regex:
 ```

@@ -9,10 +9,13 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ansible-playbook stackhpc.azimuth_ops.destroy -e @extra-vars.yml -e force_destroy=true
+        ansible-playbook azimuth_cloud.azimuth_ops.destroy \
+          -e @extra-vars.yml \
+          -e force_destroy=true \
+          -e capi_cluster_volumes_policy=delete
       if: ${{ always() }}
 
-    - name: Release ingress floating IP
+    - name: Release floating IPs
       shell: bash
       run: |
         set -eo pipefail
@@ -20,6 +23,9 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         if [ -n "$INGRESS_IP" ]; then
           openstack floating ip delete $INGRESS_IP
+        fi
+        if [ -n "$ZENITH_SSHD_IP" ]; then
+          openstack floating ip delete $ZENITH_SSHD_IP
         fi
       if: ${{ always() }}
 
@@ -44,7 +50,7 @@ runs:
       if: ${{ always() }}
 
     - name: Release S3 lock
-      uses: stackhpc/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@master
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}

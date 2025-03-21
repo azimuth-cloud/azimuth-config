@@ -16,14 +16,21 @@ fi
 ansible_variable() {
     ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
+    ANSIBLE_JSON_INDENT=0 \
     ansible -m debug -a "var=$1" all | \
-      jq -r ".plays[0].tasks[0].hosts.localhost.$1"
+       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
 
 # Get the test directory
 test_directory="$(ansible_variable generate_tests_suite_directory)"
+test_vars_file="$(ansible_variable generate_tests_vars_file)"
 # Use a headless browser by default
 export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
 # Execute the test suite, including any args we were given
-exec robot --loglevel debug --consolecolors on "$@" "$test_directory"
+exec robot \
+  --loglevel debug \
+  --consolecolors on \
+  --variablefile "$test_vars_file" \
+  "$@" \
+  "$test_directory"

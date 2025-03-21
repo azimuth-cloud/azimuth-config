@@ -29,7 +29,7 @@ environments, although deployments to production typically include a manual appr
 ## GitLab CI/CD
 
 `azimuth-config` provides a
-[sample configuration](https://github.com/stackhpc/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
+[sample configuration](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
 for use with [GitLab CI/CD](https://docs.gitlab.com/ee/ci/) that demonstrates how to
 set up continuous delivery for an Azimuth configuration repository.
 
@@ -60,23 +60,23 @@ environment in your repository. This is a one-to-one relationship except for
 [per-branch dynamic review environments](#per-branch-dynamic-review-environments),
 where multiple GitLab environments will use a single configuration environment.
 
-If you are using GitLab-managed Terraform state, each *GitLab environment* (not
+If you are using GitLab-managed Terraform state, each _GitLab environment_ (not
 configuration environment) will get it's own independent state.
 
 The sample configuration defines the following deployment jobs:
 
-  1. Each commit to a branch other than `main` (e.g. a feature branch), triggers an
-     automated deployment to a **branch-specific**
-     [dynamic GitLab environment](https://docs.gitlab.com/ee/ci/environments/#create-a-dynamic-environment),
-     using a single [concrete configuration environment](../environments.md). These
-     environments are automatically destroyed when the associated merge request is
-     closed.
-  2. Each commit to `main` triggers an automated deployment to staging using a
-     [static GitLab environment](https://docs.gitlab.com/ee/ci/environments/#create-a-static-environment).
-  3. Each commit to `main` also creates a job for an automated deployment to
-     production, also using a static environment. However this job requires a
-     [manual trigger](https://docs.gitlab.com/ee/ci/environments/#configure-manual-deployments)
-     before it will start.
+1. Each commit to a branch other than `main` (e.g. a feature branch), triggers an
+   automated deployment to a **branch-specific**
+   [dynamic GitLab environment](https://docs.gitlab.com/ee/ci/environments/#create-a-dynamic-environment),
+   using a single [concrete configuration environment](../environments.md). These
+   environments are automatically destroyed when the associated merge request is
+   closed.
+2. Each commit to `main` triggers an automated deployment to staging using a
+   [static GitLab environment](https://docs.gitlab.com/ee/ci/environments/#create-a-static-environment).
+3. Each commit to `main` also creates a job for an automated deployment to
+   production, also using a static environment. However this job requires a
+   [manual trigger](https://docs.gitlab.com/ee/ci/environments/#configure-manual-deployments)
+   before it will start.
 
 To get started, just copy `.gitlab-ci.yml.sample` to `.gitlab-ci.yml` and amend
 the environment names and paths to match the environments in your configuration.
@@ -212,14 +212,18 @@ Unfortunately, this is a paid feature and the only real alternative is to use a
     separate service account that only belongs to your configuration project and
     issue a personal access token from that account instead.
 
-
 ## GitHub CI/CD
 
 For site-specific configuration repositories hosted on GitHub, `azimuth-config` provides two sample workflows
 for automated deployments to a test or staging environment
-([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-staging.yml.sample))
+([example workflow](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.github-deploy-staging.yml.sample))
 and manually-triggered deployment to a production environment
-([example workflow](https://github.com/stackhpc/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)).
+([example workflow](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)).
 These can be used with [GitHub Actions](https://docs.github.com/en/actions) to mimic some of the GitLab
 functionality described above. Each sample file contains a top-level comment describing how to tailor these
 workflows to a site-specific configuration repository.
+
+An additional [upgrade-check](https://github.com/stackhpc/azimuth-config/blob/stable/.github-upgrade-check.yml.sample)
+workflow is included which will regularly check for new upstream azimuth-config releases and automatically create a
+pull request in the downstream azimuth-config repository when a new upstream version is available. See the comment
+at the top of the sample workflow file for more details.

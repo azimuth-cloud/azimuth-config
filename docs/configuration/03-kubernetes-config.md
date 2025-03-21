@@ -130,8 +130,9 @@ etcd is extremely sensitive to write latency.
 
 Azimuth is able to configure Kubernetes nodes, both for the HA cluster and tenant clusters, so
 that etcd is on a separate block device. This block device can be of a different volume type to
-the root disk, allowing efficient use of SSD-backed storage. When supported by the flavor, the
-etcd block device can also use local disk even if the root volume is from Cinder.
+the root disk, allowing efficient use of SSD-backed storage. When the flavor has an ephemeral storage
+allocation, and the ephemeral storage capacity is at least as large as the desired etcd block device
+size, the etcd block device can also use local disk even if the root volume is from Cinder.
 
 !!! tip  "Use local disk for etcd whenever possible"
 

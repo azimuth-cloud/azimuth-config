@@ -9,7 +9,12 @@ azimuth_secret_key: "<some secret key>"
 !!! tip
 
     This key should be a long, random string - at least 32 bytes (256 bits) is recommended.
-    A suitable key can be generated using `openssl rand -hex 32`.
+
+    `azimuth-config` includes a utility for generating secrets for an environment:
+
+    ```sh
+    ./bin/generate-secrets [--force] <environment-name>
+    ```
 
 !!! danger
 
