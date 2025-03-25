@@ -40,6 +40,7 @@ nav:
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
+      - debugging/recovery-of-seed.md
       - debugging/access-ha.md
       - debugging/using-k9s.md
       - debugging/access-monitoring.md
