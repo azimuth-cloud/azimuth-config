@@ -49,7 +49,7 @@ else
 fi
 
 run_apt update
-run_apt install -y -t 'o=LP-PPA-mozillateam' firefox
+run_apt install -y -t 'o=LP-PPA-mozillateam' firefox-esr
 
 pip install -U pip
 pip install -r requirements.txt
