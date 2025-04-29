@@ -67,6 +67,10 @@ azimuth_apps_enabled: yes
 azimuth_kubernetes_enabled: yes
 azimuth_clusters_enabled: yes
 
+# Indicates whether to install FluxCD on management cluster (required to install Flux based
+# addons)
+flux_enabled: false
+
 # The base domain for Azimuth ingress resources
 # This should be set by the concrete environment
 ingress_base_domain: "{{ undef(hint = 'ingress_base_domain is required') }}"
