@@ -75,7 +75,7 @@ settings = deep_merge(
                 "release_namespace": "azimuth",
             },
             "coral-credits": {
-                "release_namespace": "coral-credits",
+                "release_namespace": "azimuth",
             },
             "cluster-api-addon-provider": {
                 "release_namespace": "capi-addon-system",
