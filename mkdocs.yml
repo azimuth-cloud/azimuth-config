@@ -41,6 +41,7 @@ nav:
       - debugging/index.md
       - debugging/access-k3s.md
       - debugging/access-ha.md
+      - debugging/using-k9s.md
       - debugging/access-monitoring.md
       - debugging/zenith-services.md
       - debugging/consul.md

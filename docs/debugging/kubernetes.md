@@ -121,7 +121,7 @@ NAME                                          CLUSTER  REPLICAS   READY   UPDATE
 machinedeployment.cluster.x-k8s.io/demo-sm0   demo     1          1       1         0             Running   11d   v1.24.2
 
 NAME                            PHASE         AGE   VERSION
-cluster.cluster.x-k8s.io/demo   Provisioned   11d   
+cluster.cluster.x-k8s.io/demo   Provisioned   11d
 
 NAME                                                CLUSTER  NODENAME                            PROVIDERID                                          PHASE     AGE   VERSION
 machine.cluster.x-k8s.io/demo-control-plane-7p8zv   demo     demo-control-plane-7d76d0be-z6dm8   openstack:///f687f926-3cee-4550-91e5-32c2885708b0   Running   11d   v1.24.2
@@ -133,7 +133,7 @@ NAME                                                                   CLUSTER  
 kubeadmcontrolplane.controlplane.cluster.x-k8s.io/demo-control-plane   demo     true          true                   3          3       3         0             11d   v1.24.2
 
 NAME                                                    CLUSTER  READY   NETWORK                                SUBNET                                 BASTION IP
-openstackcluster.infrastructure.cluster.x-k8s.io/demo   demo     true    4b6b2722-ee5b-40ec-8e52-a6610e14cc51   73e22c49-10b8-4763-af2f-4c0cce007c82   
+openstackcluster.infrastructure.cluster.x-k8s.io/demo   demo     true    4b6b2722-ee5b-40ec-8e52-a6610e14cc51   73e22c49-10b8-4763-af2f-4c0cce007c82
 
 NAME                                                                                 CLUSTER  INSTANCESTATE   READY   PROVIDERID                                          MACHINE
 openstackmachine.infrastructure.cluster.x-k8s.io/demo-control-plane-7d76d0be-d2mcr   demo     ACTIVE          true    openstack:///ea91f79a-8abb-4cb9-a2ea-8f772568e93c   demo-control-plane-9skvh
@@ -165,6 +165,52 @@ kubectl -n capi-kubeadm-bootstrap-system logs deploy/capi-kubeadm-bootstrap-cont
 kubectl -n capi-kubeadm-control-plane-system logs deploy/capi-kubeadm-control-plane-controller-manager
 kubectl -n capo-system logs deploy/capo-controller-manager
 kubectl -n capi-addon-system logs deploy/cluster-api-addon-provider
+```
+
+### Recovering clusters stuck in failed state after network disruption
+
+If the underlying cloud infrastructure has undergone maintenance or suffered
+from temporary networking problems, clusters can get stuck in a 'Failed' state
+even after the network is recovered and the cluster is otherwise fully
+functional.
+This is can happen when `failureMessage` and `failureReason` are set, which
+Cluster API mistakenly interprets as an unrecoverable error and therefore
+changes the cluster's status to `Failed`. There are ongoing discussions in the
+Kubernetes community about resolving this mistaken interpretation of transient
+networking errors but for now this failed status must be manually cleared.
+
+If you think this is the case, you can check for affected clusters with the following command:
+
+```command  title="On the K3s node, targetting the HA cluster if deployed"
+$ kubectl get cluster.cluster.x-k8s.io --all-namespaces -o json | jq -r '.items[] | "\(.metadata.name): \(.status.failureMessage) \(.status.failureReason)"'
+```
+
+Clusters where one or both of the `failure{Message,Reason}` fields is not
+`null` are affected.
+You can reset the status for an individual cluster by updating removing the
+failure message and reason fields using
+`kubectl edit --subresource=status clusters.cluster.x-k8s.io/<cluster-name>`.
+Alternatively, you can apply a patch to all workload clusters at once using the
+following command:
+
+```command  title="On the K3s node, targetting the HA cluster if deployed"
+# Shell command to extract the list of failed clusters and generate the required `kubectl patch` command for each one
+$ kubectl get cluster.cluster.x-k8s.io --all-namespaces -o json \
+| jq -r '.items[] | select(.status.failureMessage or .status.failureReason) | "kubectl patch cluster.cluster.x-k8s.io \(.metadata.name) -n \(.metadata.namespace) --type=merge --subresource=status -p '\''{\"status\": {\"failureMessage\": null, \"failureReason\": null}}'\''"'
+kubectl patch cluster.cluster.x-k8s.io demo1 -n az-demo --type=merge --subresource=status -p '{"status": {"failureMessage": null, "failureReason": null}}'
+kubectl patch cluster.cluster.x-k8s.io demo2 -n az-demo --type=merge --subresource=status -p '{"status": {"failureMessage": null, "failureReason": null}}'
+kubectl patch cluster.cluster.x-k8s.io demo3 -n az-demo --type=merge --subresource=status -p '{"status": {"failureMessage": null, "failureReason": null}}'
+kubectl patch cluster.cluster.x-k8s.io demo4 -n az-demo --type=merge --subresource=status -p '{"status": {"failureMessage": null, "failureReason": null}}'
+
+# Modification of the previous command which pipes the output into `sh` so that the `kubectl patch` commands are executed to fix the failed clusters
+$ kubectl get cluster.cluster.x-k8s.io --all-namespaces -o json \
+| jq -r '.items[] | select(.status.failureMessage or .status.failureReason) | "kubectl patch cluster.cluster.x-k8s.io \(.metadata.name) -n \(.metadata.namespace) --type=merge --subresource=status -p '\''{\"status\": {\"failureMessage\": null, \"failureReason\": null}}'\''"' \
+| sh
+cluster.cluster.x-k8s.io/demo1 patched
+cluster.cluster.x-k8s.io/demo2 patched
+cluster.cluster.x-k8s.io/demo3 patched
+cluster.cluster.x-k8s.io/demo4 patched
+
 ```
 
 ## Accessing tenant clusters

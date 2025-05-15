@@ -153,3 +153,8 @@ git push --set-upstream origin upgrade/$RELEASE_TAG
 
 You can now open a merge (or pull) request proposing the upgrade to your `main` branch
 that can be reviewed like any other.
+
+Once the upgrade branch has been merged into your `main` branch, you can follow the
+steps for [Activating an environment](../deployment/index.md#activating-an-environment),
+and [Deploying Azimuth](../deployment/index.md#deploying-an-environment) to deploy the
+upgrade.
