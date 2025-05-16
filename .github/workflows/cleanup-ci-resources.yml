@@ -1,0 +1,84 @@
+---
+name: Clean up stale CI resources
+on:
+  schedule:
+    # Every 2 hours at 8 minutes past
+    - cron: '8 0/2 * * *'
+  workflow_dispatch:
+    inputs:
+      delete-resources:
+        type: boolean
+        description: "Delete resources older than 6h"
+        required: true
+      delete-all-keypairs:
+        type: boolean
+        description: "Delete all CI user keypairs"
+        required: true
+      
+permissions: {}
+
+jobs:
+  ci-cleanup:
+    strategy:
+      matrix:
+        target-cloud: [arcus, leafcloud]
+    name: Clean up stale CI resources
+    if: github.repository == 'azimuth-cloud/azimuth-config'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+      - name: Generate clouds.yaml
+        run: |
+          cat << EOF > clouds.yaml
+          ${{ secrets.OS_CLOUDS }}
+          EOF
+
+      - name: Install OpenStack client
+        run: |
+          pip install python-openstackclient
+
+      - name: Clean up instances and attached volumes over 6 hours old
+        if: ${{ github.event_name == 'schedule' || inputs.delete-resources }}
+        run: |
+          result=0
+          changes_before=$(date -Imin -d -6hours)
+          for status in ACTIVE BUILD ERROR SHUTOFF; do
+              for instance in $(openstack server list --unlocked --format value --column ID --changes-before $changes_before --status $status); do
+                  echo "Cleaning up $status instance $instance"
+                  openstack server show $instance
+                  echo "Getting volumes for instance $instance"
+                  volumes=$(openstack server volume list -f value -c "Volume ID" $instance)
+                  keypair=$(openstack server show $instance -f value -c key_name)
+                  if ! openstack server delete $instance; then
+                      echo "Failed to delete $status instance $instance"
+                      result=1
+                  fi
+                  echo "Deleting keypair for instance $instance"
+                  # This shouldn't fail, but might if the keypair is in-use elsewhere
+                  openstack keypair delete $keypair || true
+                  for volume in $volumes; do
+                    echo "Cleaning up volume $volume from instance $instance"
+                    openstack volume show $volume
+                    if ! openstack volume delete $volume; then
+                      echo "Failed to delete volume $volume"
+                      result=1
+                    fi
+                  done
+              done
+          done
+          exit $result
+        env:
+          OS_CLOUD: ${{ matrix.target-cloud }}
+        
+      - name: Clean up all SSH keypairs
+        if: ${{ inputs.delete-all-keypairs }}
+        run: |
+          for keypair in $(openstack keypair list --format value -c Name); do
+            openstack keypair delete $keypair
+            echo "Deleted keypair $keypair"
+          done
+        env:
+          OS_CLOUD: ${{ matrix.target-cloud }}
