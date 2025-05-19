@@ -37,6 +37,8 @@ nav:
       - deployment/index.md
       - deployment/automation.md
       - deployment/testing.md
+  - Operations:
+      - operations/maintenance.md
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
