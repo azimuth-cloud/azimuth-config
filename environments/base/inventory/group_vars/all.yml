@@ -156,7 +156,7 @@ __os_auth_url: >-
   {{-
     lookup('file', __os_clouds_file) |
       from_yaml |
-      json_query('clouds.' + __os_cloud + '.auth.auth_url') |
+      json_query('clouds.' + '"%s"' % __os_cloud + '.auth.auth_url') |
       trim('/')
   }}
 azimuth_openstack_auth_url: "{{ __os_auth_url.removesuffix('/v3') }}/v3"
