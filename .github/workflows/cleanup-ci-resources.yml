@@ -77,8 +77,10 @@ jobs:
         if: ${{ inputs.delete-all-keypairs }}
         run: |
           for keypair in $(openstack keypair list --format value -c Name); do
-            openstack keypair delete $keypair
-            echo "Deleted keypair $keypair"
+            if [[ "$keypair" =~ ^azimuth- ]]; then
+              openstack keypair delete $keypair
+              echo "Deleted keypair $keypair"
+            fi
           done
         env:
           OS_CLOUD: ${{ matrix.target-cloud }}
