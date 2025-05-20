@@ -77,7 +77,7 @@ jobs:
         if: ${{ inputs.delete-all-keypairs }}
         run: |
           for keypair in $(openstack keypair list --format value -c Name); do
-            if [[ "$keypair" =~ ^azimuth- ]]; then
+            if [[ "$keypair" =~ ^azimuth- || "$keypair" =~ ^packer_ ]]; then
               openstack keypair delete $keypair
               echo "Deleted keypair $keypair"
             fi
