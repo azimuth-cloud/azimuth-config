@@ -14,14 +14,21 @@ on:
         type: boolean
         description: "Delete all CI user keypairs"
         required: true
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
+
       
 permissions: {}
 
 jobs:
   ci-cleanup:
-    strategy:
-      matrix:
-        target-cloud: [arcus, leafcloud]
     name: Clean up stale CI resources
     if: github.repository == 'azimuth-cloud/azimuth-config'
     runs-on: ubuntu-latest
@@ -71,7 +78,7 @@ jobs:
           done
           exit $result
         env:
-          OS_CLOUD: ${{ matrix.target-cloud }}
+          OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
         
       - name: Clean up all SSH keypairs
         if: ${{ inputs.delete-all-keypairs }}
@@ -83,4 +90,4 @@ jobs:
             fi
           done
         env:
-          OS_CLOUD: ${{ matrix.target-cloud }}
+          OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
