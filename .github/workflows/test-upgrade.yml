@@ -13,6 +13,14 @@ on:
           - ""
           - arcus
           - leafcloud
+      from-ref:
+        description: >-
+          The git ref to use for the initial deployment.
+        type: string
+      to-ref:
+        description: >-
+          The git ref to test an upgrade to.
+        type: string
 
 jobs:
   # Tests an Azimuth upgrade from the current latest release to the code under test
@@ -24,17 +32,11 @@ jobs:
   test_upgrade:
     runs-on: ubuntu-latest
     steps:
-      - name: Get latest tag
-        id: latest-tag
-        run: |
-          set -eo pipefail
-          TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
-          echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout latest tag
+      - name: Checkout the initial git ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          ref: ${{ inputs.from-ref }}
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
@@ -74,7 +76,7 @@ jobs:
         # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
         timeout-minutes: 180
 
-      - name: Provision Azimuth at latest tag
+      - name: Provision Azimuth
         uses: ./.github/actions/provision
 
       - name: Generate test suite
@@ -109,6 +111,7 @@ jobs:
         with:
           # Make sure not to remove working directories
           clean: false
+          ref: ${{ inputs.to-ref }}
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies
