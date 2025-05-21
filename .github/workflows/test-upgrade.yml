@@ -43,7 +43,7 @@ jobs:
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
-          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          ref: ${{ inputs.from-ref }}
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-upgrade
