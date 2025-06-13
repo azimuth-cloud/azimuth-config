@@ -13,6 +13,14 @@ on:
           - ""
           - arcus
           - leafcloud
+      from-ref:
+        description: >-
+          The git ref to use for the initial deployment.
+        type: string
+      to-ref:
+        description: >-
+          The git ref to test an upgrade to.
+        type: string
 
 jobs:
   # Tests an Azimuth upgrade from the current latest release to the code under test
@@ -24,24 +32,18 @@ jobs:
   test_upgrade:
     runs-on: ubuntu-latest
     steps:
-      - name: Get latest tag
-        id: latest-tag
-        run: |
-          set -eo pipefail
-          TAG_NAME="$(curl -fsSL "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r '.tag_name')"
-          echo "tag-name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout latest tag
+      - name: Checkout the initial git ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          ref: ${{ inputs.from-ref }}
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
         with:
           os-clouds: ${{ secrets.OS_CLOUDS }}
           repository: ${{ github.repository }}
-          ref: ${{ steps.latest-tag.outputs.tag-name }}
+          ref: ${{ inputs.from-ref }}
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-upgrade
@@ -74,7 +76,7 @@ jobs:
         # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
         timeout-minutes: 180
 
-      - name: Provision Azimuth at latest tag
+      - name: Provision Azimuth
         uses: ./.github/actions/provision
 
       - name: Generate test suite
@@ -86,6 +88,28 @@ jobs:
           ansible-playbook azimuth_cloud.azimuth_ops.generate_tests \
             -e @extra-vars.yml \
             -e generate_tests_include_upgrade_tests=true
+
+      - name: Downgrade installed firefox browser version
+        shell: bash
+        # Based on https://support.mozilla.org/en-US/kb/install-firefox-linux
+        run: |
+          set -e
+          # Import Mozilla repo key
+          sudo install -d -m 0755 /etc/apt/keyrings
+          wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+          # Check fingerprint
+          if [[ $(gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | grep 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3) ]]; then
+            echo "Fingerprint matches"
+          else
+            echo "Mozilla repo fingerprint doesn't match expected"
+            exit 1
+          fi
+          # Add repo to sources
+          echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
+          # Install Firefox extended support release
+          sudo apt update
+          sudo apt remove firefox # Uninstall default version (1.136.0)
+          sudo apt install -y firefox-esr # Install older version (1.128)
 
       - name: Create test platforms
         id: tests-create
@@ -109,6 +133,7 @@ jobs:
         with:
           # Make sure not to remove working directories
           clean: false
+          ref: ${{ inputs.to-ref }}
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies
