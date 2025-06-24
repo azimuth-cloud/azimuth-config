@@ -11,13 +11,13 @@ infra_external_network_id: >-
   }}
 
 # Pick suitable flavors from the available flavors
-#   Only consider flavors with at least 2 CPUs and 20GB disk
+#   Only consider flavors with at least 4 CPUs and 20GB disk
 __os_flavors: >-
   {{
     lookup('pipe', 'openstack flavor list -f json') |
       from_json |
       selectattr('Disk', '>=', 20) |
-      selectattr('VCPUs', '>=', 2)
+      selectattr('VCPUs', '>=', 4)
   }}
 
 # For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
