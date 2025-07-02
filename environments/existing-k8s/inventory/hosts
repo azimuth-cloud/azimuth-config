@@ -1,0 +1,6 @@
+# local setup for testing, replace <ubuntu-big> with host@ip or the name of a host in your ssh config file 
+[azimuth_deploy]
+ubuntu-big
+
+[k3s]
+ubuntu-big

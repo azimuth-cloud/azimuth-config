@@ -1,0 +1,35 @@
+---
+
+kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
+
+infra_external_ip: "172.16.1.136"
+ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
+
+
+#infra_external_network_id: "{{ infra_external_ip }}"
+# Use the same external network as we use for the infra
+#azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
+
+# Disable HTTPS and certificate verification everywhere to avoid certificate issues
+ingress_tls_enabled: false #this will probably break things 
+
+azimuth_current_cloud_name: demo
+
+# Disabling things that will not work without openstack
+azimuth_clusters_enabled: no 
+
+azimuth_kubernetes_enabled: no
+
+azimuth_capi_operator_chart_version: 0.11.1-dev.0.fix-oidc-users-rbac.4
+azimuth_identity_operator_chart_version: 0.8.8-dev.0.feat-additional-crds.15
+
+azimuth_capi_operator_release_overrides:
+  config:
+    identity:
+      oidcEnabled: true
+flux_enabled: true
+azimuth_authentication_type: oidc
+##ingress_tls_enabled: true
+
+
+azimuth_chart_version: 0.15.0
