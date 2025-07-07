@@ -1,12 +1,21 @@
+---
 # This workflow proposes updates to the dependencies that dependabot cannot
 name: Update dependencies
+
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  security-events: write
+  id-token: write
 
 on:
   # Allow manual executions
   workflow_dispatch:
   # Run nightly
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 
 jobs:
   propose_github_release_updates:

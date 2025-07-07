@@ -21,16 +21,17 @@ for the project into which Azimuth will be deployed.
 The following fragment demonstrates how to layer inventories in the `ansible.cfg` file for
 a highly-available (HA) deployment:
 
-```ini  title="ansible.cfg"
+```ini title="ansible.cfg"
 [defaults]
 inventory = ../base/inventory,../ha/inventory,./inventory
 ```
 
 For a single node deployment, replace the `ha` environment with `singlenode`.
 
+<!-- prettier-ignore-start -->
 !!! tip
-
     If the same variable is defined in multiple inventories, the right-most inventory takes precedence.
+<!-- prettier-ignore-end -->
 
 ## Available mixin environments
 
@@ -59,7 +60,7 @@ and flavor IDs or the location of an ACME server.
 
 A typical layering of inventories might be:
 
-```
+```text
 base -> singlenode -> site -> development
 base -> ha -> site -> staging
 base -> ha -> site -> production
@@ -71,7 +72,7 @@ base -> ha -> site -> production
 into the current shell when the environment is activated. This is accomplished by using
 statements of the form:
 
-```bash  title="env"
+```bash title="env"
 MY_VAR="some value"
 ```
 

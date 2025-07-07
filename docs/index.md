@@ -11,7 +11,7 @@ driven by configuration derived from the
 [azimuth-config reference configuration](https://github.com/azimuth-cloud/azimuth-config).
 
 The `azimuth-config` repository is designed to be forked for a specific site and is structured
-into multiple [environments](#environments). This structure allows common configuration to be
+into multiple [environments](environments.md). This structure allows common configuration to be
 shared but overridden where required using composition of environments.
 
 To try out Azimuth on your OpenStack cloud, you can follow [these instructions](./try.md)
@@ -36,8 +36,8 @@ a configuration derived from `azimuth-config`.
 There are two methods that `azimuth-ops` can use to deploy Azimuth and all of its
 dependencies:
 
-  1. Onto a managed single-node [K3s](https://k3s.io/) cluster in an OpenStack project.
-  2. Onto a managed highly-available Kubernetes cluster in an OpenStack project.
+1. Onto a managed single-node [K3s](https://k3s.io/) cluster in an OpenStack project.
+2. Onto a managed highly-available Kubernetes cluster in an OpenStack project.
 
 Option 1 is useful for development or demo deployments, but is not suitable for a production
 deployment.
@@ -49,7 +49,8 @@ is used to provision a single-node K3s cluster that is configured as a
 used to provision a highly-available Kubernetes cluster in the same OpenStack project
 onto which Azimuth is deployed.
 
+<!-- prettier-ignore-start -->
 !!! warning
-
-    Option 2 requires that [Octavia](https://docs.openstack.org/octavia/latest/index.html)
-    is available on the target cloud to provide load-balancers for Azimuth components.
+    Option 2 requires that Octavia is available on the target cloud to provide load-balancers for Azimuth components.
+    See [Octavia](https://docs.openstack.org/octavia/latest/index.html).
+<!-- prettier-ignore-end -->

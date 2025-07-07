@@ -11,13 +11,13 @@
 
 # The image id of an Ubuntu 20.04 image to use for the node
 # By default, a suitable image is uploaded to the target project
-# infra_image_id: "<image id>"
+# infra_image_id: "<image id>"
 
 # The id of the flavor to use for the node
 # For a seed node for an HA cluster, 8GB RAM is fine (maybe even 4GB)
 # For a single node deployment, >= 8GB RAM is recommended
 # By default, the first flavor matching these constraints is selected
-# infra_flavor_id: "<flavor id>"
+# infra_flavor_id: "<flavor id>"
 
 # The size in GB for the data volume
 # This will hold all cluster data, including Kubernetes resources

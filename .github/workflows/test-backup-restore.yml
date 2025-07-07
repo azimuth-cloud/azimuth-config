@@ -1,8 +1,17 @@
+---
 name: Backup and restore test
+
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  id-token: write
 
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
         description: >-
@@ -15,16 +24,20 @@ on:
           - leafcloud
 
 jobs:
-  # Tests that a backup and restore re-adopts all the existing platforms correctly
+  # Tests that a backup and restore re-adopts all the existing platforms
+  # correctly
   #
-  # Note that success() and failure() consider *all previous steps*, and continue-on-failure
-  # prevents the job from being marked as failed if that step fails
-  # This means that in order to get the execution flow that we want while still resulting in a
-  # failed job when required, we need to use step ids and the conclusions of specific steps
+  # Note that success() and failure() consider *all previous steps*, and
+  # continue-on-failure prevents the job from being marked as failed if that
+  # step fails
+  # This means that in order to get the execution flow that we want while still
+  # resulting in a failed job when required, we need to use step ids and the
+  # conclusions of specific steps
   test_backup_restore:
     runs-on: ubuntu-latest
     steps:
-      # We need to check out the code under test first in order to use local actions
+      # We need to check out the code under test first in order to use local
+      # actions
       - name: Checkout code under test
         uses: actions/checkout@v4
 
@@ -38,8 +51,10 @@ jobs:
           install-mode: ha
           environment-prefix: ci-restore
         # GitHub terminates jobs after 6 hours
-        # We don't want jobs to acquire the lock then get timed out before they can finish
-        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        # We don't want jobs to acquire the lock then get timed out before they
+        # can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for
+        # other tasks in the job
         timeout-minutes: 180
 
       - name: Generate S3 credentials for Velero
@@ -48,7 +63,7 @@ jobs:
           source ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           VELERO_S3_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
-          VELERO_S3_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret $VELERO_S3_ACCESS_KEY)"
+          VELERO_S3_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret "$VELERO_S3_ACCESS_KEY")"
           cat >> ci.env <<EOF
           export VELERO_S3_ACCESS_KEY="$VELERO_S3_ACCESS_KEY"
           export VELERO_S3_SECRET_KEY="$VELERO_S3_SECRET_KEY"
@@ -88,8 +103,8 @@ jobs:
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/seed-ssh -- \
-            velero backup create $AZIMUTH_ENVIRONMENT \
-              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
+            velero backup create "$AZIMUTH_ENVIRONMENT" \
+              --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --from-schedule default \
               --wait
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
@@ -126,7 +141,7 @@ jobs:
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ansible-playbook azimuth_cloud.azimuth_ops.restore \
             -e @extra-vars.yml \
-            -e velero_restore_backup_name=$AZIMUTH_ENVIRONMENT
+            -e velero_restore_backup_name="$AZIMUTH_ENVIRONMENT"
         if: ${{ !cancelled() && steps.azimuth-destroy.conclusion == 'success' }}
 
       - name: Verify test platforms post restore
@@ -151,8 +166,8 @@ jobs:
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/seed-ssh -- \
-            velero backup delete $AZIMUTH_ENVIRONMENT \
-              --kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml \
+            velero backup delete "$AZIMUTH_ENVIRONMENT" \
+              --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --confirm
         if: ${{ always() }}
 
@@ -187,5 +202,5 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          openstack ec2 credentials delete $VELERO_S3_ACCESS_KEY
+          openstack ec2 credentials delete "$VELERO_S3_ACCESS_KEY"
         if: ${{ always() }}

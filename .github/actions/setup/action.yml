@@ -1,3 +1,4 @@
+---
 name: Azimuth CI setup
 description: Sets up an environment for running Azimuth CI.
 inputs:
@@ -84,7 +85,8 @@ runs:
       shell: bash
       run: cat > extra-vars.yml <<< "$EXTRA_VARS"
       env:
-        # Use a dummy variable so that Ansible treats the file as YAML even if the input is empty
+        # Use a dummy variable so that Ansible treats the file as YAML
+        # even if the input is empty
         EXTRA_VARS: |
           this_variable_is_never_used: ever
           ${{ inputs.extra-vars }}

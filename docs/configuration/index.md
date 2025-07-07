@@ -9,14 +9,12 @@ configuration that is required or commonly changed.
 For more advanced cases, the role defaults files are extensively documented and can be
 consulted directly.
 
+<!-- prettier-ignore-start -->
 !!! note
+    Make sure you are familiar with the Azimuth and Zenith architectures before continuing.
+    See [Azimuth](https://github.com/azimuth-cloud/azimuth/blob/master/docs/architecture.md) and [Zenith](https://github.com/azimuth-cloud/zenith/blob/main/docs/architecture.md).
 
-    Make sure you are familiar with the
-    [Azimuth](https://github.com/azimuth-cloud/azimuth/blob/master/docs/architecture.md)
-    and
-    [Zenith](https://github.com/azimuth-cloud/zenith/blob/main/docs/architecture.md)
-    architectures before continuing.
-
-    It is assumed that you have already followed the steps in
-    [Setting up a configuration repository](../repository/index.md), and so have an environment for your
-    site that is ready to be configured.
+!!! note
+    It is assumed that you have already followed the steps in setting up a configuration repository, and so have an environment for your site that is ready to be configured.
+    See [Setting up a configuration repository](../repository/index.md).
+<!-- prettier-ignore-end -->

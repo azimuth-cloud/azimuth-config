@@ -1,3 +1,4 @@
+---
 name: Azimuth CI destroy
 description: Destroys an Azimuth CI environment.
 runs:

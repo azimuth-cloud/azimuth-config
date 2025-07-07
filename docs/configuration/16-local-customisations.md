@@ -15,7 +15,7 @@ how to get an account to use with Azimuth, which is out-of-scope for the generic
 
 To change the documentation link, use the following variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_documentation_url: https://docs.example.org/azimuth
 ```
 
@@ -26,7 +26,7 @@ which provides a grid system and several built-in components.
 
 Bootstrap is built to be customisable - please consult the
 [Bootstrap documentation](https://getbootstrap.com/docs/5.3/customize/overview/) for more
-information on how to do this. Several websites also provide free and paid themes for
+information on how to do this. Several sites also provide free and paid themes for
 Bootstrap - by default, Azimuth uses the [Pulse theme](https://bootswatch.com/pulse/) from
 the [Bootswatch project](https://bootswatch.com/).
 
@@ -36,16 +36,20 @@ It is possible to replace the Bootstrap theme completely by pointing to a differ
 compiled CSS file. For example, the following configuration tells Azimuth to use the
 [Zephyr theme from Bootswatch](https://bootswatch.com/zephyr/):
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_theme_bootstrap_css_url: https://bootswatch.com/5/zephyr/bootstrap.css
 ```
-!!! tip
 
-    In order for the theming changes to take effect you may need to do a hard refresh of 
-    the page due to the aggressive nature of CSS caching.
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable code-block-style -->
+!!! tip
+    In order for the theming changes to take effect you may need to do a hard refresh of the page due to the aggressive nature of CSS caching.
 
     Mac: <kbd>⇧ Shift</kbd> + <kbd>⌘ Command</kbd> + <kbd>R</kbd>
-    Windows: <kbd> ctrl</kbd> + <kbd>⇧ Shift</kbd> + <kbd>R</kbd> / <kbd> ctrl</kbd> + <kbd> F5</kbd>
+
+    Windows: <kbd> ctrl</kbd> + <kbd>⇧ Shift</kbd> + <kbd>R</kbd> or <kbd> ctrl</kbd> + <kbd> F5</kbd>
+<!-- markdownlint-enable code-block-style -->
+<!-- prettier-ignore-end -->
 
 ### Injecting custom CSS
 
@@ -57,7 +61,7 @@ In particular, custom CSS can be used to add a logo to the navigation bar. For e
 the following snippet adds the Azimuth logo to the navigation bar instead of the cloud
 label:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_theme_custom_css: |
   .navbar-brand {
     background-size: auto 100%;
@@ -70,24 +74,17 @@ azimuth_theme_custom_css: |
   }
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-
-    The image must already be available somewhere on the internet - Azimuth does not
-    currently have support for hosting the logo itself.
-
-    The `height` and `width` should be adjusted to match the aspect ratio of your logo
-    and the desired size in the Azimuth UI.
+    The image must already be available somewhere on the internet - Azimuth does not currently have support for hosting the logo itself.
+    The `height` and `width` should be adjusted to match the aspect ratio of your logo and the desired size in the Azimuth UI.
 
 !!! warning
-
-    If you are using the default Pulse theme, make sure to include the following at the
-    top of your custom CSS:
-
+    If you are using the default Pulse theme, make sure to include the following at the top of your custom CSS:
     ```css
     @import url(/pulse-overrides.css);
     ```
-
     This is because Azimuth has some Pulse-specific tweaks that you will need to keep.
-    For more details, see the
-    [CSS file](https://github.com/azimuth-cloud/azimuth/blob/master/ui/assets/pulse-overrides.css),
-    which has comments indicating why these are necessary.
+    For more details, see the CSS file, which has comments indicating why these are necessary.
+    See [CSS file](https://github.com/azimuth-cloud/azimuth/blob/master/ui/assets/pulse-overrides.css).
+<!-- prettier-ignore-end -->

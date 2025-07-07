@@ -1,4 +1,6 @@
-# Set the install_mode variable that is used by the provision playbook to select a code path
+---
+# Set the install_mode variable that is used by the provision playbook to
+# select a code path
 install_mode: ha
 
 # Give the seed node a name corresponding to the environment
@@ -7,6 +9,6 @@ infra_name: "azimuth-{{ azimuth_environment }}-seed"
 capi_cluster_release_name: "azimuth-{{ azimuth_environment }}"
 
 # By default, use a base domain from a dynamic DNS service derived from the FIP
-# assigned to the ingress controller's load balancer
+# assigned to the ingress controller's load balancer
 ingress_base_domain: >-
   apps.{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io

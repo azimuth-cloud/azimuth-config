@@ -7,31 +7,26 @@ Cluster API management cluster for the HA cluster that actually runs Azimuth.
 
 In both cases, the K3s node is deployed using Terraform and the IP address and SSH key
 for accessing the node are in the Terraform state for the environment. The `azimuth-config`
-repository contains a utility script - 
+repository contains a utility script -
 [seed-ssh](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/seed-ssh) - that will
 extract these details from the Terraform state for the active environment and use them to
 execute an SSH command to access the provisioned node.
 
-!!! warning  "Accessing an environment deployed using automation"
-
-    If you are using `seed-ssh` to access an environment that is deployed using
-    [automation](../deployment/automation.md), you still need to make sure that the
-    Python and Ansible dependencies are installed in order for the script to work:
-
+<!-- prettier-ignore-start -->
+!!! warning "Accessing an environment deployed using automation"
+    If you are using `seed-ssh` to access an environment that is deployed using automation, you still need to make sure that the Python and Ansible dependencies are installed in order for the script to work:
     ```sh
     # Ensure that the Python venv is set up
     ./bin/ensure-venv
-
     # Activate the target environment
     source ./bin/activate my-site
-
     # Install Ansible dependencies
     ansible-galaxy install -f -r requirements.yml
-
     # Execute the seed-ssh script
     ./bin/seed-ssh
     ```
-
+    See section on [automation](../deployment/automation.md).
+<!-- prettier-ignore-end -->
 
 Once on the node, you can use `kubectl` to inspect the state of the Kubernetes cluster. It
 is already configured with the correct kubeconfig file:

@@ -3,7 +3,7 @@
 Cluster-as-a-Service (CaaS) in Azimuth allows self-service platforms to be provided to
 users that are deployed and configured using a combination of [Ansible](https://www.ansible.com/),
 [OpenTofu](https://opentofu.org/) and [Packer](https://www.packer.io/), stored in
-a [git](https://git-scm.com/) repository.
+a [Git](https://git-scm.com/) repository.
 
 CaaS support in Azimuth is implemented by the
 [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator).
@@ -15,21 +15,21 @@ that it exposes:
 
 `clustertypes.caas.azimuth.stackhpc.com`
 : A cluster type represents an available appliance, e.g. "workstation" or "Slurm cluster".
-  This CRD defines the git repository, version and playbook that will be used to deploy
-  clusters of the specified type, along with metadata for generating the UI and any
-  global variable such as image UUIDs.
+This CRD defines the Git repository, version and playbook that will be used to deploy
+clusters of the specified type, along with metadata for generating the UI and any
+global variable such as image UUIDs.
 
 `clusters.caas.azimuth.stackhpc.com`
 : A cluster represents the combination of a cluster type with values collected from the user.
-  The CaaS operator tracks the status of the `ansible-runner` executions for the cluster and
-  reports it on the CRD for Azimuth to consume.
+The CaaS operator tracks the status of the `ansible-runner` executions for the cluster and
+reports it on the CRD for Azimuth to consume.
 
 ## Disabling CaaS
 
 CaaS support is enabled by default in the reference configuration. To disable it, just
 set:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_clusters_enabled: no
 ```
 
@@ -62,7 +62,7 @@ Zenith.
 
 To disable the Slurm appliance, use the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_stackhpc_slurm_appliance_enabled: no
 ```
 
@@ -75,7 +75,7 @@ stack is also available, exposed via Zenith.
 
 To disable the Linux Workstation appliance, use the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_workstation_enabled: no
 ```
 
@@ -87,7 +87,7 @@ compliant repository. A simple monitoring stack is also available, exposed via Z
 
 To disable the repo2docker appliance, use the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_repo2docker_enabled: no
 ```
 
@@ -100,11 +100,11 @@ with both the R-studio and monitoring services exposed via Zenith.
 
 To disable the R-studio appliance, use the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_rstudio_enabled: no
 ```
 
-## Custom appliances
+## Custom appliances
 
 It is possible to make custom appliances available in the Azimuth interface for users to deploy.
 For more information on building a CaaS-compatible appliance, please see the
@@ -113,7 +113,7 @@ For more information on building a CaaS-compatible appliance, please see the
 Custom appliances can be easily specified in your Azimuth configuration. For example,
 the following will configure the sample appliance as an available cluster type:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_cluster_templates_overrides:
   sample-appliance:
     # Access control annotations
@@ -135,7 +135,8 @@ azimuth_caas_cluster_templates_overrides:
         cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
 ```
 
-!!! info  "Access control"
-
-    See [Access control](./13-access-control.md) for more details on the access
-    control annotations.
+<!-- prettier-ignore-start -->
+!!! info "Access control"
+    See Access control for more details on the access control annotations.
+    [Access control](./13-access-control.md).
+<!-- prettier-ignore-end -->

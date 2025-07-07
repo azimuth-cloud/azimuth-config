@@ -34,16 +34,12 @@ git push --set-upstream origin main
 You now have an independent copy of the `azimuth-config` repository that has a link back
 to the source repository via the `upstream` remote.
 
-!!! tip  "Branch protection rules"
+<!-- prettier-ignore-start -->
+!!! tip "Branch protection rules"
+    It is a good idea to apply branch protection rules to the `main` branch that enforce that all changes are made via a merge (or pull) request. This should ensure that changes are not accidentally pushed into production without being reviewed.
+<!-- prettier-ignore-end -->
 
-    It is a good idea to apply branch protection rules to the `main` branch that enforce
-    that all changes are made via a merge (or pull) request. This should ensure that changes
-    are not accidentally pushed into production without being reviewed.
-
-    Instructions are available on how to set this up for
-    [GitHub](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule) or
-    [GitLab](https://docs.gitlab.com/ee/user/project/protected_branches.html).
-
+Instructions are available on how to set this up for [GitHub](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule) or [GitLab](https://docs.gitlab.com/ee/user/project/protected_branches.html).
 
 ## Creating a new environment
 
@@ -54,25 +50,21 @@ to do this is to copy the `example` environment as a starting point:
 cp -r ./environments/example ./environments/my-site
 ```
 
-!!! tip  "Copy instead of rename"
-
-    Copying the `example` environment, rather than just renaming it, avoids conflicts
-    when synchronising changes from the `azimuth-config` repository where the `example`
-    environment has changed.
+<!-- prettier-ignore-start -->
+!!! tip "Copy instead of rename"
+    Copying the `example` environment, rather than just renaming it, avoids conflicts when synchronising changes from the `azimuth-config` repository where the `example` environment has changed.
+<!-- prettier-ignore-end -->
 
 Once you have your new environment, you can make the required changes for your site.
 
-!!! tip  "Generating secrets"
-
-    `azimuth-config` includes a utility that can be used to generate secrets for your
-    environment:
-
+<!-- prettier-ignore-start -->
+!!! tip "Generating secrets"
+    azimuth-config includes a utility that can be used to generate secrets for your environment:
     ```sh
     ./bin/generate-secrets --force my-site
     ```
-
-    `--force` is required because the `example` environment includes an example secrets
-    file that we want to overwrite with the generated secrets.
+    `--force` is required because the `example` environment includes an example secrets file that we want to overwrite with the generated secrets.
+<!-- prettier-ignore-end -->
 
 As you make changes to your environment, remember to commit and push them regularly:
 
@@ -88,10 +80,11 @@ Once you have an environment deployed, it is recommended to use a
 [feature branch workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
 when making changes to your configuration repository.
 
+<!-- prettier-ignore-start -->
 !!! tip "Automated deployments"
-
-    The feature branch workflow works particularly well when you use a
-    [continuous delivery approach to automate deployments](../deployment/automation.md).
+    The feature branch workflow works particularly well when you use a continuous delivery approach to automate deployments.
+    More information on [automation](../deployment/automation.md).
+<!-- prettier-ignore-end -->
 
 In this workflow, the required changes are made on a branch in the configuration repository.
 Once you are happy with the changes, you create a merge (or pull) request proposing the
@@ -106,16 +99,15 @@ When a new Azimuth release becomes available, you will need to synchronise the c
 from `azimuth-config` into your site configuration repository in order to pick up new
 component versions, upgraded dependencies and new images.
 
-!!! info  "Choosing a release"
+<!-- prettier-ignore-start -->
+!!! info "Choosing a release"
+    The available releases, with associated release notes, can be reviewed on the Azimuth releases page.
+    See [Azimuth releases page](https://github.com/azimuth-cloud/azimuth-config/releases).
 
-    The available releases, with associated release notes, can be reviewed on the
-    [Azimuth releases page](https://github.com/azimuth-cloud/azimuth-config/releases).
-
-!!! tip  "Automating upgrades"
-
-    If you have automated deployments, which is recommended for a production installation,
-    this process
-    [can also be automated](../deployment/automation.md#automated-synchronisation-of-upstream-changes).
+!!! tip "Automating upgrades"
+    If you have automated deployments, which is recommended for a production installation, this process can also be automated.
+    More information on [automated deployments](../deployment/automation.md).
+<!-- prettier-ignore-end -->
 
 To upgrade your Azimuth configuration to a new release, use the following steps to create
 a new branch containing the upgrade:
@@ -138,11 +130,10 @@ git merge $RELEASE_TAG
 At this point, you will need to fix any conflicts where you have made changes to the same
 files that have been changed by `azimuth-config`.
 
-!!! danger  "Avoiding conflicts"
-
-    To avoid conflicts, you should **never** directly modify any files that come from
-    `azimuth-config` - instead you should use the environment layering to override
-    variables where required, and copy files if necessary.
+<!-- prettier-ignore-start -->
+!!! danger "Avoiding conflicts"
+    To avoid conflicts, you should **never** directly modify any files that come from azimuth-config - instead you should use the environment layering to override variables where required, and copy files if necessary.
+<!-- prettier-ignore-end -->
 
 Once any conflicts have been resolved, you can commit and push the changes:
 

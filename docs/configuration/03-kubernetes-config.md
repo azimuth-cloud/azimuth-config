@@ -22,7 +22,7 @@ If required, e.g. for
 [custom Kubernetes templates](./10-kubernetes-clusters.md#custom-cluster-templates), the
 IDs of these images can be referenced using the `community_images_image_ids` variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 kube_1_25_image_id: "{{ community_images_image_ids.kube_1_25 }}"
 kube_1_26_image_id: "{{ community_images_image_ids.kube_1_26 }}"
 kube_1_27_image_id: "{{ community_images_image_ids.kube_1_27 }}"
@@ -49,21 +49,20 @@ azimuth_capi_operator_capi_helm_registry_mirrors:
   docker.io: ["https://docker-hub-mirror.example.org/v2"]
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-
-    If you do not have a Docker Hub mirror available, one can be
-    [deployed as part of an Azimuth deployment](./10-kubernetes-clusters.md#harbor-registry).
+    If you do not have a Docker Hub mirror available, one can be deployed as part of an Azimuth deployment.
+    See [harbor registry](./10-kubernetes-clusters.md#harbor-registry).
     This mirror will be automatically configured for tenant Kubernetes clusters.
-
-    This mirror **cannot** be used for the Azimuth HA cluster as it is deployed on that
-    cluster.
+    This mirror **cannot** be used for the Azimuth HA cluster as it is deployed on that cluster.
+<!-- prettier-ignore-end -->
 
 ## Multiple external networks
 
 In the case where multiple external networks are available, you must tell Azimuth which one
 to use:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # The ID of the external network to use
@@ -74,9 +73,10 @@ capi_cluster_external_network_id: "<network id>"
 azimuth_capi_operator_external_network_id: "<network id>"
 ```
 
+<!-- prettier-ignore-start -->
 !!! note
-
-    This does **not** currently respect the `portal-external` tag.
+    This does **not** currently respect the "portal-external" tag.
+<!-- prettier-ignore-end -->
 
 ## Volume-backed instances
 
@@ -86,22 +86,20 @@ Azimuth deployment and for tenant clusters.
 If flavors with large root disks are not available on the target cloud, it is possible
 to use volume-backed instances instead.
 
-!!! danger  "etcd and spinning disks"
+<!-- prettier-ignore-start -->
+!!! danger "etcd and spinning disks"
+    The configuration options in this section should be used subject to the advice in the prerequisites.
+    See [prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes) about using Cinder volumes with Kubernetes.
 
-    The configuration options in this section should be used subject to the advice
-    in the [prerequisites](./01-prerequisites.md#cinder-volumes-and-kubernetes) about
-    using Cinder volumes with Kubernetes.
-
-!!! tip  "etcd on a separate block device"
-
-    If you only have a limited amount of SSD or, even better, local disk, available,
-    consider placing [etcd on a separate block device](#etcd-block-device) to make
-    best use of the limited capacity.
+!!! tip "etcd on a separate block device"
+    If you only have a limited amount of SSD or, even better, local disk, available, consider placing etcd on a separate block device.
+    See [etcd block device](#etcd-configuration) to make best use of the limited capacity.
+<!-- prettier-ignore-end -->
 
 To configure Kubernetes clusters to use volume-backed instances (i.e. use a Cinder
 volume as the root disk), the following variables can be used:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # The size of the root volumes for Kubernetes nodes
@@ -115,13 +113,13 @@ azimuth_capi_operator_capi_helm_root_volume_size: 100
 azimuth_capi_operator_capi_helm_root_volume_type: nvme
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-
     You can see the available volume types using the OpenStack CLI:
-
     ```sh
     openstack volume type list
     ```
+<!-- prettier-ignore-end -->
 
 ## Etcd configuration
 
@@ -134,14 +132,14 @@ the root disk, allowing efficient use of SSD-backed storage. When the flavor has
 allocation, and the ephemeral storage capacity is at least as large as the desired etcd block device
 size, the etcd block device can also use local disk even if the root volume is from Cinder.
 
-!!! tip  "Use local disk for etcd whenever possible"
-
-    Using local disk when possible minises the write latency for etcd and also eliminates
-    network instability as a cause of latency problems.
+<!-- prettier-ignore-start -->
+!!! tip "Use local disk for etcd whenever possible"
+    Using local disk when possible minises the write latency for etcd and also eliminates network instability as a cause of latency problems.
+<!-- prettier-ignore-end -->
 
 The following variables are used to configure the etcd block device for the HA cluster:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Specifies the size of the etcd block device in GB
 # This is typically between 2GB and 10GB - Amazon recommends 8GB for EKS
 # Defaults to 0, meaning etcd stays on the root device
@@ -165,7 +163,7 @@ capi_cluster_etcd_blockdevice_volume_az: nova
 
 The equivalent variables for tenant clusters are:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_capi_helm_etcd_blockdevice_size:
 azimuth_capi_operator_capi_helm_etcd_blockdevice_type:
 azimuth_capi_operator_capi_helm_etcd_blockdevice_volume_type:
@@ -179,17 +177,17 @@ If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
 is enabled, then Kubernetes clusters should be configured to use the OVN provider for
 any load-balancers that are created:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 openstack_loadbalancer_provider: ovn
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-
     You can see the available load-balancer providers using the OpenStack CLI:
-
     ```sh
     openstack loadbalancer provider list
     ```
+<!-- prettier-ignore-end -->
 
 ## Availability zones
 
@@ -201,28 +199,28 @@ specifying the AZs to use, both for the HA cluster and for tenant Kubernetes clu
 
 The default behaviour when scheduling Kubernetes nodes using Cluster API is:
 
-  * *All available AZs* are considered for control plane nodes, and Cluster API will
-    attempt to spread the nodes across multiple AZs, if available.
-  * Worker nodes are scheduled into the `nova` AZ explicitly. If this AZ does not exist,
-    scheduling will fail.
+- _All available AZs_ are considered for control plane nodes, and Cluster API will
+  attempt to spread the nodes across multiple AZs, if available.
+- Worker nodes are scheduled into the `nova` AZ explicitly. If this AZ does not exist,
+  scheduling will fail.
 
 If this default behaviour does not work for your target cloud, the following options are
 available.
 
+<!-- prettier-ignore-start -->
 !!! note
-
-    Cluster API refers to "failure domains" which, in the OpenStack provider,
-    correspond to availability zones (AZs).
+    Cluster API refers to "failure domains" which, in the OpenStack provider, correspond to availability zones (AZs).
+<!-- prettier-ignore-end -->
 
 ### Ignore availability zones
 
-It is possible to configure Cluster API clusters in such a way that AZs are *not specified at all*
+It is possible to configure Cluster API clusters in such a way that AZs are _not specified at all_
 for Kubernetes nodes. This allows other placement constraints such as
 [flavor traits](https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs-required-traits)
 and [host aggregates](https://docs.openstack.org/nova/latest/admin/aggregates.html) to
 be used, and a suitable AZ to be selected by OpenStack.
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # Indicate that the failure domain should be omitted for control plane nodes
@@ -235,16 +233,16 @@ azimuth_capi_operator_capi_helm_control_plane_omit_failure_domain: true
 azimuth_capi_operator_capi_helm_worker_failure_domain: null
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-
-    This is the recommended configuration for new deployments, unless you have a specific
-    need to use specific availability zones.
+    This is the recommended configuration for new deployments, unless you have a specific need to use specific availability zones.
+<!-- prettier-ignore-end -->
 
 ### Use specific availability zones
 
 To use specific availability zones for Kubernetes nodes, the following variables can be used:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 #### For the HA cluster ####
 
 # A list of failure domains that should be considered for control plane nodes

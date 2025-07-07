@@ -1,10 +1,19 @@
 ---
 name: Clean up stale CI resources
+
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  id-token: write
+
 on:
   schedule:
     # Every 2 hours at 8 minutes past
-    - cron: '8 0/2 * * *'
+    - cron: "8 0/2 * * *"
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       delete-resources:
         type: boolean
@@ -24,15 +33,11 @@ on:
           - arcus
           - leafcloud
 
-      
-permissions: {}
-
 jobs:
   ci-cleanup:
     name: Clean up stale CI resources
     if: github.repository == 'azimuth-cloud/azimuth-config'
     runs-on: ubuntu-latest
-    permissions: {}
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -53,23 +58,23 @@ jobs:
           result=0
           changes_before=$(date -Imin -d -6hours)
           for status in ACTIVE BUILD ERROR SHUTOFF; do
-              for instance in $(openstack server list --unlocked --format value --column ID --changes-before $changes_before --status $status); do
+              for instance in $(openstack server list --unlocked --format value --column ID --changes-before "$changes_before" --status $status); do
                   echo "Cleaning up $status instance $instance"
-                  openstack server show $instance
+                  openstack server show "$instance"
                   echo "Getting volumes for instance $instance"
-                  volumes=$(openstack server volume list -f value -c "Volume ID" $instance)
-                  keypair=$(openstack server show $instance -f value -c key_name)
-                  if ! openstack server delete $instance; then
+                  volumes=$(openstack server volume list -f value -c "Volume ID" "$instance")
+                  keypair=$(openstack server show "$instance" -f value -c key_name)
+                  if ! openstack server delete "$instance"; then
                       echo "Failed to delete $status instance $instance"
                       result=1
                   fi
                   echo "Deleting keypair for instance $instance"
                   # This shouldn't fail, but might if the keypair is in-use elsewhere
-                  openstack keypair delete $keypair || true
+                  openstack keypair delete "$keypair" || true
                   for volume in $volumes; do
                     echo "Cleaning up volume $volume from instance $instance"
-                    openstack volume show $volume
-                    if ! openstack volume delete $volume; then
+                    openstack volume show "$volume"
+                    if ! openstack volume delete "$volume"; then
                       echo "Failed to delete volume $volume"
                       result=1
                     fi
@@ -85,7 +90,7 @@ jobs:
         run: |
           for keypair in $(openstack keypair list --format value -c Name); do
             if [[ "$keypair" =~ ^azimuth- || "$keypair" =~ ^packer_ ]]; then
-              openstack keypair delete $keypair
+              openstack keypair delete "$keypair"
               echo "Deleted keypair $keypair"
             fi
           done

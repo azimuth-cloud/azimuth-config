@@ -11,16 +11,17 @@ infra_external_network_id: >-
   }}
 
 # Pick suitable flavors from the available flavors
-#   Only consider flavors with at least 2 CPUs and 20GB disk
+#   Only consider flavors with at least 4 CPUs and 20GB disk
 __os_flavors: >-
   {{
     lookup('pipe', 'openstack flavor list -f json') |
       from_json |
       selectattr('Disk', '>=', 20) |
-      selectattr('VCPUs', '>=', 2)
+      selectattr('VCPUs', '>=', 4)
   }}
 
-# For the infra, we need at least 8GB RAM, but 16GB is better, plus at least 4 CPUs
+# For the infra, we need at least 8GB RAM, but 16GB is better,
+# plus at least 4 CPUs
 infra_flavor_id: >-
   {{-
     __os_flavors |
@@ -39,13 +40,15 @@ azimuth_capi_operator_external_network_id: "{{ infra_external_network_id }}"
 # CaaS/Kubernetes will only work within the tenancy in which Azimuth is deployed
 community_images_default_visibility: private
 # However don't assume we are in control of the images, e.g. if there is another
-# Azimuth deployment on the same cloud
+# Azimuth deployment on the same cloud
 community_images_update_existing_visibility: false
 
-# Disable HTTPS and certificate verification everywhere to avoid certificate issues
+# Disable HTTPS and certificate verification everywhere to avoid certificate
+# issues
 ingress_tls_enabled: false
 
-# Use the same external network as the infra for Azimuth auto-created networking
+# Use the same external network as the infra for Azimuth auto-created
+# networking
 azimuth_openstack_external_net_template: >-
   {{-
     lookup('pipe', 'openstack network show -f value -c name ' ~ infra_external_network_id)

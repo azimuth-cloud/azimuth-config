@@ -1,0 +1,30 @@
+# Configuration for file paths. The keys are glob patterns to match to file
+# paths relative to the repository root. The values are the configurations for
+# the file paths. Note that the path separator is always '/'.
+# The following configurations are available.
+#
+# "ignore" is an array of regular expression patterns. Matched error messages
+# are ignored. This is similar to the "-ignore" command line option.
+paths:
+#  .github/workflows/**/*.yml:
+#    ignore: []
+
+  .github/workflows/cleanup-ci-resources.yml:
+    ignore: [ "string should not be empty" ]
+
+
+  .github/workflows/pr.yml:
+    ignore: [ "string should not be empty" ]
+
+  .github/workflows/test-backup-restore.yml:
+    ignore: [ "string should not be empty" ]
+
+  .github/workflows/test-ha.yml:
+    ignore: [ "string should not be empty" ]
+
+  .github/workflows/test-singlenode.yml:
+    ignore: [ "string should not be empty" ]
+
+  .github/workflows/test-upgrade.yml:
+    ignore: [ "string should not be empty" ]
+

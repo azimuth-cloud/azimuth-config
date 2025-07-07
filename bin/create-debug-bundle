@@ -6,24 +6,20 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
-
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
-
 bundle_name="${1:-debug-bundle}"
-
 
 # Get the install_mode that is in use
 install_mode="$(ansible_variable install_mode)"
@@ -31,9 +27,9 @@ install_mode="$(ansible_variable install_mode)"
 # For HA installations, we want to collect some additional information from the seed before
 # collecting the regular information from the HA cluster
 if [ "$install_mode" = "ha" ]; then
-    cluster_name="$(ansible_variable capi_cluster_release_name)"
-    additional_commands="$(
-cat <<EOF
+  cluster_name="$(ansible_variable capi_cluster_release_name)"
+  additional_commands="$(
+    cat <<EOF
 kubectl get pods --all-namespaces -o wide > debug-bundle/seed-list-pods.txt 2>&1 || true
 kubectl get pvc --all-namespaces -o wide > debug-bundle/seed-list-pvcs.txt 2>&1 || true
 kubectl get cluster-api -o wide > debug-bundle/seed-list-cluster-api.txt 2>&1 || true
@@ -46,9 +42,8 @@ kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bu
 
 export KUBECONFIG=./kubeconfig-${cluster_name}.yaml
 EOF
-    )"
+  )"
 fi
-
 
 # We produce an archive on the seed, then pull it down
 # For some reason, cating the archive at the end of the main command corrupts the file
@@ -98,6 +93,6 @@ kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bu
 tar -czf debug-bundle.tar.gz -C debug-bundle \$(ls -A debug-bundle)
 EOF
 echo "[INFO] Fetching debug bundle"
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- cat debug-bundle.tar.gz > "$bundle_name.tar.gz"
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- cat debug-bundle.tar.gz >"$bundle_name.tar.gz"
 echo "[INFO] Cleaning up interim files"
 "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -- rm -rf debug-bundle debug-bundle.tar.gz

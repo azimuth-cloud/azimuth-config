@@ -7,7 +7,7 @@ On the K3s node, a kubeconfig file for the HA cluster is created in the `$HOME` 
 of the `ubuntu` user. You can activate this kubeconfig by setting the `KUBECONFIG` environment
 variable, which allows you to access the HA cluster using `kubectl`:
 
-```
+```text
 $ ./bin/seed-ssh
 ubuntu@azimuth-staging-seed:~$ export KUBECONFIG=./kubeconfig-azimuth-staging.yaml
 ubuntu@azimuth-staging-seed:~$ kubectl get po -n azimuth

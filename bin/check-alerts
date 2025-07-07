@@ -7,15 +7,13 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
-
 echo "Starting port-forward for Prometheus API"
-./bin/port-forward prometheus 9090 > /dev/null 2>&1 &
+./bin/port-forward prometheus 9090 >/dev/null 2>&1 &
 PID="$!"
 # Make sure port-forward is killed on exit
 trap 'kill $PID' EXIT
@@ -25,10 +23,10 @@ API_RETRIES=0
 API_RETRY_LIMIT=24
 API_RETRY_SLEEP=5
 while true; do
-  API_RETRIES=$(( API_RETRIES + 1 ))
+  API_RETRIES=$((API_RETRIES + 1))
   echo "Waiting for Prometheus API to become available (attempt $API_RETRIES of $API_RETRY_LIMIT)"
 
-  if curl -fsSL http://localhost:9090/api/v1/alerts > /dev/null 2>&1; then
+  if curl -fsSL http://localhost:9090/api/v1/alerts >/dev/null 2>&1; then
     break
   elif [[ ${API_RETRIES} -eq ${API_RETRY_LIMIT} ]]; then
     echo "Timed out waiting for Prometheus API" >&2
@@ -43,21 +41,21 @@ RETRIES=0
 RETRY_LIMIT=60
 RETRY_SLEEP=10
 while true; do
-    RETRIES=$(( RETRIES + 1 ))
-    echo "Querying alerts (attempt $RETRIES of $RETRY_LIMIT)"
+  RETRIES=$((RETRIES + 1))
+  echo "Querying alerts (attempt $RETRIES of $RETRY_LIMIT)"
 
-    ALERTS="$(curl -fsSL http://localhost:9090/api/v1/alerts)"
-    ALERT_COUNT="$(echo "$ALERTS" | jq -r '.data.alerts | length')"
-    echo "  Found $ALERT_COUNT pending or firing alerts:"
-    echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
-    echo ""
+  ALERTS="$(curl -fsSL http://localhost:9090/api/v1/alerts)"
+  ALERT_COUNT="$(echo "$ALERTS" | jq -r '.data.alerts | length')"
+  echo "  Found $ALERT_COUNT pending or firing alerts:"
+  echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
+  echo ""
 
-    # Check that only the Watchdog is firing
-    if [[ ${ALERT_COUNT} -eq 1 ]]; then
-        exit
-    elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
-        exit 1
-    else
-        sleep "$RETRY_SLEEP"
-    fi
+  # Check that only the Watchdog is firing
+  if [[ ${ALERT_COUNT} -eq 1 ]]; then
+    exit
+  elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
+    exit 1
+  else
+    sleep "$RETRY_SLEEP"
+  fi
 done

@@ -25,7 +25,7 @@ before continuing. For example, if you use [pyenv](https://github.com/pyenv/pyen
 you can set the `PYENV_VERSION` environment variable
 [in your azimuth-config environment](../environments.md#linux-environment-variables):
 
-```sh  title="env"
+```sh title="env"
 PYENV_VERSION=azimuth-config
 ```
 
@@ -37,11 +37,10 @@ Before you can deploy Azimuth, you must first activate an environment:
 source ./bin/activate my-site
 ```
 
+<!-- prettier-ignore-start -->
 !!! warning
-
-    This script must be `source`d rather than just executed as it exports
-    environment variables into the current shell that are used to configure
-    the deployment.
+    This script must be `source`d rather than just executed as it exports environment variables into the current shell that are used to configure the deployment.
+<!-- prettier-ignore-end -->
 
 ## Deploying an environment
 
