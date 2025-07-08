@@ -34,10 +34,10 @@ cluster, the default Kubernetes templates and the default Cluster-as-a-Service a
 Properties can be set on the uploaded images, if required. The properties are given as
 strings of the form `key=value` in the following variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images_custom_properties:
-  - 'prop1=value1'
-  - 'prop2=value2'
+  - "prop1=value1"
+  - "prop2=value2"
 ```
 
 ## Image conversion
@@ -49,7 +49,7 @@ images to be uploaded in a different format, e.g. `raw` or `vmdk`.
 
 To specify the target format for your cloud, just set the following (the default is `qcow2`):
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images_disk_format: raw
 ```
 
@@ -62,17 +62,15 @@ target cloud.
 It is possible to prevent `azimuth-ops` from uploading any images, even the default ones,
 by setting the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images: {}
 ```
 
+<!-- prettier-ignore-start -->
 !!! warning
-
-    If community images are disabled you will need to ensure suitable images are
-    uploaded via another mechanism, and the correct variables populated with the
-    image IDs in your Azimuth configuration. See the
-    [azimuth-ops roles](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles)
-    for more details.
+    If community images are disabled you will need to ensure suitable images are uploaded via another mechanism, and the correct variables populated with the image IDs in your Azimuth configuration. See the azimuth-ops roles for more details.
+    See [azimuth-ops roles](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles).
+<!-- prettier-ignore-end -->
 
 ## Custom images
 
@@ -80,7 +78,7 @@ If you want to upload custom images as part of your Azimuth installation, for ex
 a custom Cluster-as-a-Service appliance or for older Kubernetes versions, you can use the
 `community_images_extra` variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images_extra:
   # Key, used to refer to the image ID
   debian_11:
@@ -96,16 +94,13 @@ community_images_extra:
 
 The ID of this image can then be referred to elsewhere in your Azimuth configuration using:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 my_custom_caas_appliance_image: "{{ community_images_image_ids.debian_11 }}"
 ```
 
+<!-- prettier-ignore-start -->
 !!! warning
-
     It is assumed that the `name` in a community image specification refers to a unique image.
-    `azimuth-ops` will only download, convert and upload images to the target cloud for names
-    that do not already exist.
-
-    For this reason, it is recommended to include a timestamp or build reference in the image
-    name in order to identify different images that serve the same purpose (e.g. different builds
-    of the same pipeline).
+    azimuth-ops will only download, convert and upload images to the target cloud for names that do not already exist.
+    For this reason, it is recommended to include a timestamp or build reference in the image name in order to identify different images that serve the same purpose (e.g. different builds of the same pipeline).
+<!-- prettier-ignore-end -->

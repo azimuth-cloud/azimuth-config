@@ -1,3 +1,4 @@
+---
 #####
 # This file, combined with secrets.yml, shows an example configuration for a
 # minimal, but still best-practice, Azimuth deployment on a "well-behaved" cloud
@@ -17,7 +18,7 @@
 terraform_backend_type: "<http or s3>"
 
 # The backend configuration (depends on the selected backend type)
-terraform_backend_config: {}
+terraform_backend_config: { }
 
 
 ## Configuration for the seed node (HA) or single node deployment
@@ -38,7 +39,8 @@ infra_data_volume_size: 100
 
 # SINGLE NODE DEPLOYMENT ONLY
 # The fixed floating IP to associate with the machine
-# Must be pre-allocated to the project and have the wildcard ingress domain assigned to it
+# Must be pre-allocated to the project and have the wildcard ingress domain
+# assigned to it
 # infra_fixed_floatingip: "<pre-allocated floating ip>"
 
 

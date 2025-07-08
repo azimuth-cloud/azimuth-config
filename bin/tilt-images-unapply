@@ -5,8 +5,8 @@ set -euo pipefail
 # Roll back to the revision specified in the file
 revision_file="$AZIMUTH_TILT_WORK_DIR/$TILT_RELEASE_NAME.$TILT_RELEASE_NAMESPACE.rev"
 if [ -f "$revision_file" ]; then
-    revision="$(cat "$revision_file")"
-    echo "Executing cmd: helm rollback $TILT_RELEASE_NAME $revision --namespace $TILT_RELEASE_NAMESPACE"
-    helm rollback "$TILT_RELEASE_NAME" "$revision" --namespace "$TILT_RELEASE_NAMESPACE"
-    rm "$revision_file"
+  revision="$(cat "$revision_file")"
+  echo "Executing cmd: helm rollback $TILT_RELEASE_NAME $revision --namespace $TILT_RELEASE_NAMESPACE"
+  helm rollback "$TILT_RELEASE_NAME" "$revision" --namespace "$TILT_RELEASE_NAMESPACE"
+  rm "$revision_file"
 fi

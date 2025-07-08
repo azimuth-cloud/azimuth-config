@@ -20,7 +20,7 @@ if [ -n "$GIT_CRYPT_KEY_B64" ]; then
   # Unlock the repository
   run_apt update
   run_apt install -y git-crypt
-  echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
+  echo "$GIT_CRYPT_KEY_B64" | base64 -d | git-crypt unlock -
 fi
 
 # If no config environment is specified, use the GitLab CI environment name

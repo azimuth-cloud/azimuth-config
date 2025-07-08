@@ -22,8 +22,8 @@ represent a deployment ("concrete" environments).
 For a production deployment of Azimuth, there should be _at least two_ concrete environments
 that are deployed from the `main` branch:
 
-  * `production` - the Azimuth deployment that is provided to end users
-  * `staging` - used to validate changes before pushing to production
+- `production` - the Azimuth deployment that is provided to end users
+- `staging` - used to validate changes before pushing to production
 
 Both of these environments should be
 [highly-available](./configuration/02-deployment-method.md#highly-available-ha) deployments,
@@ -38,14 +38,14 @@ In order for validation in the `aio` and `staging` environments to be meaningful
 configuration of these environments should be as similar to `production` as possible.
 To do this, two site-specific mixins should be used:
 
-  * `site` - contains configuration that is common between `aio`, `staging` and `production`,
-    e.g. enabled features, available platforms
-  * `site-ha` - contains configuration for the HA setup that is common between `staging`
-    and `production`
+- `site` - contains configuration that is common between `aio`, `staging` and `production`,
+  e.g. enabled features, available platforms
+- `site-ha` - contains configuration for the HA setup that is common between `staging`
+  and `production`
 
 The environments would then be layered as follows:
 
-```
+```text
 base --> singlenode --> site --> aio
 base --> ha --> site --> site-ha --> staging
 base --> ha --> site --> site-ha --> production
@@ -58,9 +58,9 @@ with only necessary differences configured in each environment, e.g. the ingress
 Azimuth is usually deployed on the cloud that is being targeted for workloads. It is
 recommended to have three OpenStack projects for a production Azimuth deployment, to contain:
 
-  * A highly-available (HA) production deployment, e.g. `azimuth-production`
-  * A HA staging deployment, e.g. `azimuth-staging`
-  * All-in-one (AIO) deployments for validating changes, e.g. `azimuth-cicd`
+- A highly-available (HA) production deployment, e.g. `azimuth-production`
+- A HA staging deployment, e.g. `azimuth-staging`
+- All-in-one (AIO) deployments for validating changes, e.g. `azimuth-cicd`
 
 The production and staging projects must have
 [sufficient quota](./configuration/01-prerequisites.md#prerequisites) for a HA Azimuth
@@ -102,7 +102,7 @@ environments. The `ansible-playbook` command should **never** be executed manual
 
 The recommended approach is to automatically deploy an independent `aio` environment for each
 feature branch, also known as
-[per-branch dynamic review environments](deployment/automation/#per-branch-dynamic-review-environments).
+[per-branch dynamic review environments](deployment/automation.md#per-branch-dynamic-review-environments).
 This allows changes to be validated before they are merged to `main`.
 
 Once a change is merged to `main`, it will be deployed automatically to the `staging` environment.
@@ -143,6 +143,7 @@ You are now ready to begin adding configuration to your environments. When build
 for the first time, it is recommended to follow each documentation page in order, beginning with
 the [Deployment method](./configuration/02-deployment-method.md).
 
+<!-- prettier-ignore-start -->
 !!! tip
-
     Remember to share as much configuration as possible between all your [environments](./environments.md)!
+<!-- prettier-ignore-end -->

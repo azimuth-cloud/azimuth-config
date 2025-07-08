@@ -7,84 +7,81 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
-
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
-
 
 # Get the install_mode that is in use
 install_mode="$(ansible_variable install_mode)"
 
 # For the HA install mode, we need to set the KUBECONFIG appropriately
 if [ "$install_mode" = "ha" ]; then
-    cluster_name="$(ansible_variable capi_cluster_release_name)"
-    kubeconfig="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
+  cluster_name="$(ansible_variable capi_cluster_release_name)"
+  kubeconfig="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
 fi
 
 # Get the parameters for the specified service
 case "$1" in
-  alertmanager)
-    name="AlertManager"
-    namespace="monitoring-system"
-    service="kube-prometheus-stack-alertmanager"
-    remote_port="9093"
-    ;;
-  ara)
-    name="ARA"
-    namespace="azimuth"
-    service="azimuth-caas-operator-ara"
-    remote_port="8000"
-    ;;
-  awx)
-    name="AWX"
-    namespace="azimuth"
-    service="awx-service"
-    remote_port="80"
-    ;;
-  consul)
-    name="Consul"
-    namespace="azimuth"
-    service="consul-ui"
-    remote_port="80"
-    ;;
-  grafana)
-    name="Grafana"
-    namespace="monitoring-system"
-    service="kube-prometheus-stack-grafana"
-    remote_port="80"
-    ;;
-  prometheus)
-    name="Prometheus"
-    namespace="monitoring-system"
-    service="kube-prometheus-stack-prometheus"
-    remote_port="9090"
-    ;;
-  zenith-registrar)
-    name="Zenith registrar"
-    namespace="azimuth"
-    service="zenith-server-registrar"
-    remote_port="80"
-    ;;
-  *)
-    echo "Unrecognised service: $1" 1>&2
-    exit 1
-    ;;
+alertmanager)
+  name="AlertManager"
+  namespace="monitoring-system"
+  service="kube-prometheus-stack-alertmanager"
+  remote_port="9093"
+  ;;
+ara)
+  name="ARA"
+  namespace="azimuth"
+  service="azimuth-caas-operator-ara"
+  remote_port="8000"
+  ;;
+awx)
+  name="AWX"
+  namespace="azimuth"
+  service="awx-service"
+  remote_port="80"
+  ;;
+consul)
+  name="Consul"
+  namespace="azimuth"
+  service="consul-ui"
+  remote_port="80"
+  ;;
+grafana)
+  name="Grafana"
+  namespace="monitoring-system"
+  service="kube-prometheus-stack-grafana"
+  remote_port="80"
+  ;;
+prometheus)
+  name="Prometheus"
+  namespace="monitoring-system"
+  service="kube-prometheus-stack-prometheus"
+  remote_port="9090"
+  ;;
+zenith-registrar)
+  name="Zenith registrar"
+  namespace="azimuth"
+  service="zenith-server-registrar"
+  remote_port="80"
+  ;;
+*)
+  echo "Unrecognised service: $1" 1>&2
+  exit 1
+  ;;
 esac
 
 echo "Starting port-forward to $name on port $2..."
 # Use the seed-ssh command
 exec "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" \
   -L "$2:localhost:${3:-"$2"}" -tt \
-  $kubeconfig \
+  "$kubeconfig" \
   kubectl port-forward -n "$namespace" "svc/$service" "${3:-"$2"}:$remote_port"

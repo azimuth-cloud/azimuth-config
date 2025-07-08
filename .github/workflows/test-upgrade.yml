@@ -1,8 +1,17 @@
+---
 name: Upgrade test
+
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  id-token: write
 
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
         description: >-
@@ -23,12 +32,15 @@ on:
         type: string
 
 jobs:
-  # Tests an Azimuth upgrade from the current latest release to the code under test
+  # Tests an Azimuth upgrade from the current latest release to the code under
+  # test
   #
-  # Note that success() and failure() consider *all previous steps*, and continue-on-failure
-  # prevents the job from being marked as failed if that step fails
-  # This means that in order to get the execution flow that we want while still resulting in a
-  # failed job when required, we need to use step ids and the conclusions of specific steps
+  # Note that success() and failure() consider *all previous steps*, and
+  # continue-on-failure prevents the job from being marked as failed if that
+  # step fails
+  # This means that in order to get the execution flow that we want while still
+  # resulting in a failed job when required, we need to use step ids and the
+  # conclusions of specific steps
   test_upgrade:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +59,8 @@ jobs:
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-upgrade
-          # For Kubernetes, generate a single named test that can be referenced after the upgrade
+          # For Kubernetes, generate a single named test that can be referenced
+          # after the upgrade
           extra-vars: |
             upgrade_test_kubernetes_latest_available_version: >-
               {{-
@@ -72,8 +85,10 @@ jobs:
                 dashboard_enabled: "{{ generate_tests_kubernetes_test_case_dashboard_enabled }}"
                 monitoring_enabled: "{{ generate_tests_kubernetes_test_case_monitoring_enabled }}"
         # GitHub terminates jobs after 6 hours
-        # We don't want jobs to acquire the lock then get timed out before they can finish
-        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        # We don't want jobs to acquire the lock then get timed out before they
+        # can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for
+        # other tasks in the job
         timeout-minutes: 180
 
       - name: Provision Azimuth
@@ -98,7 +113,7 @@ jobs:
           sudo install -d -m 0755 /etc/apt/keyrings
           wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
           # Check fingerprint
-          if [[ $(gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | grep 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3) ]]; then
+          if gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | grep -q 35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3; then
             echo "Fingerprint matches"
           else
             echo "Mozilla repo fingerprint doesn't match expected"

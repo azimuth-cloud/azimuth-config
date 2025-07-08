@@ -1,3 +1,4 @@
+---
 name: Azimuth CI provision
 description: Provisions an Azimuth environment using the CI config.
 runs:

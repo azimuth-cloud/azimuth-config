@@ -12,6 +12,22 @@ using a layered approach.
 
 ## Documentation
 
-Documentation on deploying Azimuth can be found at https://azimuth-config.readthedocs.io.
+Documentation on deploying Azimuth can be found at <https://azimuth-config.readthedocs.io>.
 
 The documentation source is in the [docs](./docs/) directory of this repository.
+
+## Developing locally
+
+To run the GitHub Actions linters locally, use:
+
+```sh
+docker run --rm \
+    -e RUN_LOCAL=true \
+    --env-file "super-linter.env" \
+    -v "$(pwd)":/tmp/lint \
+    ghcr.io/super-linter/super-linter:v7.3.0
+```
+
+```sh
+ansible-lint -c .ansible-lint.yml
+```

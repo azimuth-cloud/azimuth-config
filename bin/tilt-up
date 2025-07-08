@@ -7,62 +7,54 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
-
 
 # Check that the Tilt settings file exists
 if [ ! -f "$AZIMUTH_CONFIG_ROOT/tilt-settings.yaml" ]; then
-    echo "[ERROR] Could not find tilt-settings.yaml" 1>&2
-    exit 1
+  echo "[ERROR] Could not find tilt-settings.yaml" 1>&2
+  exit 1
 fi
 
-
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
-
 
 tilt_pid=
 work_dir=
 
-
 # Function to terminate background processes when the script exits
 terminate_bg_processes() {
-    set +e
-    # Make sure tilt up is dead
-    test -n "$tilt_pid" && kill -0 "$tilt_pid" >/dev/null 2>&1 && kill "$tilt_pid"
-    # Run tilt down
-    tilt down
-    # Disconnect from Kubernetes
-    "$AZIMUTH_CONFIG_ROOT/bin/kube-connect" --terminate
-    # Clean up the working directory
-    test -n "$work_dir" && rm -rf "$work_dir"
+  set +e
+  # Make sure tilt up is dead
+  test -n "$tilt_pid" && kill -0 "$tilt_pid" >/dev/null 2>&1 && kill "$tilt_pid"
+  # Run tilt down
+  tilt down
+  # Disconnect from Kubernetes
+  "$AZIMUTH_CONFIG_ROOT/bin/kube-connect" --terminate
+  # Clean up the working directory
+  test -n "$work_dir" && rm -rf "$work_dir"
 }
 trap 'terminate_bg_processes' EXIT
-
 
 # The SOCKS port is the only input
 socks_port="${1:-1080}"
 
-
 # Make a working directory for tilt related stuff
 echo "Creating working directory..."
-export AZIMUTH_TILT_WORK_DIR="$(ansible_variable work_directory)/tilt"
+AZIMUTH_TILT_WORK_DIR="$(ansible_variable work_directory)/tilt"
 mkdir -p "$AZIMUTH_TILT_WORK_DIR"
-
+export AZIMUTH_TILT_WORK_DIR
 
 # Connect to the Azimuth Kubernetes cluster
 echo "Connecting to Azimuth Kubernetes cluster..."
 eval "$("$AZIMUTH_CONFIG_ROOT/bin/kube-connect" -p "$socks_port")"
-
 
 # Run tilt
 echo "Running 'tilt up'..."

@@ -4,6 +4,9 @@
 # This file defines the test cases used in CI
 #####
 
+# Test Flux install in CI even when disabled in default config
+flux_enabled: true
+
 #-----
 # Settings for the CaaS test suite
 #-----

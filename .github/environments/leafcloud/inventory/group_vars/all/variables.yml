@@ -1,16 +1,19 @@
+---
 # Use the external-facing network
 infra_external_network_id: "{{ lookup('pipe', 'openstack network show external -f value -c id') }}"
 
-# Use the pre-existing portal-internal network so that we don't need to steal a router
+# Use the pre-existing portal-internal network so that we don't need to steal
+# a router
 infra_network_id: "{{ lookup('pipe', 'openstack network show portal-internal -f value -c id') }}"
 
 # The ingress IP comes from an environment variable
 infra_fixed_floatingip: "{{ lookup('env', 'INGRESS_IP') }}"
 
-# The flavors only have 20GB root disks, which is not enough to unpack images for uploading
+# The flavors only have 20GB root disks, which is not enough to unpack images
+# for uploading
 # So we need to use a Cinder root volume
 # We also don't need the encypted volume type
-infra_root_volume_enabled: yes
+infra_root_volume_enabled: true
 infra_root_volume_size: 40
 infra_root_volume_type: unencrypted
 # But we can decrease the size of the infra data volume

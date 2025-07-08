@@ -1,10 +1,10 @@
 # OpenStack Blazar
 
-!!! warning  "Technology preview"
-
+<!-- prettier-ignore-start -->
+!!! warning "Technology preview"
     Blazar support is currently in technology preview and under active development.
-
-    Its possible how this feature works may radically change in a future release.
+    It's possible how this feature works may radically change in a future release.
+<!-- prettier-ignore-end -->
 
 When available on the target cloud, Azimuth is able to make use of
 [Blazar](https://docs.openstack.org/blazar/latest/), an OpenStack service for reserving
@@ -22,13 +22,12 @@ successful then Azimuth creates the platform using the reserved resources. If it
 successful, Azimuth reports that the cloud is not able to accomodate the platform as currently
 configured and the user may try again with different parameters.
 
-!!! info  "Future work"
-
-    Blazar also supports creating reservations that start in the future, e.g. "can I have three
-    machines of flavor X and two of flavor Y for two weeks starting tomorrow". This is useful for
-    cases where it is known advance when resources will be required, and they can be reserved for
-    that time. In the future, Azimuth will support creating platforms that start in the future
-    using this mechanism.
+<!-- prettier-ignore-start -->
+!!! info "Future work"
+    Blazar also supports creating reservations that start in the future, e.g. "can I have three machines of flavor X and two of flavor Y for two weeks starting tomorrow".
+    This is useful for cases where it is known advance when resources will be required, and they can be reserved for that time.
+    In the future, Azimuth will support creating platforms that start in the future using this mechanism.
+<!-- prettier-ignore-end -->
 
 ## Blazar flavor plugin
 
@@ -63,7 +62,7 @@ by the available credits for a project.
 
 Coral Credits can be deployed as part of an Azimuth installation using the following:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 coral_credits_enabled: yes
 ```
 
@@ -76,16 +75,17 @@ to configure the credit allocations for each OpenStack project, see the
 To enable "time-limited" platforms in Azimuth, i.e. platforms that are automatically deleted
 at a specified time in the future, set the following variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_scheduling_enabled: true
 ```
 
 When this variable is set, Azimuth users will be required to specify an end time for any
 platforms that they create.
 
-!!! warning  "Platforms cannot be extended"
-
+<!-- prettier-ignore-start -->
+!!! warning "Platforms cannot be extended"
     Currently, Azimuth does **not** support extending the end time for a platform.
+<!-- prettier-ignore-end -->
 
 By default, this **does not** use Blazar reservations - Azimuth just ensures that the platform is
 deleted at the requested time. This is still useful to help to prevent resource squatting on clouds
@@ -94,7 +94,7 @@ because the resources are not reserved for the platform as they are in Blazar.
 
 To tell Azimuth to create Blazar reservations for platforms, set the following variable:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_schedule_operator_blazar_enabled: true
 ```
 

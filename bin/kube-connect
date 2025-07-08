@@ -7,42 +7,38 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
-
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
-
 
 # Process the inputs
 terminate_only="no"
 socks_port="1080"
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --terminate)
-            terminate_only="yes"
-            shift
-            ;;
-        -p|--socks-port)
-            socks_port="$2"
-            shift
-            shift
-            ;;
-        *)
-            shift
-            ;;
-    esac
+  case $1 in
+  --terminate)
+    terminate_only="yes"
+    shift
+    ;;
+  -p | --socks-port)
+    socks_port="$2"
+    shift
+    shift
+    ;;
+  *)
+    shift
+    ;;
+  esac
 done
-
 
 # Find the working directory
 # We will write a PID file and the kubeconfig file here
@@ -51,69 +47,62 @@ work_dir="$(ansible_variable work_directory)/kube-connect"
 socks_pid_file="$work_dir/pid"
 kubeconfig="$work_dir/config"
 
-
 # If there is an existing PID file, kill the process and delete the old files
 if [ -f "$socks_pid_file" ]; then
-    socks_pid="$(cat "$socks_pid_file")"
-    if kill -0 "$socks_pid" >/dev/null 2>&1; then
-        echo "Terminating existing SOCKS proxy..." >&2
-        kill "$socks_pid"
-        rm -rf "$work_dir"
-    fi
+  socks_pid="$(cat "$socks_pid_file")"
+  if kill -0 "$socks_pid" >/dev/null 2>&1; then
+    echo "Terminating existing SOCKS proxy..." >&2
+    kill "$socks_pid"
+    rm -rf "$work_dir"
+  fi
 fi
-
 
 # If we are only doing a terminate, we are done
 if [ "$terminate_only" = "yes" ]; then
-    exit
+  exit
 fi
-
 
 # Make sure that the work directory exists
 mkdir -p "$work_dir"
-
 
 # Get the raw kubeconfig for the Azimuth cluster
 echo "Fetching kubeconfig for Azimuth Kubernetes cluster..." >&2
 install_mode="$(ansible_variable install_mode)"
 if [ "$install_mode" = "ha" ]; then
-    cluster_name="$(ansible_variable capi_cluster_release_name)"
-    kubeconfig_arg="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
+  cluster_name="$(ansible_variable capi_cluster_release_name)"
+  kubeconfig_arg="KUBECONFIG=./kubeconfig-${cluster_name}.yaml"
 fi
 "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -q \
-  $kubeconfig_arg \
-  kubectl config view --raw > "$kubeconfig"
-
+  "$kubeconfig_arg" \
+  kubectl config view --raw >"$kubeconfig"
 
 # Add the SOCKS proxy config to the cluster
 echo "Updating kubeconfig with SOCKS proxy..." >&2
-ctx="$(kubectl config current-context --kubeconfig $kubeconfig)"
-cluster="$( \
+ctx="$(kubectl config current-context --kubeconfig "$kubeconfig")"
+cluster="$(
   kubectl config view \
     --output jsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}" \
-    --kubeconfig $kubeconfig
+    --kubeconfig "$kubeconfig"
 )"
-kubectl config set-cluster $cluster \
+kubectl config set-cluster "$cluster" \
   --proxy-url "socks5://localhost:$socks_port" \
-  --kubeconfig $kubeconfig \
+  --kubeconfig "$kubeconfig" \
   >/dev/null
 
 echo "Renaming context to azimuth..." >&2
-kubectl config rename-context $ctx azimuth --kubeconfig $kubeconfig >/dev/null
-
+kubectl config rename-context "$ctx" azimuth --kubeconfig "$kubeconfig" >/dev/null
 
 # Launch the SOCKS proxy and store the PID
 echo "Starting SOCKS proxy..." >&2
-"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -q -D $socks_port -N &
+"$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" -q -D "$socks_port" -N &
 socks_pid="$!"
 # Wait a few seconds and check that the process is running
 sleep 5
 if ! kill -0 "$socks_pid" >/dev/null 2>&1; then
-    echo "Failed to connect to Azimuth cluster" >&2
-    exit 1
+  echo "Failed to connect to Azimuth cluster" >&2
+  exit 1
 fi
-echo "$socks_pid" > "$socks_pid_file"
-
+echo "$socks_pid" >"$socks_pid_file"
 
 # Echo the KUBECONFIG variable that needs to be set
 echo "export KUBECONFIG=$kubeconfig"

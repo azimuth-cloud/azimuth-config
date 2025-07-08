@@ -26,16 +26,14 @@ for the chart to generate a form for collecting input from the user.
 Azimuth also renders the output of the [NOTES.txt](https://helm.sh/docs/chart_template_guide/notes_files/)
 file in the user interface, so this can be used to describe how to consume the application.
 
+<!-- prettier-ignore-start -->
 !!! warning
-
-    If the chart does not have a values schema, the generated form will be blank and the chart
-    will be deployed with the default values.
+    If the chart does not have a values schema, the generated form will be blank and the chart will be deployed with the default values.
 
 !!! tip
-
-    In addition, a file called `azimuth-ui.schema.yaml` can be included to apply some small
-    customisations to the generated form, like selecting different controls. See the
-    [azimuth-charts](https://github.com/azimuth-cloud/azimuth-charts) for examples.
+    In addition, a file called `azimuth-ui.schema.yaml` can be included to apply some small customisations to the generated form, like selecting different controls.
+    See the [azimuth-charts](https://github.com/azimuth-cloud/azimuth-charts) for examples.
+<!-- prettier-ignore-end -->
 
 ## Default app templates
 
@@ -43,38 +41,38 @@ Azimuth comes with the following app templates enabled by default:
 
 `jupyterhub`
 : Allows the user to deploy [JupyterHub](https://jupyter.org/hub) on their clusters. JupyterHub
-  provides a multi-user environment for using [Jupyter notebooks](https://jupyter.org/) where
-  each user gets their own dynamically-provisioned notebook server and storage. The Jupyter
-  notebook interface is exposed using [Zenith](./08-zenith.md).
+provides a multi-user environment for using [Jupyter notebooks](https://jupyter.org/) where
+each user gets their own dynamically-provisioned notebook server and storage. The Jupyter
+notebook interface is exposed using [Zenith](./08-zenith.md).
 
 `daskhub`
 : A JupyterHub instance with [Dask](https://www.dask.org/) integration. Dask is a library that aims
-  to simplify the process of scaling data-intensive Python applications, such as those using
-  [Numpy](https://numpy.org/) or [pandas](https://pandas.pydata.org/). DaskHub installs
-  [Dask Gateway](https://gateway.dask.org/) alongside JupyterHub and configures them so that
-  they integrate seamlessly. This allows users to easily create Dask clusters in their notebooks
-  that scale out by creating pods on the underlying Kubernetes cluster. As with `jupyterhub`
-  above, the notebook interface is exposed using Zenith.
+to simplify the process of scaling data-intensive Python applications, such as those using
+[Numpy](https://numpy.org/) or [pandas](https://pandas.pydata.org/). DaskHub installs
+[Dask Gateway](https://gateway.dask.org/) alongside JupyterHub and configures them so that
+they integrate seamlessly. This allows users to easily create Dask clusters in their notebooks
+that scale out by creating pods on the underlying Kubernetes cluster. As with `jupyterhub`
+above, the notebook interface is exposed using Zenith.
 
 `binderhub`
 : A JupyterHub instance with [Binder](https://mybinder.readthedocs.io/en/latest/) integration.
-  BinderHub allows you to create custom computing environments that can be shared and used by
-  many remote users. As with `jupyterhub` above, the notebook interface is exposed using Zenith.
+BinderHub allows you to create custom computing environments that can be shared and used by
+many remote users. As with `jupyterhub` above, the notebook interface is exposed using Zenith.
 
 `kubeflow`
 : Allows users to deploy the [Kubeflow](https://www.kubeflow.org/) machine learning toolkit
-  on their clusters. Kubeflow provides an interface for easily accessing best-of-breed machine
-  learning systems using Jupyter notebooks and [TensorFlow](https://www.tensorflow.org/).
+on their clusters. Kubeflow provides an interface for easily accessing best-of-breed machine
+learning systems using Jupyter notebooks and [TensorFlow](https://www.tensorflow.org/).
 
 `huggingface-llm`
 : A generative AI chatbot service backed by a [HuggingFace](https://huggingface.co) large language
-  model. A convenient web interface is exposed via Zenith and the backend API is directly accessible
-  to other applications running on the same Kubernetes cluster for programmatic use cases. For
-  further details, see [this blog post](https://stackhpc.com/running-large-language-models-on-openstack.html).
+model. A convenient web interface is exposed via Zenith and the backend API is directly accessible
+to other applications running on the same Kubernetes cluster for programmatic use cases. For
+further details, see [this blog post](https://stackhpc.com/running-large-language-models-on-openstack.html).
 
 These can be disabled by setting the following variables:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_jupyterhub_enabled: false
 azimuth_capi_operator_app_templates_daskhub_enabled: false
 azimuth_capi_operator_app_templates_binderhub_enabled: false
@@ -86,7 +84,7 @@ azimuth_capi_operator_app_templates_huggingface_llm_enabled: false
 
 If you have Helm charts that you want to make available as apps, you can define them as follows:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_extra:
   # The key is the name of the app template
   my-custom-app:
@@ -102,10 +100,11 @@ azimuth_capi_operator_app_templates_extra:
         name: my-custom-app
 ```
 
-!!! info  "Access control"
-
-    See [Access control](./13-access-control.md) for more details on the access
-    control annotations.
+<!-- prettier-ignore-start -->
+!!! info "Access control"
+    See access control for more details on the access control annotations.
+    [Access control](./13-access-control.md)
+<!-- prettier-ignore-end -->
 
 By default, Azimuth will use the last 5 stable versions of the chart (i.e. versions without a
 prerelease part, see [semver.org](https://semver.org/)) and the `name`, `icon` and `description`
@@ -113,7 +112,7 @@ from the [Chart.yaml file](https://helm.sh/docs/topics/charts/#the-chartyaml-fil
 to build the user interface. A chart annotation is also supported to define the human-readable
 label:
 
-```yaml  title="my-chart/Chart.yaml"
+```yaml title="my-chart/Chart.yaml"
 annotations:
   azimuth.stackhpc.com/label: My Custom App
 ```
@@ -131,13 +130,14 @@ This behaviour can be customised for each app template using the following optio
 
 `versionRange`
 : **Default:** `>=0.0.0` (stable versions only).  
-  The range of chart versions to consider.  
-  Must be a comma-separated list of constraints, where each constraint is an operator followed
-  by a [SemVer version](https://semver.org). The supported operators are `==`, `!=`, `>`, `>=`,
-  `< `and `<=`.  
-  Prerelease versions are only considered if the _lower bound_ includes a prerelease part.
-  If no lower bound is given, an implicit lower bound of `>=0.0.0` is used.  
-  Some examples of valid ranges:
+ The range of chart versions to consider.  
+ Must be a comma-separated list of constraints, where each constraint is an operator followed
+by a [SemVer version](https://semver.org). The supported operators are `==`, `!=`, `>`, `>=`,
+`<`and `<=`.  
+ Prerelease versions are only considered if the _lower bound_ includes a prerelease part.
+If no lower bound is given, an implicit lower bound of `>=0.0.0` is used.  
+ Some examples of valid ranges:
+
   <ul>
     <li><code>>=0.0.0-0</code> - all versions, including prerelease versions like <code>1.0.0-alpha.1</code></li>
     <li>
@@ -151,18 +151,18 @@ This behaviour can be customised for each app template using the following optio
 
 `keepVersions`
 : **Default:** 5.  
-  The number of versions to keep.  
-  This is used to limit the size of the `AppTemplate` resource, because etcd has limits on the
-  maximum size of objects (usually approx. 1MB). This will need to be smaller if the chart
-  has a large values schema.
+ The number of versions to keep.  
+ This is used to limit the size of the `AppTemplate` resource, because etcd has limits on the
+maximum size of objects (usually approx. 1MB). This will need to be smaller if the chart
+has a large values schema.
 
 `syncFrequency`
 : **Default:** 86400 (24 hours).  
-  The number of seconds to wait before checking for new versions of the chart.
+ The number of seconds to wait before checking for new versions of the chart.
 
 `defaultValues`
 : **Default:** `{}`.  
-  Default values for deployments of the app, on top of the chart defaults.
+ Default values for deployments of the app, on top of the chart defaults.
 
 ## Zenith integration
 
@@ -175,7 +175,7 @@ without using `type: NodePort`, `type: LoadBalancer` or
 
 `reservations.zenith.stackhpc.com`
 : Represents the reservation of a Zenith domain, and results in the generation of a
-  Kubernetes secret containing an SSH keypair associated with the allocated domain.
+Kubernetes secret containing an SSH keypair associated with the allocated domain.
 
 `clients.zenith.stackhpc.com`
 : Defines a Zenith client, pointing at a Zenith reservation and upstream Kubernetes service.

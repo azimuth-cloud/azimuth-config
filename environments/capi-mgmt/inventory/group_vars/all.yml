@@ -1,3 +1,4 @@
+---
 # Give the seed node a name corresponding to the environment
 infra_name: "capi-mgmt-{{ azimuth_environment }}{{ '-seed' if install_mode == 'ha' else '' }}"
 # Give the HA cluster a name corresponding to the environment
@@ -7,7 +8,8 @@ capi_cluster_release_name: "capi-mgmt-{{ azimuth_environment }}"
 # This will hold all cluster data, including Kubernetes resources
 infra_data_volume_size: 50
 
-# Pick a flavor with at least 20GB disk, 2 CPUs and 8GB RAM from the available flavors
+# Pick a flavor with at least 20GB disk, 2 CPUs and 8GB RAM from the available
+# flavors
 infra_flavor_id: >-
   {{-
     lookup('pipe', 'openstack flavor list -f json') |
@@ -60,7 +62,7 @@ capi_cluster_control_plane_flavor: >-
 capi_cluster_worker_flavor: "{{ capi_cluster_control_plane_flavor }}"
 
 # By default, provision the cluster with a FIP on the API server load-balancer
-# so that the Kubernetes API can be reached from outside
+# so that the Kubernetes API can be reached from outside
 capi_cluster_apiserver_floating_ip: true
 
 # By default, don't worry about failure domains
@@ -68,10 +70,10 @@ capi_cluster_control_plane_omit_failure_domain: true
 capi_cluster_worker_failure_domain: ~
 
 # We don't need the ingress controller for a CAPI mgmt cluster
-ingress_controller_enabled: no
+ingress_controller_enabled: false
 
 # cert-manager is always required
-certmanager_enabled: yes
+certmanager_enabled: true
 
 # Harbor is never required
-harbor_enabled: no
+harbor_enabled: false

@@ -16,7 +16,7 @@ conflict with or break things for others.
 
 Azimuth supports using a single [configuration environment](../environments.md) to deploy multiple
 independent Azimuth instances. When
-[activating an environment](../deployment/#activating-an-environment), a unique instance name
+[activating an environment](../deployment/index.md#activating-an-environment), a unique instance name
 can be given as a second argument to the `activate` script, e.g.:
 
 ```bash
@@ -37,17 +37,14 @@ customisations that are required, usually by building on a
 [demo environment](https://github.com/azimuth-cloud/azimuth-config/tree/devel/environments/demo)
 is a good starting point for this, as it is designed to be flexible and dynamic.
 
-!!! tip  "Producing unique values in your Azimuth configuration"
+<!-- prettier-ignore-start -->
+!!! tip "Producing unique values in your Azimuth configuration"
+    The Ansible variable "azimuth_environment" contains the unique instance name, and can be used in other variables in your configuration where a unique value is required for each developer environment.
 
-    The Ansible variable `azimuth_environment` contains the unique instance name, and
-    can be used in other variables in your configuration where a unique value is required
-    for each developer environment.
-
-!!! warning  "Developers should use their own application credential"
-
+!!! warning "Developers should use their own application credential"
     You should not include an application credential in your development environment.
-    Instead, each developer can use their own application credential as described in the
-    next section.
+    Instead, each developer can use their own application credential as described in the next section.
+<!-- prettier-ignore-end -->
 
 ### Using the dev environment
 
@@ -83,14 +80,14 @@ ansible-playbook azimuth_cloud.azimuth_ops.provision
 
 Azimuth has a number of components, mostly written in Python:
 
-  * [Azimuth API and UI](https://github.com/azimuth-cloud/azimuth) - user-facing API and UI
-  * [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
-  * [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
-  * [Azimuth identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) - Kubernetes operator implementing platform identity
-  * [Azimuth schedule operator](https://github.com/azimuth-cloud/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
-  * [Zenith](https://github.com/azimuth-cloud/zenith) - secure, tunnelling application proxy used to expose platform services
-  * [Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider) - addons for Cluster API clusters
-  * [Cluster API janitor for OpenStack](https://github.com/azimuth-cloud/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
+- [Azimuth API and UI](https://github.com/azimuth-cloud/azimuth) - user-facing API and UI
+- [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
+- [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
+- [Azimuth identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) - Kubernetes operator implementing platform identity
+- [Azimuth schedule operator](https://github.com/azimuth-cloud/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
+- [Zenith](https://github.com/azimuth-cloud/zenith) - secure, tunnelling application proxy used to expose platform services
+- [Cluster API addon provider](https://github.com/azimuth-cloud/cluster-api-addon-provider) - addons for Cluster API clusters
+- [Cluster API janitor for OpenStack](https://github.com/azimuth-cloud/cluster-api-janitor-openstack) - resource cleanup for Cluster API clusters on OpenStack clouds
 
 It is useful to develop these components in the context of a running Azimuth installation,
 as they have dependencies on each other.
@@ -107,17 +104,17 @@ build failures and the logs of the components under development.
 In order to use Tilt to develop Azimuth, the following tools must be available on your
 development machine (in addition to those required to install Azimuth itself):
 
-  * The [Tilt CLI](https://docs.tilt.dev/install.html)
-  * A `docker` or `podman` command,
-    e.g. [Docker Desktop](https://docs.docker.com/desktop/) or [Podman Desktop](https://podman-desktop.io/)
-  * The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
-  * The [Helm CLI](https://helm.sh/docs/intro/install/)
-  * The [skopeo CLI](https://github.com/containers/skopeo) (optional)
+- The [Tilt CLI](https://docs.tilt.dev/install.html)
+- A `docker` or `podman` command,
+  e.g. [Docker Desktop](https://docs.docker.com/desktop/) or [Podman Desktop](https://podman-desktop.io/)
+- The [kubectl command](https://kubernetes.io/docs/tasks/tools/#kubectl)
+- The [Helm CLI](https://helm.sh/docs/intro/install/)
+- The [skopeo CLI](https://github.com/containers/skopeo) (optional)
 
 For developing the Azimuth UI, the following are also required:
 
-  * [node.js](https://nodejs.org)
-  * The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
+- [Node.js](https://nodejs.org)
+- The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
 
 ### Tilt settings
 
@@ -134,7 +131,7 @@ to this registry and then configure the Azimuth instance to use them.
 
 To configure the prefix for images built by Tilt, use the following setting:
 
-```yaml  title="tilt-settings.yaml"
+```yaml title="tilt-settings.yaml"
 # Images will be pushed to:
 #   ghcr.io/jbloggs/azimuth-api
 #   ghcr.io/jbloggs/azimuth-ui
@@ -143,16 +140,12 @@ To configure the prefix for images built by Tilt, use the following setting:
 image_prefix: ghcr.io/jbloggs
 ```
 
+<!-- prettier-ignore-start -->
 !!! tip
-    
-    A good candidate for this is to use [GitHub Packages](https://github.com/features/packages)
-    with your user account, as in the example above. This means that development builds do not
-    require access to or clutter up the production repositories.
-
-    When using GitHub Packages, the repositories that are created by Tilt when it builds images
-    for the first time will be private. You must log into GitHub and make them public before
-    your Azimuth instance can use them. Until you do this, you will see image pull errors in
-    the Tilt interface.
+    A good candidate for this is to use GitHub Packages with your user account, as in the example above. This means that development builds do not require access to or clutter up the production repositories.
+    When using GitHub Packages, the repositories that are created by Tilt when it builds images for the first time will be private. You must log into GitHub and make them public before your Azimuth instance can use them. Until you do this, you will see image pull errors in the Tilt interface.
+    See [GitHub Packages](https://github.com/features/packages).
+<!-- prettier-ignore-end -->
 
 #### Using Podman for builds
 
@@ -162,7 +155,7 @@ images.
 
 To configure Tilt to use `podman` to build container images, use the following setting:
 
-```yaml  title="tilt-settings.yaml"
+```yaml title="tilt-settings.yaml"
 build_engine: podman
 ```
 
@@ -175,7 +168,7 @@ uses the configured build engine for this by pulling, re-tagging and pushing the
 on container images, such as efficiently copying an image from one repository to another, and
 Azimuth's Tilt configuration supports using this to mirror images:
 
-```yaml  title="tilt-settings.yaml"
+```yaml title="tilt-settings.yaml"
 mirror_engine: skopeo
 ```
 
@@ -186,7 +179,7 @@ and include them in your development environment. For example, the following dir
 will result in a development environment where changes to the Azimuth API, UI and CaaS operators
 are built and pushed into your development Azimuth instance for testing:
 
-```
+```text
 .
 ├── azimuth
 │   ├── api
@@ -212,7 +205,7 @@ the component in `tilt-settings.yaml`. For example, the following would prevent 
 operator from being included in the development environment, even with the directory structure
 above:
 
-```yaml  title="tilt-settings.yaml"
+```yaml title="tilt-settings.yaml"
 components:
   azimuth-caas-operator:
     enabled: false
@@ -231,9 +224,12 @@ component before reconfiguring the Helm release for the component to point to th
 Once this process is complete, you can interact with your changes using the Azimuth UI for
 your instance.
 
+<!-- prettier-ignore-start -->
 !!! tip
+    Press the space bar to launch the Tilt user interface
+<!-- prettier-ignore-end -->
 
-    Press the space bar to launch the [Tilt user interface](https://docs.tilt.dev/tutorial/3-tilt-ui.html).
+More information on the [Tilt user interface](https://docs.tilt.dev/tutorial/3-tilt-ui.html).
 
 When the `tilt-up` command is terminated, all of the Helm releases for the components that
 were under development are rolled back to the version that was running before the command
@@ -253,7 +249,8 @@ in order for the cookie-based authentication to work properly).
 
 The local version of the UI is available at `http://localhost:3000`.
 
+<!-- prettier-ignore-start -->
 !!! note
-
     The UI container image is still built, pushed and deployed in the background.
     However changes made to the JS files will be visible in the local version much faster.
+<!-- prettier-ignore-end -->
