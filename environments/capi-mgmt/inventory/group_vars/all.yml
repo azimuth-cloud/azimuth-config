@@ -80,3 +80,4 @@ harbor_enabled: false
 
 # To enable creating token-based kubeconfig
 capi_cluster_service_account_enabled: true
+capi_cluster_service_account_rotate_secret: false
