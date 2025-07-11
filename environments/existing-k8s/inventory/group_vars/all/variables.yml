@@ -2,7 +2,9 @@
 
 kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
 
-infra_external_ip: "172.16.1.136"
+
+# assumes the host VM is also hosting the cluster, this may need to be overridden 
+infra_external_ip: "hostvars[inventory_hostname]['ansible_default_ipv4']['address']"
 ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
 
 
@@ -31,5 +33,11 @@ flux_enabled: true
 azimuth_authentication_type: oidc
 ##ingress_tls_enabled: true
 
-
 azimuth_chart_version: 0.15.0
+
+cloud_metrics_enabled: false #saves a lot of storage, not currently in use + grafana seems to have issues 
+
+certmanager_monitoring_enabled: no # certmanager tries to setup monitoring (UNTESTED)
+
+azimuth_cloud_provider_type: "null" # stops it expecting openstack 
+# yes it has to be "null", and not null. 

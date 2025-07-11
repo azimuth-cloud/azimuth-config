@@ -1,6 +1,8 @@
-# local setup for testing, replace <ubuntu-big> with host@ip or the name of a host in your ssh config file 
+# local setup for testing, replace <ubuntu-XYZ> with host@ip or the name of a host in your ssh config file 
 [azimuth_deploy]
-ubuntu-big
+# ubuntu-bigger 
+ubuntu-leafcloud
 
 [k3s]
-ubuntu-big
+# ubuntu-bigger
+ubuntu-leafcloud 
