@@ -2,9 +2,8 @@
 
 kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
 
-
 # assumes the host VM is also hosting the cluster, this may need to be overridden 
-infra_external_ip: "hostvars[inventory_hostname]['ansible_default_ipv4']['address']"
+infra_external_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
 
 
