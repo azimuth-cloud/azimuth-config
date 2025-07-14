@@ -2,14 +2,14 @@
 
 <!-- prettier-ignore-start -->
 !!! warning
-    This mode is still experimental and in early development! 
+    This mode is still experimental and in early development!
 <!-- prettier-ignore-end -->
 
 - Kubernetes only is an environment/set of features designed to allow azimuth to run WITHOUT openstack on any Kubernetes cluster.
 - It is currently in alpha, so some features may not work as intended.
 - While Azimuth itself can run without Openstack, it depends on the Openstack API to create most of its platforms so this version can only deploy a limited subset of Azimuth apps.
 
-## Install:
+## Install
 
 ### Assumptions/Warnings
 
@@ -23,7 +23,7 @@
 
 ### Deployment
 
-```
+``` bash 
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
@@ -57,10 +57,10 @@ ansible-playbook azimuth_cloud.azimuth_ops.setup_existing_k3s
 
 - azimuth requires `tenancies` to be setup to create groups of users who can access/own resources.
 - your tenancy can be managed using CD through `flux`, which will read a repository and then apply the config files there to the cluster.
-- you can then push tenancies or app templates to the repo, and flux will automatically make them available inside your azimuth deployment
-- the repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repo
+- you can then push tenancies or app templates to the repository, and flux will automatically make them available inside your azimuth deployment
+- the repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repository
 
-```
+``` bash 
 #clone the tennancy config repository on a machine that has a kubeconfig for the cluster
 git clone  https://github.com/azimuth-cloud/azimuth-tenant-config
 cd azimuth-tenant-config
@@ -80,7 +80,7 @@ python3 bin/bootstrap.py --type kubeconfig \
 
 OIDC has now been setup on Azimuth, but it needs to be linked with the external provider before it can work.
 
-- go to the admin keycloak console at http://identity.apps.<your_ip>.sslip.io/admin/master/console/
+- go to the admin keycloak console at `http://identity.apps.<your_ip>.sslip.io/admin/master/console/` 
 - Login with the username "admin" and the password in `.../existing_k8s/inventory/group_vars/all/secrets.yml`
 - switch to the realm `azimuth-users`
 - go down to `identity providers`
