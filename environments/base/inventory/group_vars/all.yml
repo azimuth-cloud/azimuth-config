@@ -53,6 +53,7 @@ community_images_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 # Harbor is not used when the null provider is configured
 harbor_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 # Create a mirror registry in Harbor for public Docker Hub images by default
+
 harbor_proxy_cache_default_projects:
   docker.io:
     name: dockerhub-public
@@ -71,12 +72,16 @@ velero_enabled: false
 # Indicates whether to install coral credits
 coral_credits_enabled: false
 
-# Azimuth features to enable
+# Azimuth features to enable
 # Apps (Kubernetes apps + Zenith) are always enabled
-azimuth_apps_enabled: yes
+azimuth_apps_enabled: true
 # Kubernetes and CaaS will not work with the null cloud provider
 azimuth_kubernetes_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 azimuth_clusters_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
+
+# Indicates whether to install FluxCD on management cluster
+# (required to install Flux-based addons)
+flux_enabled: false
 
 # The base domain for Azimuth ingress resources
 # This should be set by the concrete environment
