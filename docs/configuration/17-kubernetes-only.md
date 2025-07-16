@@ -7,7 +7,7 @@ This mode is still experimental and in early development!
 
 <!-- prettier-ignore-end -->
 
-- Kubernetes only is an environment/set of features designed to allow azimuth to run WITHOUT openstack on any Kubernetes cluster.
+- Kubernetes only is an environment/set of features designed to allow Azimuth to run WITHOUT Openstack on any Kubernetes cluster.
 - It is currently in alpha, so some features may not work as intended.
 - While Azimuth itself can run without Openstack, it depends on the Openstack API to create most of its platforms so this version can only deploy a limited subset of Azimuth apps.
 
@@ -25,7 +25,26 @@ This mode is still experimental and in early development!
 
 ### Deployment
 
+#### Development 
+- For quick and easy Azimuth deployment, a playbook has been created to setup a fresh Ubuntu VM to run Azimuth.
+
+ADD SOME KIND OF ESTIMATE FOR THE MINIMUM AND RECCOMENDED RESOURCES THIS VM NEEDS
+
+- this playbook sets up the VM with all the required dependencies, and then deploys Azimuth.
+
+- By default, it sets up a new k3s cluster,
+- Sets some system values,
+- Installs fresh command line tools,
+- Sets up the kubeconfig,
+- And deploys azimuth.
+
+- If you are running the playbook against an existing VM with some tools preinstalled/ an existing k3s cluster/ etc then these steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml`
+
 ```bash
+
+# ssh into your VM
+
+# exit your VM, and execute the rest of these commands in an empty folder 
 
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
@@ -50,18 +69,32 @@ ansible-galaxy install -f -r requirements.yml
 # N.B. these are excluded from git using .gitignore
 ./bin/generate-secrets
 
-# Deploy Azimuth
+# Run playbook to setup your VM amd Deploy Azimuth
 ansible-playbook azimuth_cloud.azimuth_ops.setup_existing_k3s
 ```
+
+#### Into an existing cluster
+(wip)
+
+##### Dependencies
+On the playbook machine:
+- k9s
+- Kubectl
+- Helm
+- Kustomize
+- Flux
+
+On the k3s host:
+- Nginx ingress controller (this may need some work for setup)
 
 ### Azimuth setup
 
 #### Tenancy creation
 
-- azimuth requires `tenancies` to be setup to create groups of users who can access/own resources.
+- Azimuth requires `tenancies` to be setup to create groups of users who can access/own resources.
 - your tenancy can be managed using CD through `flux`, which will read a repository and then apply the config files there to the cluster.
-- you can then push tenancies or app templates to the repository, and flux will automatically make them available inside your azimuth deployment
-- the repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repository
+- You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment
+- The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repository
 
 ```bash
 #clone the tennancy config repository on a machine that has a kubeconfig for the cluster
@@ -93,25 +126,25 @@ OIDC has now been setup on Azimuth, but it needs to be linked with the external 
 
 - Setup your Identity Provider of choice (example instructions for some tested providers below)
 
-##### with GitHub
+##### GitHub
 
-- select GitHub from the list of options
-- on another page, go to your GitHub account and open `settings -> developer settings -> OAuth apps`
-- create a new OAuth app
-- set the homepage URL to `http://identity.apps.<your-azimuth-ip>.sslip.io`
-- set the callback URL to `http://identity.apps.<your-azimuth-ip>.sslip.io/realms/azimuth-users/broker/github/endpoint`
-- create the app
+- Select GitHub from the list of options
+- On another page, go to your GitHub account and open `settings -> developer settings -> OAuth apps`
+- Create a new OAuth app
+- Set the homepage URL to `http://identity.apps.<your-azimuth-ip>.sslip.io`
+- Set the callback URL to `http://identity.apps.<your-azimuth-ip>.sslip.io/realms/azimuth-users/broker/github/endpoint`
+- Create the app
 - Copy the `Client ID` field over to the setup page on Keycloak
 - Generate a new client secret on GitHub, and copy it over
-- generate the new Identity provider on Keycloak
+- Generate the new Identity provider on Keycloak
 
-- once an OIDC provider has been setup, users can go to user login page at `http://identity.apps.<your-azimuth-ip>.sslip.io/` and select it as a login option
+- Once an OIDC provider has been setup, users can go to user login page at `http://identity.apps.<your-azimuth-ip>.sslip.io/` and select it as a login option
 
 ### Notes
 
 - This setup may work in HA mode but has not been tested
 
-- This setup will not work with other kubernetes distros as the kubeconfig path will be wrong, but could be adapted.
+- This setup will not work with other Kubernetes distros as the kubeconfig path will be wrong, but could be adapted.
 
 - [sslip.io](https://sslip.io) is used to provide DNS. This avoids the need for a DNS entry to be provisioned in advance.
 
