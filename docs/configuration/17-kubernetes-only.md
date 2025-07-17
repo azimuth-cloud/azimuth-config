@@ -25,27 +25,20 @@ This mode is still experimental and in early development!
 
 ### Deployment
 
-#### Development 
+#### Development
 - For quick and easy Azimuth deployment, a playbook has been created to setup a fresh Ubuntu VM to run Azimuth.
-
-ADD SOME KIND OF ESTIMATE FOR THE MINIMUM AND RECCOMENDED RESOURCES THIS VM NEEDS
-
-- this playbook sets up the VM with all the required dependencies, and then deploys Azimuth.
 
 - By default, it sets up a new k3s cluster,
 - Sets some system values,
-- Installs fresh command line tools,
+- Installs fresh command-line tools,
 - Sets up the kubeconfig,
 - And deploys azimuth.
+
+- The VM needs to be Ubuntu 24.04 or similar, with at least 2 VCPUs, 8GB of ram and 30GB of disk space (with monitoring disabled, if monitoring is enabled then at least 50GB of disk space is reccomended)
 
 - If you are running the playbook against an existing VM with some tools preinstalled/ an existing k3s cluster/ etc then these steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml`
 
 ```bash
-
-# ssh into your VM
-
-# exit your VM, and execute the rest of these commands in an empty folder 
-
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
@@ -77,15 +70,17 @@ ansible-playbook azimuth_cloud.azimuth_ops.setup_existing_k3s
 (wip)
 
 ##### Dependencies
-On the playbook machine:
+On the machine running the playbook:
 - k9s
 - Kubectl
 - Helm
 - Kustomize
 - Flux
 
-On the k3s host:
-- Nginx ingress controller (this may need some work for setup)
+- admin kubeconfig for the cluster in the default `~/.kube/config` file.
+
+On the kubernetes cluster:
+- Nginx ingress controller (this may need some work to setup)
 
 ### Azimuth setup
 
@@ -109,7 +104,6 @@ python3 bin/bootstrap.py --type kubeconfig \
 --git-remote-url <URL for your flux repo> \
 --oidc-admin-username tenancy-admin \
 --oidc-admin-email <your-email-on-OIDC-service>
-
 ```
 
 #### OIDC setup
