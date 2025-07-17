@@ -1,7 +1,5 @@
 ---
-
-# kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
-kubeconfig_path: "~/.kube/config"
+kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 
 configure_system_resources: true # setup for a custom CA and setting different defaults for k3s etc
 install_k3s: true
