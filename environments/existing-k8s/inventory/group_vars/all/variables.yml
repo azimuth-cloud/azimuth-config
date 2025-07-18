@@ -1,14 +1,16 @@
 ---
-kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
+kubeconfig_path: "~/Documents/StackHPC/azimuth/leafcloud_kubeconfig"
 
-configure_system_resources: true # setup for a custom CA and setting different defaults for k3s etc
-install_k3s: true
-install_cli_tools: true # useful on a VM but could overwrite existing tools on localhost
-slurp_k3s_kubeconfig: true # will overwrite existing kubeconfig
+configure_system_resources: false # setup for a custom CA and setting different defaults for k3s etc
+install_k3s: false
+install_cli_tools: false # useful on a VM but could overwrite existing tools on localhost
+slurp_k3s_kubeconfig: false # will overwrite existing kubeconfig
+ingress_controller_enabled: false
 
 # assumes the deploy host is also hosting the cluster, this may need to be overridden
-infra_external_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" # replace with cluster IP
-ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
+# infra_external_ip: 45.135.59.103
+# infra_external_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" # replace with cluster IP
+# ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
 
 # Disable HTTPS and certificate verification everywhere to avoid certificate issues (false by default)
 ingress_tls_enabled: false
@@ -25,3 +27,10 @@ certmanager_monitoring_enabled: false # certmanager tries to setup monitoring
 azimuth_authentication_type: oidc
 azimuth_cloud_provider_type: "null" # stops it expecting openstack
 # yes it has to be "null", and not null.
+
+ingress_base_domain: 45-135-57-156.sslip.io
+# install_mode: "other"
+zenith_sshd_host: 45.135.57.156
+
+flux_enabled: true # for the bootstrap script + remote management
+
