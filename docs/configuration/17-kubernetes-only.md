@@ -79,7 +79,7 @@ On the machine running the playbook:
 
 - admin kubeconfig for the cluster in the default `~/.kube/config` file.
 
-- An OpenSSH server running setup to allow you to ssh in to localhost
+- An OpenSSH server running setup to allow you to SSH in to localhost
 
 On the kubernetes cluster:
 - Nginx ingress controller
@@ -115,8 +115,8 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy
 
 - Azimuth requires `tenancies` to be setup to create groups of users who can access/own resources.
 - your tenancy can be managed using CD through `flux`, which will read a repository and then apply the config files there to the cluster.
-- [Azimth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/tree/feat/crossplane-support) is a template for tenancies, fork it so you can add your own users. 
-- You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment. 
+- [Azimth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/tree/feat/crossplane-support) is a template for tenancies, fork it so you can add your own users.
+- You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment.
 - The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repository.
 
 ```bash
