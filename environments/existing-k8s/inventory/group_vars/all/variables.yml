@@ -33,4 +33,3 @@ ingress_base_domain: 45-135-57-156.sslip.io
 zenith_sshd_host: 45.135.57.156
 
 flux_enabled: true # for the bootstrap script + remote management
-
