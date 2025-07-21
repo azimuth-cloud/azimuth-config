@@ -1,4 +1,4 @@
-# Kubernetes only mode
+# Standalone Azimuth mode
 
 <!-- prettier-ignore-start -->
 !!! warning
@@ -7,18 +7,26 @@ This mode is still experimental and in early development!
 
 <!-- prettier-ignore-end -->
 
-- Kubernetes only is an environment/set of features designed to allow Azimuth to run WITHOUT Openstack on any Kubernetes cluster.
+- Standalone mode is an environment/set of features designed to allow Azimuth to run WITHOUT Openstack on any Kubernetes cluster.
 - It is currently in alpha, so some features may not work as intended.
-- While Azimuth itself can run without Openstack, it depends on the Openstack API to create most of its platforms so this version can only deploy a limited subset of Azimuth apps.
+
+- Previously, Azimuth authentication has been delegated to OpenStack Keystone. Azimuth now supports using OIDC group membership to authorise access to Azimuth tenancies. Each tenancy now has the required credentials for the configured Azimuth cloud provider.
+- Azimuth defaults to using an OpenStack cloud provider, for the Standalone mode, we configure the null cloud provider via the environment config. Currently, the chosen cloud provider is a global Azimuth settings across all tenancies.
+- For more details on OIDC authentication, and what happens when OpenStack cloud provider is used with OIDC auth see [these docs](https://github.com/azimuth-cloud/azimuth-config/pull/188/files)
+- All Azimuth platforms, when using the null cloud provider and OIDC auth, are currently provided by the [new apps operator](https://github.com/azimuth-cloud/azimuth-apps-operator), which uses fluxCD resources to deploy apps on a remote K8s cluster, using the kubeconfig within the Azimuth tenancy k8s namespace.
 
 ## Install
 
 ### Assumptions/Warnings
 
 - The host VM targeted by the playbook is Ubuntu 22.04-24.04 or similar.
-- existing ingress controllers like `traefik` may conflict with the `nginx` ingress controller setup here.
-- CaaS apps will not work as they rely on Openstack API calls.
-- Community images will not work as they rely on Openstack API calls.
+- Existing ingress controllers such as `traefik` may conflict with the `nginx` ingress controller instaled by Azimuth.
+- CaaS apps will not work as they currently rely on injecting OpenStack application credentials, however this could be reworked in the future.
+<!--
+CaaS apps create clusters using ansible and terraform, although the operator currently depends on injecting an OpenStack application credential. The Azimuth driver and operator need some re-work to support passing K8s credentials into ansible.
+-->
+- Community images and CAPI clusters will not work as they rely on Openstack API calls.
+- OIDC relies on Crossplane, which currently does not work with Valero.
 
 ### Deployment
 
@@ -77,17 +85,17 @@ On the machine running the playbook:
 - admin kubeconfig for the cluster in the default `~/.kube/config` file.
 - An OpenSSH server running setup to allow you to SSH in to localhost.
 
-On the kubernetes cluster:
+On the Kubernetes cluster:
 
 - Nginx ingress controller.
-- A spare floating IP for zenith.
+- A spare floating IP for Zenith.
 
 ```bash
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
 
-# Replace the automatic assignment of 'infra_external_ip' with your IP of the cluster
+# If the IP of the cluster is not the IP of the host VM, replace the automatic assignment of 'infra_external_ip' with the external IP of your cluster
 vim environments/existing-k8s/inventory/group_vars/all/variables.yml
 
 # Set up the virtual environment
@@ -111,22 +119,22 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy
 
 #### Tenancy creation
 
-- Azimuth requires `tenancies` to be setup to create groups of users who can access/own resources.
-- Your tenancy can be managed using CD through `flux`, which will read a repository and then apply the config files there to the cluster.
-- [Azimth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/tree/feat/crossplane-support) is a template for tenancies, fork it so you can add your own users.
+- Azimuth requires `tenancies` to be setup to create groups of users who can access external Kubernetes clusters assigned to each tenancy.
+- Your tenancy can be managed using continuous deployment through `FluxCD`, which will read Kustomizations in a repository and apply their manifests to the cluster.
+- [Azimth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/) is a template for tenancies, [fork it](https://github.com/azimuth-cloud/azimuth-tenant-config/?tab=readme-ov-file#forkcopy-this-repository) so you have your own copy for Flux to reference.
 - You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment.
-- The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then enables flux to track that repository.
+- The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then creates resources for Flux to track that repository.
 
 ```bash
 #clone the tennancy config repository on a machine that has a kubeconfig for the cluster
 git clone https://github.com/<you>/<your-tennant-config>
-cd azimuth-tenant-config
+cd <your-tennant-config>
 
 # Run the setup script (for a more detailed explanation of what the script is doing see the tennancy repository readme)
 python3 bin/bootstrap.py --type kubeconfig \
---cred-file path/to/your-kubeconfig.yml \
+--cred-file path/to/tennant/kubeconfig.yml \
 --name script-tennant \
---azimuth-kubeconfig /etc/rancher/k3s/k3s.yaml \
+--azimuth-kubeconfig path/to/<admin kubeconfig for the cluster>.yml \
 --git-remote-url <URL for your flux repo> \
 --oidc-admin-username tenancy-admin \
 --oidc-admin-email <your-email-on-OIDC-service>
