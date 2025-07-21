@@ -50,13 +50,13 @@ git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
 
 # Setup the hosts file to point at your VM
-vim environments/existing-k8s/inventory/hosts
+vim environments/standalone/inventory/hosts
 
 # Set up the virtual environment
 ./bin/ensure-venv
 
 # Activate the demo environment
-source ./bin/activate existing-k8s
+source ./bin/activate standalone
 
 # Install Ansible dependencies
 ansible-galaxy install -f -r requirements.yml
@@ -66,7 +66,7 @@ ansible-galaxy install -f -r requirements.yml
 ./bin/generate-secrets
 
 # Run playbook to setup your VM amd Deploy Azimuth
-ansible-playbook azimuth_cloud.azimuth_ops.setup_existing_k3s
+ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 ```
 
 #### Into an existing cluster
@@ -96,13 +96,13 @@ git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
 
 # If the IP of the cluster is not the IP of the host VM, replace the automatic assignment of 'infra_external_ip' with the external IP of your cluster
-vim environments/existing-k8s/inventory/group_vars/all/variables.yml
+vim environments/standalone/inventory/group_vars/all/variables.yml
 
 # Set up the virtual environment
 ./bin/ensure-venv
 
 # Activate the demo environment
-source ./bin/activate existing-k8s
+source ./bin/activate standalone
 
 # Install Ansible dependencies
 ansible-galaxy install -f -r requirements.yml
