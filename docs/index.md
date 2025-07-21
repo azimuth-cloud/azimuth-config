@@ -33,7 +33,7 @@ cluster within an OpenStack project on the target cloud to host our Azimuth depl
 This is exactly what the playbooks in the `azimuth-ops` collection will do, when driven by
 a configuration derived from `azimuth-config`.
 
-Alternatively, an experimental [kubernetes only mode](./configuration/17-kubernetes-only.md) is currently in development which can deploy Azimuth onto any Kubernetes cluster (with limited functionality).
+Alternatively, an experimental [kubernetes only mode](./configuration/17-standalone-mode.md) is currently in development which can deploy Azimuth onto any Kubernetes cluster (with limited functionality).
 
 There are two methods that `azimuth-ops` can use to deploy Azimuth and all of its
 dependencies:
