@@ -28,6 +28,9 @@ azimuth_authentication_type: oidc
 azimuth_cloud_provider_type: "null" # stops it expecting openstack
 # yes it has to be "null", and not null.
 
+# k3s expects special filesystem setup done by terriform that is not done here
+k3s_configure_filesystem: false
+
 ingress_base_domain: 45-135-57-156.sslip.io
 # install_mode: "other"
 zenith_sshd_host: 45.135.57.156

@@ -226,3 +226,11 @@ azimuth_capi_operator_capi_helm_openstack_loadbalancer_provider: >-
 
 # controls if prometheus and its associated CRDs are deployed
 deploy_prometheus_stack: true
+
+keycloak_metrics: "{{ deploy_prometheus_stack }}"
+zenith_metrics: "{{ deploy_prometheus_stack }}"
+azimuth_identity_operator_metrics: "{{ deploy_prometheus_stack }}"
+azimuth_capi_operator_metrics: "{{ deploy_prometheus_stack }}"
+azimuth_apps_operator_metrics: "{{ deploy_prometheus_stack }}"
+azimuth_metrics: "{{ deploy_prometheus_stack }}"
+ingress_nginx_prometheus_stack_enabled: "{{ deploy_prometheus_stack}}"
