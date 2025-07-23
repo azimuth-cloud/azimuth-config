@@ -74,16 +74,14 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 ##### Dependencies
 
 On the machine running the playbook:
-
-- k9s
+- python3
+- pip
 - Kubectl
 - Helm
 - Kustomize
 - Flux
-  (you can run the setup_k3s playbook with all options other than install_cli_tools disabled to do this setup for you)
 
 - admin kubeconfig for the cluster in the default `~/.kube/config` file.
-- An OpenSSH server running setup to allow you to SSH in to localhost.
 
 On the Kubernetes cluster:
 
