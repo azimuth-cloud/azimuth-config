@@ -15,7 +15,7 @@ ingress_controller_enabled: false
 # Disable HTTPS and certificate verification everywhere to avoid certificate issues (false by default)
 ingress_tls_enabled: false
 
-azimuth_current_cloud_name: k3s-azimuth
+azimuth_current_cloud_name: standalone
 
 # Disabling things that will not work without openstack
 azimuth_clusters_enabled: false

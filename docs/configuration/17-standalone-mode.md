@@ -121,7 +121,7 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy
 
 - Azimuth requires `tenancies` to be setup to create groups of users who can access external Kubernetes clusters assigned to each tenancy.
 - Your tenancy can be managed using continuous deployment through `FluxCD`, which will read Kustomizations in a repository and apply their manifests to the cluster.
-- [Azimth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/) is a template for tenancies, [fork it](https://github.com/azimuth-cloud/azimuth-tenant-config/?tab=readme-ov-file#forkcopy-this-repository) so you have your own copy for Flux to reference.
+- [Azimuth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/) is a template for tenancies, [fork it](https://github.com/azimuth-cloud/azimuth-tenant-config/?tab=readme-ov-file#forkcopy-this-repository) so you have your own copy for Flux to reference.
 - You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment.
 - The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then creates resources for Flux to track that repository.
 
@@ -132,12 +132,12 @@ cd <your-tennant-config>
 
 # Run the setup script (for a more detailed explanation of what the script is doing see the tennancy repository readme)
 python3 bin/bootstrap.py --type kubeconfig \
---cred-file path/to/tennant/kubeconfig.yml \
---name script-tennant \
---azimuth-kubeconfig path/to/<admin kubeconfig for the cluster>.yml \
---git-remote-url <URL for your flux repo> \
---oidc-admin-username tenancy-admin \
---oidc-admin-email <your-email-on-OIDC-service>
+  --cred-file path/to/tennant/kubeconfig.yml \
+  --name script-tennant \
+  --azimuth-kubeconfig path/to/<admin kubeconfig for the cluster>.yml \
+  --git-remote-url <URL for your flux repo> \
+  --oidc-admin-username tenancy-admin \
+  --oidc-admin-email <your-email-on-OIDC-service>
 ```
 
 #### OIDC setup
