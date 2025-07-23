@@ -1,5 +1,5 @@
 ---
-#kubeconfig_path: "path/to/your/kubeconfig"
+# kubeconfig_path: "path/to/your/kubeconfig"
 
 configure_system_resources: true # setup for a custom CA and setting different defaults for k3s etc
 install_k3s: true

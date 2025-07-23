@@ -74,6 +74,7 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 ##### Dependencies
 
 On the machine running the playbook:
+
 - python3
 - pip
 - Kubectl
@@ -81,12 +82,13 @@ On the machine running the playbook:
 - Kustomize
 - Flux
 
-- admin kubeconfig for the cluster in the default `~/.kube/config` file.
+- an admin kubeconfig for the cluster in the default `~/.kube/config` location, or
+- set `kubeconfig_path: "path/to/your/kubeconfig"` in the enviroments variables file (or supply it as an argument when running the playbook)
 
 On the Kubernetes cluster:
 
 - Nginx ingress controller.
-- A spare floating IP for Zenith.
+- The cluster needs to support load balancer service types. (e.g. [Service LB](https://docs.k3s.io/networking/networking-services#service-load-balancer) on k3s by default)
 
 ```bash
 # Clone the azimuth-config repository
