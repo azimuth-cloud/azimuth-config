@@ -30,6 +30,7 @@ on:
         description: >-
           The git ref to test an upgrade to.
         type: string
+        default: devel
 
 jobs:
   # Tests an Azimuth upgrade from the current latest release to the code under
