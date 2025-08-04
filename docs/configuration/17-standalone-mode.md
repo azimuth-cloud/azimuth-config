@@ -118,29 +118,6 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy
 
 ### Azimuth setup
 
-#### Tenancy creation
-
-- Azimuth requires `tenancies` to be setup to create groups of users who can access external Kubernetes clusters assigned to each tenancy.
-- Your tenancy can be managed using continuous deployment through `FluxCD`, which will read Kustomizations in a repository and apply their manifests to the cluster.
-- [Azimuth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/) is a template for tenancies, [fork it](https://github.com/azimuth-cloud/azimuth-tenant-config/?tab=readme-ov-file#forkcopy-this-repository) so you have your own copy for Flux to reference.
-- You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment.
-- The repository also includes a [setup script](https://github.com/azimuth-cloud/azimuth-tenant-config/blob/feat/crossplane-support/docs/standalone-quickstart.md) that automates setting up a new tenancy, pushes the files to your repository and then creates resources for Flux to track that repository.
-
-```bash
-#clone the tennancy config repository on a machine that has a kubeconfig for the cluster
-git clone https://github.com/<you>/<your-tennant-config>
-cd <your-tennant-config>
-
-# Run the setup script
-python3 bin/bootstrap.py --type kubeconfig \
-  --cred-file path/to/tennant/kubeconfig.yml \
-  --name script-tennant \
-  --azimuth-kubeconfig path/to/<admin kubeconfig for the cluster>.yml \
-  --git-remote-url <URL for your flux repo> \
-  --oidc-admin-username tenancy-admin \
-  --oidc-admin-email <your-email-on-OIDC-service>
-```
-
 #### OIDC setup
 
 OIDC authentication can be used for user accounts on Azimuth, but it requires some setup.
@@ -166,6 +143,12 @@ OIDC authentication can be used for user accounts on Azimuth, but it requires so
 - Scroll down to `First login flow override`, and set it to `map-users-flow` (this maps users GitHub emails to their account emails)
 
 - Once an OIDC provider has been setup, users can go to user login page at `http://identity.apps.<your-azimuth-ip>.sslip.io/` and select it as a login option.
+
+#### Tenancy creation
+
+- Azimuth requires `tenancies` to be setup to create groups of users who can access external Kubernetes clusters assigned to each tenancy.
+- Your tenancies can be managed using continuous deployment through `FluxCD`, which will read Kustomizations in a repository and apply their manifests to the cluster.
+- Follow this [setup script](https://github.com/azimuth-cloud/azimuth-tenant-config/blob/feat/crossplane-support/docs/standalone-quickstart.md) to setup a tenancy for your Azimuth.
 
 ### Notes
 
