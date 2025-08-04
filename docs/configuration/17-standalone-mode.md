@@ -41,6 +41,7 @@ CaaS apps create clusters using ansible and terraform, although the operator cur
 - And deploys azimuth.
 
 - The VM needs to be Ubuntu 24.04 or similar, with at least 2 VCPUs, 8GB of ram and 30GB of disk space (with monitoring disabled, if monitoring is enabled then at least 50GB of disk space is reccomended)
+- Ports 6443, 443, 80, 22 and 2222 should be open.
 
 - If you are running the playbook against an existing VM with some tools preinstalled/ an existing k3s cluster/ etc then these steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml`
 
@@ -123,14 +124,14 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy
 - Your tenancy can be managed using continuous deployment through `FluxCD`, which will read Kustomizations in a repository and apply their manifests to the cluster.
 - [Azimuth tenant config](https://github.com/azimuth-cloud/azimuth-tenant-config/) is a template for tenancies, [fork it](https://github.com/azimuth-cloud/azimuth-tenant-config/?tab=readme-ov-file#forkcopy-this-repository) so you have your own copy for Flux to reference.
 - You can then push tenancies or app templates to the repository, and Flux will automatically make them available inside your Azimuth deployment.
-- The repository also includes a setup script that automates setting up a new tenancy, pushes the files to your repository and then creates resources for Flux to track that repository.
+- The repository also includes a [setup script](https://github.com/azimuth-cloud/azimuth-tenant-config/blob/feat/crossplane-support/docs/standalone-quickstart.md) that automates setting up a new tenancy, pushes the files to your repository and then creates resources for Flux to track that repository.
 
 ```bash
 #clone the tennancy config repository on a machine that has a kubeconfig for the cluster
 git clone https://github.com/<you>/<your-tennant-config>
 cd <your-tennant-config>
 
-# Run the setup script (for a more detailed explanation of what the script is doing see the tennancy repository readme)
+# Run the setup script
 python3 bin/bootstrap.py --type kubeconfig \
   --cred-file path/to/tennant/kubeconfig.yml \
   --name script-tennant \
@@ -145,7 +146,7 @@ python3 bin/bootstrap.py --type kubeconfig \
 OIDC authentication can be used for user accounts on Azimuth, but it requires some setup.
 
 - Go to the admin Keycloak console at `http://identity.apps.<your_ip>.sslip.io/admin/master/console/`
-- Login with the username "admin" and the password in `.../existing_k8s/inventory/group_vars/all/secrets.yml`
+- Login with the username "admin" and the password in `../existing_k8s/inventory/group_vars/all/secrets.yml`
 - Switch to the realm `azimuth-users`
 - Navigate to `Identity Providers` in the sidebar.
 - Setup your Identity Provider of choice (example instructions for a tested provider below).
@@ -161,6 +162,8 @@ OIDC authentication can be used for user accounts on Azimuth, but it requires so
 - Copy the `Client ID` field over to the setup page on Keycloak.
 - Generate a new client secret on GitHub, and copy it over.
 - Generate the new Identity provider on Keycloak.
+- Once the provider has been created, click on it to open the `Provider details` page
+- Scroll down to `First login flow override`, and set it to `map-users-flow` (this maps users GitHub emails to their account emails)
 
 - Once an OIDC provider has been setup, users can go to user login page at `http://identity.apps.<your-azimuth-ip>.sslip.io/` and select it as a login option.
 
