@@ -12,21 +12,21 @@ This mode is still experimental and in early development!
 
 - Previously, Azimuth authentication has been delegated to OpenStack Keystone. Azimuth now supports using OIDC group membership to authorise access to Azimuth tenancies. Each tenancy now has the required credentials for the configured Azimuth cloud provider.
 - Azimuth defaults to using an OpenStack cloud provider, for the Standalone mode, we configure the null cloud provider via the environment config. Currently, the chosen cloud provider is a global Azimuth settings across all tenancies.
-- For more details on OIDC authentication, and what happens when OpenStack cloud provider is used with OIDC auth see [these docs](https://github.com/azimuth-cloud/azimuth-config/pull/188/files)
-- All Azimuth platforms, when using the null cloud provider and OIDC auth, are currently provided by the [new apps operator](https://github.com/azimuth-cloud/azimuth-apps-operator), which uses fluxCD resources to deploy apps on a remote K8s cluster, using the kubeconfig within the Azimuth tenancy k8s namespace.
+- For more details on OIDC authentication, see [identity docs](https://github.com/azimuth-cloud/azimuth-config/pull/188/files)
+- All Azimuth platforms, when using the null cloud provider and OIDC auth, are currently provided by the [apps operator](https://github.com/azimuth-cloud/azimuth-apps-operator), which uses FluxCD resources to deploy apps on a remote K8s cluster, using the kubeconfig provided for the tenancy.
 
 ## Install
 
 ### Assumptions/Warnings
 
 - The host VM targeted by the playbook is Ubuntu 22.04-24.04 or similar.
-- Existing ingress controllers such as `traefik` may conflict with the `nginx` ingress controller instaled by Azimuth.
+- Existing ingress controllers such as Traefik may conflict with the Nginx ingress controller installed by Azimuth.
 - CaaS apps will not work as they currently rely on injecting OpenStack application credentials, however this could be reworked in the future.
 <!--
 CaaS apps create clusters using ansible and terraform, although the operator currently depends on injecting an OpenStack application credential. The Azimuth driver and operator need some re-work to support passing K8s credentials into ansible.
 -->
 - Community images and CAPI clusters will not work as they rely on Openstack API calls.
-- OIDC relies on Crossplane, which currently does not work with Valero.
+- OIDC relies on Crossplane, which currently does not work with Velero.
 
 ### Deployment
 
@@ -43,7 +43,7 @@ CaaS apps create clusters using ansible and terraform, although the operator cur
 - The VM needs to be Ubuntu 24.04 or similar, with at least 2 VCPUs, 8GB of ram and 30GB of disk space (with monitoring disabled, if monitoring is enabled then at least 50GB of disk space is reccomended)
 - Ports 6443, 443, 80, 22 and 2222 should be open.
 
-- If you are running the playbook against an existing VM with some tools preinstalled/ an existing k3s cluster/ etc then these steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml`
+- If you are running the playbook against an existing VM with some tools preinstalled or are targeting an existing Kubernetes cluster then these steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml`
 
 ```bash
 # Clone the azimuth-config repository
@@ -83,8 +83,8 @@ On the machine running the playbook:
 - Kustomize
 - Flux
 
-- an admin kubeconfig for the cluster in the default `~/.kube/config` location, or
-- set `kubeconfig_path: "path/to/your/kubeconfig"` in the enviroments variables file (or supply it as an argument when running the playbook)
+- An admin kubeconfig for the cluster in the default `~/.kube/config` location. Alternatively, you can set 
+  `kubeconfig_path: "path/to/your/kubeconfig"` in the environment's variables file (or supply it as an extra var when running the playbook)
 
 On the Kubernetes cluster:
 
@@ -131,7 +131,7 @@ OIDC authentication can be used for user accounts on Azimuth, but it requires so
 ##### GitHub
 
 - Select GitHub from the list of options.
-- On another page, go to your GitHub account and open `settings -> developer settings -> OAuth apps`
+- On another page, go to your GitHub account and open `Settings -> Developer Settings -> OAuth apps`
 - Create a new OAuth app.
 - Set the homepage URL to `http://identity.apps.<your-azimuth-ip>.sslip.io`
 - Set the callback URL to `http://identity.apps.<your-azimuth-ip>.sslip.io/realms/azimuth-users/broker/github/endpoint`
