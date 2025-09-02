@@ -15,7 +15,6 @@ This mode is still experimental and in early development!
 - For more details on OIDC authentication, see [identity docs](https://github.com/azimuth-cloud/azimuth-config/pull/188/files)
 - All Azimuth platforms, when using the null cloud provider and OIDC auth, are currently provided by the [apps operator](https://github.com/azimuth-cloud/azimuth-apps-operator), which uses FluxCD resources to deploy apps on a remote K8s cluster, using the kubeconfig provided for the tenancy.
 
-
 ## Assumptions/Warnings
 
 - The host VM targeted by the playbook is Ubuntu 22.04-24.04 or similar.
@@ -34,6 +33,7 @@ CaaS apps create clusters using ansible and terraform, although the operator cur
 - For quick and easy Azimuth deployment, a playbook has been created to setup a fresh Ubuntu VM to run Azimuth.
 
 By default, the playbook will:
+
 1. Setup system inotify limits limits and trust bundles
 2. Install k3s
 3. Install required command-line tools (kubectl, Helm, Flux, Kustomize, K9s)
@@ -77,6 +77,7 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 #### Dependencies
 
 ##### Required tools on the host machine
+
 - python3
 - pip
 - Kubectl
@@ -92,6 +93,7 @@ ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 - The cluster needs to support load balancer service types. (e.g. [Service LB](https://docs.k3s.io/networking/networking-services#service-load-balancer) on k3s by default)
 
 ### Install
+
 ```bash
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
