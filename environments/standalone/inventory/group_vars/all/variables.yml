@@ -29,6 +29,5 @@ azimuth_cloud_provider_type: "null" # stops it expecting openstack (yes it has t
 k3s_configure_filesystem: false
 
 install_mode: "standalone"
-zenith_sshd_host: 45.135.57.156
 
 flux_enabled: true # for the bootstrap script + remote management
