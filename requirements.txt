@@ -2,7 +2,7 @@ ansible-core>=2.12,<2.19 # require undef filter
 azimuth-robotframework
 bcrypt==4.0.1  # this is the latest version that doesn't emit a warning
 jmespath
-git+https://github.com/stackhpc/jsonschema-default.git@master#egg=jsonschema_default
+jsonschema-default
 munch
 passlib
 python-octaviaclient
