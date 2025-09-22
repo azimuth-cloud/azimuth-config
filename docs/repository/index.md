@@ -14,7 +14,7 @@ repository:
 
 ```sh
 # Clone the azimuth-config repository
-git clone https://github.com/azimuth-cloud/azimuth-config.git my-azimuth-config
+git clone https://github.com/azimuth-cloud/azimuth-config.git -b stable my-azimuth-config
 cd my-azimuth-config
 
 # Maintain the existing origin remote as upstream
@@ -23,7 +23,7 @@ git remote rename origin upstream
 # Create a new origin remote for the repository location
 git remote add origin git@<repo location>/my-azimuth-config.git
 
-# Create a new main branch from devel
+# Create a new main branch from stable
 # This will be the branch that is deployed into production
 git checkout -b main
 
