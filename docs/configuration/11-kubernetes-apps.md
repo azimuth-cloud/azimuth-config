@@ -42,8 +42,11 @@ Azimuth comes with the following app templates enabled by default:
 `jupyterhub`
 : Allows the user to deploy [JupyterHub](https://jupyter.org/hub) on their clusters. JupyterHub
 provides a multi-user environment for using [Jupyter notebooks](https://jupyter.org/) where
-each user gets their own dynamically-provisioned notebook server and storage. The Jupyter
-notebook interface is exposed using [Zenith](./08-zenith.md).
+each user gets their own dynamically-provisioned notebook server and storage. The JupyterHub
+notebook profiles can be customised to provide users with required environments by the Azimuth
+administrator - see
+[user notebook profiles](https://github.com/azimuth-cloud/azimuth-charts/blob/54a06cfc08acf5a9147e56a23de2d018261d1f82/jupyterhub-azimuth/values.yaml#L7-L15).
+The Jupyter notebook interface is exposed using [Zenith](./08-zenith.md).
 
 `daskhub`
 : A JupyterHub instance with [Dask](https://www.dask.org/) integration. Dask is a library that aims
