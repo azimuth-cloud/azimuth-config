@@ -63,6 +63,7 @@ jobs:
           # For Kubernetes, generate a single named test that can be referenced
           # after the upgrade
           extra-vars: |
+            generate_tests_caas_test_case_slurm_enabled: false
             upgrade_test_kubernetes_latest_available_version: >-
               {{-
                 generate_tests_installed_kubernetes_templates |
