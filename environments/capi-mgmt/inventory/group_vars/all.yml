@@ -23,16 +23,23 @@ infra_flavor_id: >-
       json_query('ID')
   }}
 
+# Extract minor and major version and filter into format of community images manifest key
+_magnum_community_images_key: "kubernetes-{{ capi_cluster_kubernetes_version[1:5] | regex_replace('\\.','-') }}-jammy"
 # Upload the Kubernetes image we need for the HA cluster as a private image
 # By default, we get the image from the azimuth-images version
-community_images_default:
-  kube_1_31:
-    name: "{{ community_images_azimuth_images_manifest['kubernetes-1-31-jammy'].name }}"
-    source_url: "{{ community_images_azimuth_images_manifest['kubernetes-1-31-jammy'].url }}"
-    checksum: "{{ community_images_azimuth_images_manifest['kubernetes-1-31-jammy'].checksum }}"
-    source_disk_format: "qcow2"
-    container_format: "bare"
-    kubernetes_version: "{{ community_images_azimuth_images_manifest['kubernetes-1-31-jammy'].kubernetes_version }}"
+community_images_default: >-
+  {{-
+    {
+      "kube_" + (capi_cluster_kubernetes_version[1:5] | regex_replace('\.', '_') ): {
+        "name": community_images_azimuth_images_manifest[_magnum_community_images_key].name,
+        "source_url": community_images_azimuth_images_manifest[_magnum_community_images_key].url,
+        "checksum": community_images_azimuth_images_manifest[_magnum_community_images_key].checksum,
+        "source_disk_format": "qcow2",
+        "container_format": "bare",
+        "kubernetes_version": community_images_azimuth_images_manifest[_magnum_community_images_key].kubernetes_version
+      }
+    }
+  }}
 community_images_default_visibility: private
 community_images_update_existing_visibility: false
 

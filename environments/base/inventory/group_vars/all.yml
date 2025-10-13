@@ -47,6 +47,9 @@ certmanager_acmehttp01issuer_enabled: "{{ not ingress_tls_wildcard_certificate }
 # By default, we use the OpenStack cloud provider
 azimuth_cloud_provider_type: openstack
 
+# Define Kubernetes version so it is accessible to capi_cluster defaults and capi_mgmt environment
+capi_cluster_kubernetes_version: v1.32.1
+
 # Community images are not used when the null provider is configured
 community_images_enabled: "{{ azimuth_cloud_provider_type != 'null' }}"
 
