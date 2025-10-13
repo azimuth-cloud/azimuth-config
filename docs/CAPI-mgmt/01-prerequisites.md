@@ -15,12 +15,16 @@ Documentation on kayobe-config can be found [here](https://stackhpc-kayobe-confi
 
 ### Networking
 
-The Cluster API architecture relies on a CAPI management cluster in order to run the aforementioned Kubernetes operators which interact directly with the OpenStack APIs. The two requirements for this management cluster are:
+The Cluster API architecture relies on a CAPI management cluster in order to run Kubernetes operators
+which directly interact with the OpenStack APIs. 
 
-It must be capable of reaching the public OpenStack APIs.
+This management cluster has two main requirements in order to operate:
 
-It must be reachable from the control plane nodes (either controllers or dedicated network hosts) on which the Magnum containers are running (so that the Magnum can reach the IP listed in the management cluster’s kubeconfig file).
-
+- Firstly, it must be capable of reaching the public OpenStack APIs. 
+- Secondly, the management cluster must be reachable from the control
+  plane nodes on which the Magnum containers are running. 
+  - This is so that the Magnum containers may reach the management
+    cluster’s IP listed in the `kubeconfig`.
 
 ### OpenStack project quotas
 
@@ -35,10 +39,10 @@ A standard high-availability (HA) deployment with a seed node, 3 control plane n
   - 3 x during normal operation, 4 x during rolling upgrade
 - 3 x load-balancers
 - 500GB Cinder storage
-- 3 x floating IPs
+<!-- - 3 x floating IPs
   - One for accessing the seed node
-  - One fo the ingress controller for accessing HTTP services
-  - One for the Zenith SSHD server
+  - One for the ingress controller for accessing HTTP services
+  - One for the Zenith SSHD server -->
 
 <!-- prettier-ignore-start -->
 !!! tip
