@@ -1,0 +1,39 @@
+---
+name: Scheduled upgrade
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+on:
+  # Run weekly on a Thursday at 6am
+  schedule:
+    - cron: "0 6 * * 4"
+
+jobs:
+  test_upgrade:
+    runs-on: ubuntu-latest
+    if: github.repository == 'azimuth-cloud/azimuth-config'
+    steps:
+      - name: Find latest tagged release
+        id: get-tag
+        run: >-
+          echo "latest=$(gh release view --json tagName --jq .tagName)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run upgrade workflow
+        uses: ./.github/workflows/test-upgrade.yml
+        with:
+          from-ref: ${{ steps.get-tag.outputs.latest }}
+          to-ref: "devel"
+
+      - name: Send message to Slack
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: "${{ secrets.SLACK_WEBHOOK_URL }}"
+          webhook-type: incoming-webook
+          payload: |
+            text: ":siren: Scheduled Azimuth upgrade test failed\n"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}""
+        if: ${{ failure() }}
