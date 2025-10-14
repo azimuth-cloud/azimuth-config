@@ -28,8 +28,8 @@ infra_flavor_id: >-
 community_images_default: |-
   {
     {% set kube_version = capi_cluster_kubernetes_version | regex_replace('^v', '') %}
-    {% set kube_image_series = kube_version.split(".") | join("_") %}
-    {% set kube_manifest_series = kube_version.split(".") | join("-") %}
+    {% set kube_image_series = kube_version.split(".")[:-1] | join("_") %}
+    {% set kube_manifest_series = kube_version.split(".")[:-1] | join("-") %}
     {% set image_key = "kube_" ~ kube_image_series %}
     {% set manifest_key = "kubernetes-" ~ kube_manifest_series ~ "-jammy" %}
     "{{ image_key }}": {
