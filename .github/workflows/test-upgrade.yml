@@ -4,8 +4,6 @@ name: Upgrade test
 permissions:
   contents: read
   packages: write
-  # To report GitHub Actions status checks
-  statuses: write
   id-token: write
 
 on:

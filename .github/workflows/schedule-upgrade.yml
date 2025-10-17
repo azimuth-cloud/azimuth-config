@@ -14,9 +14,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  test_upgrade:
+  get_latest_release:
+    name: Find latest tagged release
     runs-on: ubuntu-latest
     if: github.repository == 'azimuth-cloud/azimuth-config'
+    outputs:
+      latest_release: ${{ steps.get-tag.outputs.latest }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -28,17 +31,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run upgrade workflow
-        uses: ./.github/workflows/test-upgrade.yml
-        with:
-          from-ref: ${{ steps.get-tag.outputs.latest }}
-          to-ref: "devel"
+  test_upgrade:
+    name: Run upgrade workflow
+    secrets: inherit
+    needs: get_latest_release
+    uses: ./.github/workflows/test-upgrade.yml
+    with:
+      from-ref: ${{ needs.get_latest_release.outputs.latest_release }}
+      to-ref: "devel"
 
+  send_slack_message:
+    name: Send message to Slack
+    runs-on: ubuntu-latest
+    if: ${{ success() || failure() }}
+    needs: test_upgrade
+    steps:
       - name: Send message to Slack
         uses: slackapi/slack-github-action@v2.1.1
         with:
           webhook: "${{ secrets.SLACK_WEBHOOK_URL }}"
           webhook-type: incoming-webhook
           payload: |
-            text: ":siren: Scheduled Azimuth upgrade test failed\n"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}""
-        if: ${{ failure() }}
+            text: ":rotating_light: \nScheduled Azimuth upgrade test **${{ needs.test_upgrade.result }}**\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
