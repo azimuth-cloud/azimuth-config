@@ -10,8 +10,8 @@ standalone CAPI management cluster, using Magnum as the chosen COE.
 
 <!-- prettier-ignore-start -->
 !!! note
-    Make sure you have some understanding of [stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config), 
-    as well as satisfying the [deployment prerequisites](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2024.1/configuration/magnum-capi.html#deployment-prerequisites).
+    Make sure you have some understanding of [stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config),
+    as well as satisfying the [deployment prerequisites](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html#deployment-prerequisites).
 
 !!! note
     It is assumed that you have already followed the steps in setting up a configuration repository, and so have an environment for your site that is ready to be configured.

@@ -7,6 +7,51 @@ The variables used to configure HA deployments are the same as those for Azimuth
 only a surface level of detail will be covered below. For further details visit the
 [Azimuth Kubernetes configuration documentation](../configuration/03-kubernetes-config.md).
 
+## Cluster configuration
+
+The shape and form which the cluster can take is possible to customise through defining
+variables which can control the image, Kubernetes version, node flavors, and cluster scaling.
+
+Below is the list of variables that can be used to customise a CAPI management cluster
+deployment. These variables have defaults which are described above each of the variables.
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
+#### Configuration for the HA cluster ####
+
+# The ID of the image that will be used for the nodes of the HA cluster.
+# By default, a suitable image is uploaded to the target project.
+capi_cluster_machine_image_id: "<image id>"
+
+# The Kubernetes version that will be used for the HA cluster.
+# This should match the image specified above.
+capi_cluster_kubernetes_version: 1.31.10
+
+# The name of the flavor to use for control plane nodes.
+# At least 2 vCPUs and 8GB RAM is required.
+# By default, the first flavor matching these requirements will be used.
+capi_cluster_control_plane_flavor: "<flavor name>"
+
+# The name of the flavor to use for worker nodes.
+# At least 2 vCPUs and 8GB RAM is required.
+# By default, the first flavor matching these requirements will be used.
+capi_cluster_worker_flavor: "<flavor name>"
+
+# The number of worker nodes to deploy in the cluster.
+# Defaults to 3.
+capi_cluster_worker_count: 3
+```
+
+<!-- prettier-ignore-start -->
+!!! tip
+    Ensure that the Kubernetes version selected corresponds to an available
+    image built and tested for that version. See the [Images](#images) section
+    below for further details.
+
+!!! note
+    The specified flavors must exist in the target OpenStack project and have
+    enough sufficient resources to host the desired number of nodes.
+<!-- prettier-ignore-end -->
+
 ## Images
 
 The clusters deployed by the Cluster API (CAPI) driver make use of the Ubuntu Kubernetes images
@@ -38,6 +83,7 @@ kube_1_27_image_id: "{{ community_images_image_ids.kube_1_27 }}"
 ```
 
 ## Docker Hub rate limits
+
 <!-- prettier-ignore-start -->
 !!! warning
     Docker Hub [imposes rate limits](https://docs.docker.com/docker-hub/download-rate-limit/)
