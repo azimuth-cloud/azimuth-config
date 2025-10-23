@@ -1,15 +1,15 @@
 # Disaster Recovery
 
-Azimuth uses [Velero](https://velero.io) as a disaster recovery solution. Velero provides the
-ability to back up Kubernetes API resources to an object store and has a plugin-based system
-to enable snapshotting of a cluster's persistent volumes.
+CAPI management clusters can be configured to use [Velero](https://velero.io) as a disaster
+recovery solution. Velero provides the ability to back up Kubernetes API resources to an object
+store and has a plugin-based system to enable snapshotting of a cluster's persistent volumes.
 
 <!-- prettier-ignore-start -->
 !!! warning
-    Backup and restore is only available for production-grade HA installations of Azimuth.
+    Backup and restore is only available for production-grade HA installations of clusters.
 <!-- prettier-ignore-end -->
 
-The Azimuth playbooks install Velero on the HA management cluster and the Velero command-line-tool on the seed node. Once configured with the appropriate credentials, the installation process will create a [Schedule](https://velero.io/docs/latest/api-types/schedule/) on the HA cluster, which triggers a daily backup at midnight and cleans up backups older which are more than 1 week old.
+The playbooks install Velero on the HA management cluster and the Velero command-line-tool on the seed node. Once configured with the appropriate credentials, the installation process will create a [Schedule](https://velero.io/docs/latest/api-types/schedule/) on the HA cluster, which triggers a daily backup at midnight and cleans up backups older which are more than 1 week old.
 
 The
 [AWS Velero plugin](https://github.com/vmware-tanzu/velero-plugin-for-aws) is used for S3 support
@@ -59,12 +59,12 @@ velero_aws_secret_access_key: <s3-secret-value>
 
 !!! danger
     The S3 credentials should be kept secret. If you want to keep them in Git - which is recommended - then they must be encrypted.
-    See [secrets](../repository/secrets.md).
+    See [secrets](../repository/secrets.md) for instructions on how to do this.
 <!-- prettier-ignore-end -->
 
 ## Velero CLI
 
-The Velero installation process also installs the Velero CLI on the Azimuth seed node, which can be
+The Velero installation process also installs the Velero CLI on the seed node, which can be
 used to inspect the state of the backups:
 
 ```sh title="On the seed node, with the kubeconfig for the HA cluster exported"

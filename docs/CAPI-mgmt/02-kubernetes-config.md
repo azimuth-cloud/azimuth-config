@@ -5,7 +5,7 @@ i.e. the HA cluster in a HA deployment and tenant clusters.
 
 The variables used to configure HA deployments are the same as those for Azimuth and so
 only a surface level of detail will be covered below. For further details visit the
-[Azimuth Kubernetes configuration documentation](../configuration/03-kubernetes-config.md). 
+[Azimuth Kubernetes configuration documentation](../configuration/03-kubernetes-config.md).
 
 ## Images
 
@@ -28,7 +28,7 @@ on each cloud regularly.
     Information on community images and how they are built can be found [here](../configuration/09-community-images.md).
 <!-- prettier-ignore-end -->
 
-If required, it is possible to reference the image's IDs using the `community_images_image_ids`
+If required, it is possible to reference an image's IDs using the `community_images_image_ids`
 variable. This, for example, could be used to create [custom Kubernetes templates](./10-kubernetes-clusters.md#custom-cluster-templates).
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
@@ -74,11 +74,13 @@ not available on the target cloud.
 <!-- prettier-ignore-start -->
 !!! danger "etcd and spinning disks"
     The configuration options in this section should be used subject to the advice in the prerequisites.
-    See [prerequisites](../configuration/01-prerequisites.md#cinder-volumes-and-kubernetes) about using Cinder volumes with Kubernetes.
+    See [prerequisites](../configuration/01-prerequisites.md#cinder-volumes-and-kubernetes) about using
+    Cinder volumes with Kubernetes.
 
 !!! tip "etcd on a separate block device"
-    If you only have a limited amount of SSD or, even better, local disk, available, consider placing etcd on a separate block device.
-    See [etcd block device](#etcd-configuration) to make best use of the limited capacity.
+    If you only have a limited amount of SSD or local disk, available, consider placing etcd on a
+    separate block device.
+    See [etcd block device](#etcd-configuration) to make best use of limited capacity.
 <!-- prettier-ignore-end -->
 
 The following variables can be used to configure Kubernetes clusters to use volume-backed instances
@@ -91,11 +93,6 @@ The following variables can be used to configure Kubernetes clusters to use volu
 capi_cluster_root_volume_size: 100
 # The volume type to use for root volumes for Kubernetes nodes
 capi_cluster_root_volume_type: nvme
-
-#### For tenant clusters ####
-
-azimuth_capi_operator_capi_helm_root_volume_size: 100
-azimuth_capi_operator_capi_helm_root_volume_type: nvme
 ```
 
 <!-- prettier-ignore-start -->
@@ -111,7 +108,7 @@ azimuth_capi_operator_capi_helm_root_volume_type: nvme
 As discussed [here](../configuration/01-prerequisites.md#cinder-volumes-and-kubernetes),
 `etcd` is extremely sensitive to write latency. As such, it is possible
 to configure `etcd` onto a separate block device, meaning the disk's volume
-type can differ from the root disk, allowing efficient use of SSD-backed storage. 
+type can differ from the root disk, allowing efficient use of SSD-backed storage.
 More detail on this can be found [here](../configuration/03-kubernetes-config.md#etcd-configuration).
 
 <!-- prettier-ignore-start -->
@@ -166,7 +163,7 @@ openstack_loadbalancer_provider: ovn
 
 By default, it is assumed that there is only a single
 [availability zone (AZ)](https://docs.openstack.org/nova/latest/admin/availability-zones.html)
-called `nova`. 
+called `nova`.
 
 However, if the target cloud's AZ configuration and scheduling behaviours differ from
 the default then some additional variables may be required, such as specifying the AZs

@@ -1,33 +1,23 @@
 # Monitoring and alerting
 
-Azimuth installations come with a monitoring and alerting stack that uses
-[Prometheus](https://prometheus.io/) to collect metrics on various components of the Kubernetes
-cluster and the Azimuth components running on it,
-[Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) to produce alerts
-based on those metrics and [Grafana](https://grafana.com/) to visualise the metrics using a
-curated set of dashboards.
+Just like standard Azimuth installations, CAPI management clusters are deployed with a
+monitoring and alert stack, including [Prometheus](https://prometheus.io/) for metric collection
+and [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) for alert generation
+based on those metrics.
 
-HA installations also include a log aggregation stack using [Loki](https://grafana.com/oss/loki/)
-and [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) that collects logs
-from all the pods running on the cluster and the systemd services on each cluster node.
-These logs are available in a dashboard in Grafana, where they can be filtered and searched.
+The monitoring stack is installed during the CAPI management cluster's deployment when the
+[`provision_capi_mgmt`](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/playbooks/provision_capi_mgmt.yml)
+playbook, imports the `provision_cluster` playbook which, in turn, is responsible for calling
+the [`kube_prometheus_stack` role](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles/kube_prometheus_stack).
 
-In addition to the monitoring and alerting stack, several additional dashboards are installed:
-
-- The [Kubernetes dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
-  for browsing the current state of Kubernetes resources.
-- The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
-  state of Helm releases.
-- The [Consul UI](https://developer.hashicorp.com/consul/tutorials/certification-associate-tutorials/get-started-explore-the-ui)
-  for browsing the Consul state (used by Cluster-as-a-Service and Zenith).
-- The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
-  Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
-
-All the dashboards that access Kubernetes resources are configured to be read-only.
+Apart from aforementioned monitoring services, there are also log aggregate services,
+[Loki](https://grafana.com/oss/loki/) and [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/),deployed as part of the stack. Further components of the deployed monitoring stack are covered in Azimuth's
+[monitoring documents](../configuration/14-monitoring.md#monitoring-and-alerting).
 
 ## Accessing web interfaces
 
-The monitoring and alerting web dashboards are exposed as subdomains under the `ingress_base_domain`:
+The monitoring and alerting web dashboards are exposed via the ingress controller IP address or even as
+subdomains under the `ingress_base_domain`, which if configured are:
 
 - `grafana` for the Grafana dashboards
 - `prometheus` for the Prometheus web interface
@@ -46,10 +36,6 @@ admin_dashboard_ingress_basic_auth_password: "<secure password>"
 ```
 
 <!-- prettier-ignore-start -->
-!!! warning "Sensitive information"
-    The dashboards allow read-only access to the internals of your Azimuth installation.
-    As such you should ensure that a strong password is used, and take care when sharing it.
-
 !!! tip
     azimuth-config includes a utility for generating secrets for an environment:
     ```sh
@@ -68,15 +54,14 @@ admin_dashboard_ingress_basic_auth_password: "<secure password>"
     Persistence is only configured for HA deployments.
 <!-- prettier-ignore-end -->
 
-In order for metrics, alert state (e.g. silences) and logs to persist across pod restarts,
-we must configure Prometheus, Alertmanager and Loki to use persistent volumes to store
-their data.
+By default, HA installations configure Prometheus, Alertmanager and Loki to use persistent volumes in order
+for metrics, alert state (e.g. silences) and logs to persist across pod restarts.
 
-This is configured by default in an Azimuth HA installation, but you may wish to tweak the
-retention periods and/or volume sizes based on your requirements and/or observed usage.
-
-The following variables, shown with their default values, control the retention periods and
-volume sizes for Alertmanager, Prometheus and Loki:
+As such, it is important to consider, due to the vast amount of storage that monitoring data and logs
+are capable of consuming, how much storage is going to be dedicated to storing it (volume size), in
+addition to, how long should the data be kept before it is discarded (retention period).
+The variables controlling these for Alertmanager, Prometheus and Loki are shown below alongside
+their default values:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Alertmanager retention and volume size
@@ -99,26 +84,14 @@ capi_cluster_addons_monitoring_loki_volume_size: 10Gi
 
 ## Slack alerts
 
-If your organisation uses [Slack](https://slack.com/), Alertmanager can be configured to send
-alerts to a Slack channel using an [Incoming Webhook](https://api.slack.com/messaging/webhooks).
-
-To enable Slack alerts, you must first
-[create a webhook](https://api.slack.com/messaging/webhooks#create_a_webhook). This should
-result in a URL of the form:
-
-```text
-https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX #gitleaks:allow
-```
-
-This URL should be placed in the following variable to allow Azimuth's Alertmanager to send
-alerts to Slack:
-
-```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
-alertmanager_config_slack_webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX #gitleaks:allow
-```
+If your organisation uses [Slack](https://slack.com/), it is possible to configure Alertmanager to send
+condition-based alerts to a Slack channel using [Incoming Webhooks](https://api.slack.com/messaging/webhooks).
 
 <!-- prettier-ignore-start -->
 !!! danger
     The webhook URL should be kept secret. If you want to keep it in Git - which is recommended - then it must be encrypted.
     See [secrets](../repository/secrets.md).
 <!-- prettier-ignore-end -->
+
+The instructions on how to enable Slack alerts can be found in Azimuth's own Slack alerts
+[documentation](../configuration/14-monitoring.md#slack-alerts).
