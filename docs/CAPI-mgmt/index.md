@@ -10,8 +10,7 @@ standalone CAPI management cluster, using Magnum as the chosen COE.
 
 <!-- prettier-ignore-start -->
 !!! note
-    Make sure you have some understanding of [stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config),
-    as well as satisfying the [deployment prerequisites](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html#deployment-prerequisites).
+    This deployment of a standalone Cluster API management cluster is, as the name suggests, able to work without the backing of another cloud infrastructure. However, if you're using [stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config), or some other OpenStack deployment tool, these documents are complimented by the following [documentation](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html).
 
 !!! note
     It is assumed that you have already followed the steps in setting up a configuration repository, and so have an environment for your site that is ready to be configured.

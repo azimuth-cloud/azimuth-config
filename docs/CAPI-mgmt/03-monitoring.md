@@ -16,8 +16,10 @@ Apart from aforementioned monitoring services, there are also log aggregate serv
 
 ## Accessing web interfaces
 
-The monitoring and alerting web dashboards are exposed via the ingress controller IP address or even as
-subdomains under the `ingress_base_domain`, which if configured are:
+The monitoring and alerting web dashboards are currently exposed via the use of this
+port-forwarding [script](https://github.com/azimuth-cloud/azimuth-config/blob/devel/bin/port-forward).
+Once run, the various services will be available on the CAPI management cluster's floating
+IP under the service subdomains. The following services are exposed:
 
 - `grafana` for the Grafana dashboards
 - `prometheus` for the Prometheus web interface

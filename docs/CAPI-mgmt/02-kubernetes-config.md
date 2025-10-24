@@ -1,95 +1,35 @@
 # Kubernetes configuration
 
-The concepts in this section apply to any Kubernetes clusters created using Cluster API,
-i.e. the HA cluster in a HA deployment and tenant clusters.
+The concepts in this section apply to the Cluster API management clusters, and not
+the tenant cluster; configuration concerning the tenant cluster are set via cluster labels.
+
+<!-- prettier-ignore-start -->
+!!! note "Tenant cluster labels"
+    For an outline of the tenant cluster configuration and their variables, please visit the example
+    file [here](https://github.com/azimuth-cloud/azimuth-config/blob/2025.10.0/environments/capi-mgmt-example/inventory/group_vars/all/variables.yml).
+<!-- prettier-ignore-end -->
 
 The variables used to configure HA deployments are the same as those for Azimuth and so
 only a surface level of detail will be covered below. For further details visit the
 [Azimuth Kubernetes configuration documentation](../configuration/03-kubernetes-config.md).
 
-## Cluster configuration
-
-The shape and form which the cluster can take is possible to customise through defining
-variables which can control the image, Kubernetes version, node flavors, and cluster scaling.
-
-Below is the list of variables that can be used to customise a CAPI management cluster
-deployment. These variables have defaults which are described above each of the variables.
-
-```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
-#### Configuration for the HA cluster ####
-
-# The ID of the image that will be used for the nodes of the HA cluster.
-# By default, a suitable image is uploaded to the target project.
-capi_cluster_machine_image_id: "<image id>"
-
-# The Kubernetes version that will be used for the HA cluster.
-# This should match the image specified above.
-capi_cluster_kubernetes_version: 1.31.10
-
-# The name of the flavor to use for control plane nodes.
-# At least 2 vCPUs and 8GB RAM is required.
-# By default, the first flavor matching these requirements will be used.
-capi_cluster_control_plane_flavor: "<flavor name>"
-
-# The name of the flavor to use for worker nodes.
-# At least 2 vCPUs and 8GB RAM is required.
-# By default, the first flavor matching these requirements will be used.
-capi_cluster_worker_flavor: "<flavor name>"
-
-# The number of worker nodes to deploy in the cluster.
-# Defaults to 3.
-capi_cluster_worker_count: 3
-```
-
-<!-- prettier-ignore-start -->
-!!! tip
-    Ensure that the Kubernetes version selected corresponds to an available
-    image built and tested for that version. See the [Images](#images) section
-    below for further details.
-
-!!! note
-    The specified flavors must exist in the target OpenStack project and have
-    enough sufficient resources to host the desired number of nodes.
-<!-- prettier-ignore-end -->
-
 ## Images
 
-The clusters deployed by the Cluster API (CAPI) driver make use of the Ubuntu Kubernetes images
-built from the [azimuth-images repository](https://github.com/azimuth-cloud/azimuth-images), alongside
-[capi-helm-charts](https://github.com/azimuth-cloud/capi-helm-charts) in order to provide the Helm charts
-which define these clusters based on the image.
+The clusters deployed by the Cluster API (CAPI) driver will, of course, require
+access to an Ubuntu Kubernetes image, as well as, a cluster template.
 
-These two repositories have CI jobs regularly building and testing the images and Helm charts
-for the latest Kubernetes versions. Therefore, it is important to update the cluster templates
-on each cloud regularly.
-
-<!-- prettier-ignore-start -->
-!!! note
-    These templates are tested as sets against specific CAPI management cluster versions. As such,
-    it is vitally important to update the CAPI management cluster to the latest release before
-    updating to the latest templates.
-
-!!! note
-    Information on community images and how they are built can be found [here](../configuration/09-community-images.md).
-<!-- prettier-ignore-end -->
-
-If required, it is possible to reference an image's IDs using the `community_images_image_ids`
-variable. This, for example, could be used to create [custom Kubernetes templates](./10-kubernetes-clusters.md#custom-cluster-templates).
-
-```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
-kube_1_25_image_id: "{{ community_images_image_ids.kube_1_25 }}"
-kube_1_26_image_id: "{{ community_images_image_ids.kube_1_26 }}"
-kube_1_27_image_id: "{{ community_images_image_ids.kube_1_27 }}"
-```
+The way these user-facing images are managed differs from those of
+[Azimuth](../configuration/03-kubernetes-config.md#images), instead the images
+and Magnum cluster templates are managed by tools found in the openstack-config
+[repository](https://github.com/stackhpc/openstack-config#magnum-cluster-templates).
 
 ## Docker Hub rate limits
 
 <!-- prettier-ignore-start -->
 !!! warning
     Docker Hub [imposes rate limits](https://docs.docker.com/docker-hub/download-rate-limit/)
-    on image downloads, which can cause issues for both the HA cluster and, in particular,
-    tenant clusters. This can be worked around by mirroring the images to a local registry.
-
+    on image downloads, which may cause issues for both the HA cluster and, in particular,
+    tenant clusters.
 
 !!! warning
     For more information please see [here](../configuration/03-kubernetes-config.md#docker-hub-mirror).
