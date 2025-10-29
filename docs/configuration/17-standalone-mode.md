@@ -1,10 +1,8 @@
 # Standalone Azimuth mode
 
 <!-- prettier-ignore-start -->
-!!! warning
-
-This mode is still experimental and in early development!
-
+!!! warning "Technology Preview"
+    Standalone Azimuth mode is still experimental and in early development!
 <!-- prettier-ignore-end -->
 
 - Standalone mode is an environment/set of features designed to allow Azimuth to run WITHOUT Openstack on any Kubernetes cluster.
