@@ -1,8 +1,17 @@
+---
 name: HA test
+
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  id-token: write
 
 on:
   # Allow manual execution on any branch
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
         description: >-
@@ -19,7 +28,8 @@ jobs:
   test_ha:
     runs-on: ubuntu-latest
     steps:
-      # We need to check out the code under test first in order to use local actions
+      # We need to check out the code under test first in order to use local
+      # actions
       - name: Checkout code under test
         uses: actions/checkout@v4
 
@@ -33,8 +43,10 @@ jobs:
           install-mode: ha
           environment-prefix: ci-ha
         # GitHub terminates jobs after 6 hours
-        # We don't want jobs to acquire the lock then get timed out before they can finish
-        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        # We don't want jobs to acquire the lock then get timed out before
+        # they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours
+        # for other tasks in the job
         timeout-minutes: 180
 
       - name: Provision Azimuth

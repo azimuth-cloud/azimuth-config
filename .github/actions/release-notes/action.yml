@@ -1,3 +1,4 @@
+---
 name: Generate release notes
 description: >-
   Generates consolidated release notes and uploads them to the target release.

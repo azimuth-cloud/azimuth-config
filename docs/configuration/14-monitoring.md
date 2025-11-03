@@ -14,14 +14,14 @@ These logs are available in a dashboard in Grafana, where they can be filtered a
 
 In addition to the monitoring and alerting stack, several additional dashboards are installed:
 
-  * The [Kubernetes dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
-    for browsing the current state of Kubernetes resources.
-  * The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
-    state of Helm releases.
-  * The [Consul UI](https://developer.hashicorp.com/consul/tutorials/certification-associate-tutorials/get-started-explore-the-ui)
-    for browsing the Consul state (used by Cluster-as-a-Service and Zenith).
-  * The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
-    Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
+- The [Kubernetes dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
+  for browsing the current state of Kubernetes resources.
+- The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
+  state of Helm releases.
+- The [Consul UI](https://developer.hashicorp.com/consul/tutorials/certification-associate-tutorials/get-started-explore-the-ui)
+  for browsing the Consul state (used by Cluster-as-a-Service and Zenith).
+- The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
+  Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
 
 All the dashboards that access Kubernetes resources are configured to be read-only.
 
@@ -29,46 +29,44 @@ All the dashboards that access Kubernetes resources are configured to be read-on
 
 The monitoring and alerting web dashboards are exposed as subdomains under the `ingress_base_domain`:
 
-  * `grafana` for the Grafana dashboards
-  * `prometheus` for the Prometheus web interface
-  * `alertmanager` for the Alertmanager web interface
-  * `consul` for the Consul UI
-  * `ara` for the ARA web interface
-  * `helm` for the Helm dashboard
-  * `kubernetes` for the Kubernetes dashboard
+- `grafana` for the Grafana dashboards
+- `prometheus` for the Prometheus web interface
+- `alertmanager` for the Alertmanager web interface
+- `consul` for the Consul UI
+- `ara` for the ARA web interface
+- `helm` for the Helm dashboard
+- `kubernetes` for the Kubernetes dashboard
 
 The dashboards are protected by a username and password (using
 [HTTP Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication)).
 The username is `admin` and a strong password must be set in your configuration:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
 admin_dashboard_ingress_basic_auth_password: "<secure password>"
 ```
 
-!!! warning  "Sensitive information"
-
+<!-- prettier-ignore-start -->
+!!! warning "Sensitive information"
     The dashboards allow read-only access to the internals of your Azimuth installation.
-    As such you should ensure that a strong password is used, and take care when sharing
-    it.
+    As such you should ensure that a strong password is used, and take care when sharing it.
 
 !!! tip
-
-    `azimuth-config` includes a utility for generating secrets for an environment:
-
+    azimuth-config includes a utility for generating secrets for an environment:
     ```sh
     ./bin/generate-secrets [--force] <environment-name>
     ```
 
 !!! danger
-
-    This password should be kept secret. If you want to keep the password in Git - which is
-    recommended - then it [must be encrypted](../repository/secrets.md).
+    This password should be kept secret. If you want to keep the password in Git - which is recommended - then it must be encrypted.
+    See [secrets](../repository/secrets.md).
+<!-- prettier-ignore-end -->
 
 ## Persistence and retention
 
+<!-- prettier-ignore-start -->
 !!! note
-
     Persistence is only configured for HA deployments.
+<!-- prettier-ignore-end -->
 
 In order for metrics, alert state (e.g. silences) and logs to persist across pod restarts,
 we must configure Prometheus, Alertmanager and Loki to use persistent volumes to store
@@ -80,7 +78,7 @@ retention periods and/or volume sizes based on your requirements and/or observed
 The following variables, shown with their default values, control the retention periods and
 volume sizes for Alertmanager, Prometheus and Loki:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 # Alertmanager retention and volume size
 capi_cluster_addons_monitoring_alertmanager_retention: 168h
 capi_cluster_addons_monitoring_alertmanager_volume_size: 10Gi
@@ -94,10 +92,10 @@ capi_cluster_addons_monitoring_loki_retention: 744h
 capi_cluster_addons_monitoring_loki_volume_size: 10Gi
 ```
 
+<!-- prettier-ignore-start -->
 !!! danger
-
-    Volumes can only be **increased** in size. Any attempt to reduce the size of a volume
-    will be rejected.
+    Volumes can only be **increased** in size. Any attempt to reduce the size of a volume will be rejected.
+<!-- prettier-ignore-end -->
 
 ## Slack alerts
 
@@ -108,18 +106,19 @@ To enable Slack alerts, you must first
 [create a webhook](https://api.slack.com/messaging/webhooks#create_a_webhook). This should
 result in a URL of the form:
 
-```
-https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+```text
+https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX #gitleaks:allow
 ```
 
 This URL should be placed in the following variable to allow Azimuth's Alertmanager to send
 alerts to Slack:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/secrets.yml"
-alertmanager_config_slack_webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
+alertmanager_config_slack_webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX #gitleaks:allow
 ```
 
+<!-- prettier-ignore-start -->
 !!! danger
-
-    The webhook URL should be kept secret. If you want to keep it in Git - which is recommended -
-    then it [must be encrypted](../repository/secrets.md).
+    The webhook URL should be kept secret. If you want to keep it in Git - which is recommended - then it must be encrypted.
+    See [secrets](../repository/secrets.md).
+<!-- prettier-ignore-end -->

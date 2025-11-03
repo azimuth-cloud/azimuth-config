@@ -1,8 +1,19 @@
+---
 name: Single node test
 
+permissions:
+  contents: read
+  packages: write
+  # To report GitHub Actions status checks
+  statuses: write
+  id-token: write
+
 on:
+  workflow_call:
+
   # Allow manual execution on any branch
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
         description: >-
@@ -13,55 +24,14 @@ on:
           - ""
           - arcus
           - leafcloud
-  # Execute by default on pull requests to the devel branch
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - ready_for_review
-      - reopened
-    branches:
-      - devel
-    # Only run the tests when something changes that affects us
-    paths:
-      - .gitattributes
-      - .gitignore
-      - requirements.txt
-      - requirements.yml
-      - .github/actions/**
-      - .github/environments/common
-      - .github/environments/arcus
-      - .github/environments/leafcloud
-      - .github/workflows/test-singlenode.yml
-      - bin/**
-      - "!bin/ci-setup"
-      - "!bin/create-merge-branch"
-      - "!bin/port-forward"
-      - "!bin/tilt-*"
-      - environments/base/**
-      - environments/singlenode/**
-      - environments/demo/**
-
-# Use the head ref for workflow concurrency, with cancellation
-# This should mean that any previous runs of this workflow for the same PR
-# are cancelled when a new commit is pushed
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref }}
-  cancel-in-progress: true
 
 jobs:
-  # This job exists so that PRs from outside the main repo are rejected
-  fail_on_remote:
+  # Tests a single node deployment
+  test_singlenode:
     runs-on: ubuntu-latest
     steps:
-      - name: Code under test must be from a branch in the azimuth-config repo
-        run: exit ${{ github.repository == 'azimuth-cloud/azimuth-config' && '0' || '1' }}
-
-  run_azimuth_tests:
-    needs: [fail_on_remote]
-    runs-on: ubuntu-latest
-    steps:
-      # We need to check out the code under test first in order to use local actions
+      # We need to check out the code under test first in order to use local
+      # actions
       - name: Checkout code under test
         uses: actions/checkout@v4
 
@@ -73,8 +43,10 @@ jobs:
           ref: ${{ github.ref }}
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
         # GitHub terminates jobs after 6 hours
-        # We don't want jobs to acquire the lock then get timed out before they can finish
-        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours for other tasks in the job
+        # We don't want jobs to acquire the lock then get timed out before
+        # they can finish
+        # So wait a maximum of 3 hours to acquire the lock, leaving 3 hours
+        # for other tasks in the job
         timeout-minutes: 180
 
       - name: Provision Azimuth

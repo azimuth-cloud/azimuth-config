@@ -7,28 +7,27 @@
 
 set -eo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
 tf_init() {
-    ansible_variable terraform_backend_config > "$terraform_dir/backend_config.json"
-    $terraform_binary_path \
-      -chdir="$terraform_dir" \
-      init \
-      -input=false \
-      -reconfigure \
-      -backend-config=$terraform_dir/backend_config.json
+  ansible_variable terraform_backend_config >"$terraform_dir/backend_config.json"
+  $terraform_binary_path \
+    -chdir="$terraform_dir" \
+    init \
+    -input=false \
+    -reconfigure \
+    -backend-config="$terraform_dir/backend_config.json"
 }
 
 # Add the Terraform binary directory to the PATH, so we can use it if it was
@@ -56,7 +55,7 @@ mkdir -p "$work_dir"
 # Check if quiet mode (-q) was passed to SSH command
 # so that we can suppress other output elsewhere too
 QUIET_MODE=false
-for arg in $@; do
+for arg in "$@"; do
   if [[ ! $arg == -* ]]; then
     # Break if we encounter a non-flag arg since
     # this is likely a command to run within the SSH
@@ -70,21 +69,21 @@ done
 # Initialise the OpenTofu backend
 terraform_backend_type="$(ansible_variable terraform_backend_type)"
 if [ "$terraform_backend_type" = "local" ]; then
-    # If the OpenTofu backend is local, that means the provisioning is run on the current host
-    # Hence there should be a pre-existing Terraform project directory we can point at
-    terraform_dir="$(ansible_variable terraform_project_path)"
+  # If the OpenTofu backend is local, that means the provisioning is run on the current host
+  # Hence there should be a pre-existing Terraform project directory we can point at
+  terraform_dir="$(ansible_variable terraform_project_path)"
 else
-    # If the OpenTofu backend type is something other than local, make an OpenTofu project
-    # directory containing a backend configuration that specifies the type and config
-    terraform_dir="$work_dir"
-    cat <<EOF > "$terraform_dir/backend.tf"
+  # If the OpenTofu backend type is something other than local, make an OpenTofu project
+  # directory containing a backend configuration that specifies the type and config
+  terraform_dir="$work_dir"
+  cat <<EOF >"$terraform_dir/backend.tf"
 terraform {
   backend "${terraform_backend_type}" {}
 }
 EOF
   # If -q (quiet) is passed to ssh then also suppress terraform / tofu output
   if [[ $QUIET_MODE == "true" ]]; then
-    tf_init > /dev/null
+    tf_init >/dev/null
   else
     tf_init
   fi
@@ -92,25 +91,25 @@ fi
 
 # Read the required variables from the Terraform state
 tfstate_file="$work_dir/tfstate"
-$terraform_binary_path -chdir="$terraform_dir" state pull > "$tfstate_file"
+$terraform_binary_path -chdir="$terraform_dir" state pull >"$tfstate_file"
 node_ip="$(jq -r '.outputs.cluster_gateway_ip.value // ""' "$tfstate_file")"
 deploy_key="$work_dir/deploy-key"
-jq -r '.outputs.cluster_ssh_private_key.value // ""' "$tfstate_file" > "$deploy_key"
+jq -r '.outputs.cluster_ssh_private_key.value // ""' "$tfstate_file" >"$deploy_key"
 chmod 600 "$deploy_key"
 
 if [ -z "$node_ip" ]; then
-    echo ""
-    echo "[ERROR] Unable to find node details in Terraform state" >&2
-    exit 1
+  echo ""
+  echo "[ERROR] Unable to find node details in Terraform state" >&2
+  exit 1
 fi
 
 # Run the SSH command
 exec \
   ssh \
-    -o UserKnownHostsFile=/dev/null \
-    -o StrictHostKeyChecking=no \
-    -o IdentitiesOnly=yes \
-    -A \
-    -i $deploy_key \
-    ubuntu@$node_ip \
-    "$@"
+  -o UserKnownHostsFile=/dev/null \
+  -o StrictHostKeyChecking=no \
+  -o IdentitiesOnly=yes \
+  -A \
+  -i "$deploy_key" \
+  "ubuntu@$node_ip" \
+  "$@"

@@ -1,15 +1,19 @@
-# Set the install_mode variable that is used by the provision playbook to select a code path
+---
+# Set the install_mode variable that is used by the provision playbook to
+# select a code path
 install_mode: singlenode
 
 # Give the node a name corresponding to the environment
 infra_name: "azimuth-{{ azimuth_environment }}"
 
-# By default, use a base domain from a dynamic DNS service derived from the allocated floating IP
+# By default, use a base domain from a dynamic DNS service derived from the
+# allocated floating IP
 ingress_base_domain: "apps.{{ infra_external_ip | replace('.', '-') }}.sslip.io"
 
 # Use the external IP for the infra as the Zenith SSHD host
 zenith_sshd_host: "{{ infra_external_ip }}"
-# Port 22 is used for SSH access to the host, so use a different port for the Zenith SSHD
+# Port 22 is used for SSH access to the host, so use a different port for the
+# Zenith SSHD
 zenith_sshd_service_port: 2222
 
 # Expose the ports for the ingress controller and Zenith SSHD

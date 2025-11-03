@@ -6,21 +6,18 @@
 
 set -exo pipefail
 
-
 if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Please activate an environment" >&2
-    exit 1
+  echo "Please activate an environment" >&2
+  exit 1
 fi
 
-
 ansible_variable() {
-    ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
     ANSIBLE_STDOUT_CALLBACK=json \
     ANSIBLE_JSON_INDENT=0 \
-    ansible -m debug -a "var=$1" all | \
-       jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
-
 
 # Get the test directory
 test_directory="$(ansible_variable generate_tests_suite_directory)"
