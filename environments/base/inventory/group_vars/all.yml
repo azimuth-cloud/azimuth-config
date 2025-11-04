@@ -3,10 +3,6 @@
 # This file contains defaults that apply to all hosts
 #####
 
-# TODO: Remove this after 2025.11.0 azimuth-config release
-# Cherry-pick of https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/pull/1005
-velero_chart_version: 10.1.2
-
 # Convert envvars for the active environment into Ansible variables
 azimuth_environment: "{{ lookup('env', 'AZIMUTH_ENVIRONMENT') }}"
 azimuth_config_root: "{{ lookup('env', 'AZIMUTH_CONFIG_ROOT') }}"
