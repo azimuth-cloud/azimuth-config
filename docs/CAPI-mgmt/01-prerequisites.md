@@ -34,23 +34,22 @@ This management cluster has two main requirements in order to operate:
 
 ### OpenStack project quotas
 
-A standard high-availability (HA) deployment with a seed node, 3 control plane nodes and
-3 worker nodes, requires the following resources:
+For a standard high-availability (HA) deployment with a seed node, 3 control plane nodes and
+3 worker nodes, the recommended capacity of available resources in your project should be sufficient for:
 
 <!-- markdownlint-disable MD007 -->
 
 - 1 x network, 1 x subnet, 1 x router
 - 1 x seed node (4 vCPU, 8 GB)
-- 4 x control plane nodes (4 vCPU, 8 GB)
-    - 3 x during normal operation, 4 x during rolling upgrade
-- 4 x worker nodes (8 vCPU, 16 GB)
-    - 3 x during normal operation, 4 x during rolling upgrade
-- 3 x load-balancers
-- 500GB Cinder storage
-- 2 x floating IPs
-    - One for accessing the seed node
-    - One for the ingress controller for accessing HTTP services
+- 3 x control plane nodes (4 vCPU, 8 GB) + 1 x extra when undergoing a rolling upgrade
+- 3 x worker nodes (8 vCPU, 16 GB) + 1 x extra when undergoing a rolling upgrade
 <!-- markdownlint-enable MD007 -->
+
+There are further suggested resources, as per the [following](../configuration/01-prerequisites.md#openstack-project-quotas),
+but these are optional.
+
+However, as with any of the configuration here, tailor these values to whatever
+best suits your needs and usecases!
 
 <!-- prettier-ignore-start -->
 !!! tip
