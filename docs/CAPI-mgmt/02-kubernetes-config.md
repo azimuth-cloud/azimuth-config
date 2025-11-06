@@ -23,6 +23,13 @@ The way these user-facing images are managed differs from those of
 and Magnum cluster templates are managed by tools found in the openstack-config
 [repository](https://github.com/stackhpc/openstack-config#magnum-cluster-templates).
 
+<!-- prettier-ignore-start -->
+!!! note
+    The way in which these Magnum templates and images are managed, as explained above,
+    is under review.
+
+<!-- prettier-ignore-end -->
+
 ## Docker Hub rate limits
 
 <!-- prettier-ignore-start -->
@@ -62,6 +69,12 @@ not available on the target cloud.
     The configuration options in this section should be used subject to the advice in the prerequisites.
     See [prerequisites](../configuration/01-prerequisites.md#cinder-volumes-and-kubernetes) about using
     Cinder volumes with Kubernetes.
+
+!!! warning "ceph spinning disks"
+    It is advised to make sure that the root disk **isnt** a spinning disk being provided ceph, rather
+    than the default local disk. These disks will be too slow to be able to provide a stable and
+    satisfactory user experience; please read [here](../configuration/01-prerequisites.md#cinder-volumes-and-kubernetes)
+    for more detail.
 
 !!! tip "etcd on a separate block device"
     If you only have a limited amount of SSD or local disk, available, consider placing etcd on a
