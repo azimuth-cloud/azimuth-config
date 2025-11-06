@@ -23,13 +23,18 @@ which directly interact with the OpenStack APIs.
 
 This management cluster has two main requirements in order to operate:
 
+
 <!-- markdownlint-disable MD007 -->
+<!-- prettier-ignore-start -->
 
 - Firstly, it must be capable of reaching the public OpenStack APIs.
 - Secondly, the management cluster must be reachable from the control
   plane nodes on which the Magnum containers are running.
+
     - This is so that the Magnum conductor(s) may reach the management
-    cluster’s API server address listed in the `kubeconfig`.
+      cluster’s API server address listed in the `kubeconfig`.
+
+<!-- prettier-ignore-end -->
 <!-- markdownlint-enable MD007 -->
 
 ### OpenStack project quotas
@@ -37,13 +42,11 @@ This management cluster has two main requirements in order to operate:
 For a standard high-availability (HA) deployment with a seed node, 3 control plane nodes and
 3 worker nodes, the recommended capacity of available resources in your project should be sufficient for:
 
-<!-- markdownlint-disable MD007 -->
 
 - 1 x network, 1 x subnet, 1 x router
 - 1 x seed node (4 vCPU, 8 GB)
 - 3 x control plane nodes (4 vCPU, 8 GB) + 1 x extra when undergoing a rolling upgrade
 - 3 x worker nodes (8 vCPU, 16 GB) + 1 x extra when undergoing a rolling upgrade
-<!-- markdownlint-enable MD007 -->
 
 There are further suggested resources, as per the [following](../configuration/01-prerequisites.md#openstack-project-quotas),
 but these are optional.
