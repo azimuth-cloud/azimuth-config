@@ -29,26 +29,6 @@ IP under the service subdomains. The following services are exposed:
 - `helm` for the Helm dashboard
 - `kubernetes` for the Kubernetes dashboard
 
-The dashboards are protected by a username and password (using
-[HTTP Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication)).
-The username is `admin` and a strong password must be set in your configuration:
-
-```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
-admin_dashboard_ingress_basic_auth_password: "<secure password>"
-```
-
-<!-- prettier-ignore-start -->
-!!! tip
-    azimuth-config includes a utility for generating secrets for an environment:
-    ```sh
-    ./bin/generate-secrets [--force] <environment-name>
-    ```
-
-!!! danger
-    This password should be kept secret. If you want to keep the password in Git - which is recommended - then it must be encrypted.
-    See [secrets](../repository/secrets.md).
-<!-- prettier-ignore-end -->
-
 ## Persistence and retention
 
 <!-- prettier-ignore-start -->

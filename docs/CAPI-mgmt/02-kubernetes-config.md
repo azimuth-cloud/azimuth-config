@@ -30,18 +30,6 @@ and Magnum cluster templates are managed by tools found in the openstack-config
 
 <!-- prettier-ignore-end -->
 
-## Docker Hub rate limits
-
-<!-- prettier-ignore-start -->
-!!! warning
-    Docker Hub [imposes rate limits](https://docs.docker.com/docker-hub/download-rate-limit/)
-    on image downloads, which may cause issues for both the HA cluster and, in particular,
-    tenant clusters.
-
-!!! warning
-    For more information please see [here](../configuration/03-kubernetes-config.md#docker-hub-mirror).
-<!-- prettier-ignore-end -->
-
 ## Multiple external networks
 
 In cases where multiple external networks are available, you must define which one the HA cluster
