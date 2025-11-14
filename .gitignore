@@ -9,3 +9,4 @@ tilt-settings.yaml
 environments/demo/inventory/group_vars/all/secrets.yml
 environments/standalone/inventory/group_vars/all/secrets.yml
 .github/environments/**/secrets.yml
+.github/environments/**/clouds.yaml
