@@ -5,10 +5,6 @@ monitoring and alert stack, including [Prometheus](https://prometheus.io/) for m
 and [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) for alert generation
 based on those metrics.
 
-The monitoring stack is installed during the CAPI management cluster's deployment when the
-[`provision_capi_mgmt`](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/playbooks/provision_capi_mgmt.yml)
-playbook, imports the `provision_cluster` playbook which, in turn, is responsible for calling
-the [`kube_prometheus_stack` role](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/tree/main/roles/kube_prometheus_stack).
 
 Apart from aforementioned monitoring services, there are also log aggregate services,
 [Loki](https://grafana.com/oss/loki/) and [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/),deployed as part of the stack. Further components of the deployed monitoring stack are covered in Azimuth's
@@ -18,26 +14,16 @@ Apart from aforementioned monitoring services, there are also log aggregate serv
 
 The monitoring and alerting web dashboards are currently exposed via the use of this
 port-forwarding [script](https://github.com/azimuth-cloud/azimuth-config/blob/devel/bin/port-forward).
-Once run, the various services will be available on the CAPI management cluster's floating
-IP under the service subdomains. The following services are exposed:
+The monitoring services are accessible using the provided port-forwarding script in azimuth-config. For example, running `./bin/port-forward grafana 1234` would make the Grafana web interface available on  `http://localhost:1234`. The following services are exposed:
 
 - `grafana` for the Grafana dashboards
 - `prometheus` for the Prometheus web interface
 - `alertmanager` for the Alertmanager web interface
-- `consul` for the Consul UI
-- `ara` for the ARA web interface
-- `helm` for the Helm dashboard
-- `kubernetes` for the Kubernetes dashboard
 
 ## Persistence and retention
 
-<!-- prettier-ignore-start -->
-!!! note
-    Persistence is only configured for HA deployments.
-<!-- prettier-ignore-end -->
-
-By default, HA installations configure Prometheus, Alertmanager and Loki to use persistent volumes in order
-for metrics, alert state (e.g. silences) and logs to persist across pod restarts.
+HA deployments configure Prometheus, Alertmanager and Loki to use persistent volumes in order
+for metrics, alert state (e.g. silences) and logs to persist across pod restarts and cluster upgrades.
 
 As such, it is important to consider, due to the vast amount of storage that monitoring data and logs
 are capable of consuming, how much storage is going to be dedicated to storing it (volume size), in

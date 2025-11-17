@@ -19,7 +19,7 @@ Documentation on `kayobe-config` can be found [here](https://stackhpc-kayobe-con
 ### Networking
 
 The Cluster API architecture relies on a CAPI management cluster in order to run Kubernetes operators
-which directly interact with the OpenStack APIs.
+which directly interact with the cloud APIs. In the OpenStack case, the [Cluster API Provider OpenStack (CAPO)](https://github.com/kubernetes-sigs/cluster-api-provider-openstack) is used.
 
 This management cluster has two main requirements in order to operate:
 
@@ -39,7 +39,7 @@ This management cluster has two main requirements in order to operate:
 
 ### OpenStack project quotas
 
-For a standard high-availability (HA) deployment with a seed node, 3 control plane nodes and
+For a production-ready, highly-available (HA) deployment with a seed node, 3 control plane nodes and
 3 worker nodes, the recommended capacity of available resources in your project should be sufficient for:
 
 
@@ -56,7 +56,7 @@ best suits your needs and usecases!
 
 <!-- prettier-ignore-start -->
 !!! tip
-    It is recommended to have a project for each concrete environment that is being deployed, particularly for high-availability (HA) deployments.
+    It is recommended to have a separate OpenStack project for each concrete environment that is being deployed, for example a staging and production CAPI management clusters, particularly for high-availability (HA) deployments.
 <!-- prettier-ignore-end -->
 
 ## Application Credential

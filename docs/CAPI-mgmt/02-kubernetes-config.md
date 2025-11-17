@@ -1,13 +1,8 @@
 # Kubernetes configuration
 
 The concepts in this section apply to the Cluster API management clusters, and not
-the tenant cluster; configuration concerning the tenant cluster are set via cluster labels.
+the tenant cluster; configuration concerning the tenant cluster are set via Magnum cluster labels.
 
-<!-- prettier-ignore-start -->
-!!! note "Tenant cluster labels"
-    For an outline of the tenant cluster configuration and their variables, please visit the example
-    file [here](https://github.com/azimuth-cloud/azimuth-config/blob/2025.10.0/environments/capi-mgmt-example/inventory/group_vars/all/variables.yml).
-<!-- prettier-ignore-end -->
 
 The variables used to configure HA deployments are the same as those for Azimuth and so
 only a surface level of detail will be covered below. For further details visit the
@@ -15,8 +10,8 @@ only a surface level of detail will be covered below. For further details visit 
 
 ## Images
 
-The clusters deployed by the Cluster API (CAPI) driver will, of course, require
-access to an Ubuntu Kubernetes image, as well as, a cluster template.
+The clusters deployed by the Magnum CAPI Helm driver will require
+an Ubuntu Kubernetes image and a Magnum cluster template.
 
 The way these user-facing images are managed differs from those of
 [Azimuth](../configuration/03-kubernetes-config.md#images), instead the images
@@ -36,11 +31,8 @@ In cases where multiple external networks are available, you must define which o
 should use:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
-#### For the HA cluster ####
-
 # The ID of the external network to use
 capi_cluster_external_network_id: "<network id>"
-```
 
 <!-- prettier-ignore-start -->
 !!! note
@@ -150,14 +142,4 @@ openstack_loadbalancer_provider: ovn
 
 By default, it is assumed that there is only a single
 [availability zone (AZ)](https://docs.openstack.org/nova/latest/admin/availability-zones.html)
-called `nova`.
-
-However, if the target cloud's AZ configuration and scheduling behaviours differ from
-the default then some additional variables may be required, such as specifying the AZs
-to use, both for the HA cluster and for tenant Kubernetes clusters.
-
-<!-- prettier-ignore-start -->
-!!! note
-    Information on availability zones and scheduling behaviours can be found
-    [here](../configuration/03-kubernetes-config.md#availability-zones).
-<!-- prettier-ignore-end -->
+called `nova`. If this is not the case for your target cloud, use the `capi_cluster_*` variables described [here](../configuration/03-kubernetes-config.md#availability-zones).
