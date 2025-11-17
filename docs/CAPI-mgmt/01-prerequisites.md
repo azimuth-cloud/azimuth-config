@@ -10,11 +10,8 @@ following [link](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.
 
 ## OpenStack cloud
 
-This guide won't cover any of the kayobe-config
-[requirements](http://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html#kayobe-config)
-and a baseline understanding of StackHPC’s Kayobe Config is assumed.
-
-Documentation on `kayobe-config` can be found [here](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/).
+This guide won't cover any OpenStack requirements which this cluster may be running on
+and a baseline understanding of OpenStack is assumed.
 
 ### Networking
 
