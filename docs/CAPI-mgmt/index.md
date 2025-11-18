@@ -10,9 +10,6 @@ standalone CAPI management cluster, using Magnum as the chosen COE.
 
 <!-- prettier-ignore-start -->
 !!! note
-    This deployment of a standalone Cluster API management cluster is, as the name suggests, able to work without the backing of another cloud infrastructure.
-
-!!! note
     It is assumed that you have already followed the steps in setting up a configuration repository, and so have an environment for your site that is ready to be configured.
     See [Setting up a configuration repository](../repository/index.md).
 <!-- prettier-ignore-end -->

@@ -61,6 +61,9 @@ best suits your needs and usecases!
 You should create an
 [Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
 for the project and save the resulting `clouds.yaml` as `./environments/<name>/clouds.yaml`.
+These application credentials should be encrypted with the use of `git-crypt`, especially if
+they are to be pushed to a git repository, these [docs](../repository/secrets.md#managing-secrets)
+provide instructions & further information regarding this.
 
 <!-- prettier-ignore-start -->
 !!! warning

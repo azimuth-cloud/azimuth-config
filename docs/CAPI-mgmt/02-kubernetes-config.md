@@ -5,8 +5,9 @@ the tenant cluster; configuration concerning the tenant cluster are set via Magn
 
 
 The variables used to configure HA deployments are the same as those for Azimuth and so
-only a surface level of detail will be covered below. For further details visit the
-[Azimuth Kubernetes configuration documentation](../configuration/03-kubernetes-config.md).
+only a surface level of detail will be covered below. For further details follow the link
+to the
+[default values](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/azimuth_capi_operator/defaults/main.yml).
 
 ## Images
 
@@ -121,7 +122,7 @@ capi_cluster_etcd_blockdevice_volume_az: nova
 
 ## Load-balancer provider
 
-If the target cloud uses [OVN networking](https://www.ovn.org/en/), and the
+If the target cloud uses [OVN networking](https://wiki.openstack.org/wiki/Neutron/ML2), and the
 [OVN Octavia provider](https://docs.openstack.org/ovn-octavia-provider/latest/admin/driver.html)
 is enabled, then Kubernetes clusters should be configured to use the OVN provider for
 any load-balancers that are created:
