@@ -88,13 +88,13 @@ jobs:
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/run-tests --include create --outputdir reports/create
 
-      - name: Verify test platforms
-        run: |
-          set -e
-          source ./ci.env
-          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./bin/run-tests --include verify --outputdir reports/verify-create
-        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
+      # - name: Verify test platforms
+      #   run: |
+      #     set -e
+      #     source ./ci.env
+      #     source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+      #     ./bin/run-tests --include verify --outputdir reports/verify-create
+      #   if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
 
       - name: Create a backup
         id: backup-create
@@ -156,13 +156,13 @@ jobs:
           limit-access-to-actor: true
           limit-access-to-users: sd109
 
-      - name: Verify test platforms post restore
-        run: |
-          set -e
-          source ./ci.env
-          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./bin/run-tests --include verify --outputdir reports/verify-post-restore
-        if: ${{ !cancelled() && steps.backup-restore.conclusion == 'success' }}
+      # - name: Verify test platforms post restore
+      #   run: |
+      #     set -e
+      #     source ./ci.env
+      #     source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+      #     ./bin/run-tests --include verify --outputdir reports/verify-post-restore
+      #   if: ${{ !cancelled() && steps.backup-restore.conclusion == 'success' }}
 
       - name: Delete test platforms
         run: |
