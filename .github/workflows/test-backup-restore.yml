@@ -109,6 +109,12 @@ jobs:
               --wait
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: sd109
+
       - name: Create pre-restore debug bundle
         run: |
           set -e
@@ -144,6 +150,12 @@ jobs:
             -e velero_restore_backup_name="$AZIMUTH_ENVIRONMENT"
         if: ${{ !cancelled() && steps.azimuth-destroy.conclusion == 'success' }}
 
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: sd109
+
       - name: Verify test platforms post restore
         run: |
           set -e
@@ -170,6 +182,12 @@ jobs:
               --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --confirm
         if: ${{ always() }}
+
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true
+          limit-access-to-users: sd109
 
       - name: Upload test report artifacts
         uses: actions/upload-artifact@v4
