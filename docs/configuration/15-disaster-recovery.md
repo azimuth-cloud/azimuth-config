@@ -41,11 +41,10 @@ velero_bucket_name: <bucket-name>
 <!-- prettier-ignore-end -->
 
 <!-- prettier-ignore-start -->
-!!! warning "Do not use single bucket for multiple enviornments"
-    As Velero does not distinguish which environment that a backup for, there is a risk of seeing
-    unexpected behaviours.
-    For example, old volume snapshots on one environment may fail to be deleted because Velero on
-    another environment keep trying to delete them (but can't reach them) and never yields.
+!!! warning "Do not use single bucket for multiple environments"
+    Velero does not track which Kubernetes cluster a particular backup is taken on, so there is a
+    risk of seeing unexpected behaviours (e.g. expired backups and volume snapshots not being
+    deleted cleanly).
 <!-- prettier-ignore-end -->
 
 You will also need to consult the documentation for your S3 provider to obtain S3 credentials for
