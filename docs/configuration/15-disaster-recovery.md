@@ -40,6 +40,14 @@ velero_bucket_name: <bucket-name>
     The specified bucket must already exist - neither azimuth-ops nor Velero will create it.
 <!-- prettier-ignore-end -->
 
+<!-- prettier-ignore-start -->
+!!! warning "Do not use single bucket for multiple enviornments"
+    As Velero does not distinguish which environment that a backup for, there is a risk of seeing
+    unexpected behaviours.
+    For example, old volume snapshots on one environment may fail to be deleted because Velero on
+    another environment keep trying to delete them (but can't reach them) and never yields.
+<!-- prettier-ignore-end -->
+
 You will also need to consult the documentation for your S3 provider to obtain S3 credentials for
 the bucket, and add the access key ID and secret to the following variables:
 
