@@ -53,12 +53,7 @@ nav:
       - debugging/caas.md
   - Developing:
       - developing/index.md
-  - CAPI management cluster:
-      - CAPI-mgmt/index.md
-      - CAPI-mgmt/01-prerequisites.md
-      - CAPI-mgmt/02-kubernetes-config.md
-      - CAPI-mgmt/03-monitoring.md
-      - CAPI-mgmt/04-disaster-recovery.md
+  - capi-mgmt.md
 
 theme:
   name: material
