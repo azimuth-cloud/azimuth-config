@@ -105,13 +105,13 @@ alert generation based on those metrics and
 All sections of the [main documentation](./configuration/14-monitoring.md) are
 applicable to a standalone CAPI management cluster deployment apart from the
 'Accessing web interfaces' section. In the CAPI-only case, since their is no
-ingress controller and no [wildcard dns](#wildcard-dns) entry, the monitoring
+ingress controller and no [wildcard DNS](#wildcard-dns) entry, the monitoring
 and alerting services are only accessible from within the management cluster.
 However, a
 [convenience script](https://github.com/azimuth-cloud/azimuth-config/blob/stable/bin/port-forward)
 is provided to allow access to the services via a combination of kubectl
 port-forwarding and SSH tunnelling. After activating the appropriate config
-environment, the script can be used from the repo root with
+environment, the script can be used from the repository root with
 
 ```bash
 ./bin/port-forward <service-name> <local-port>
