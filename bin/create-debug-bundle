@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-# This script produces an archive containing useful information for debugging
+# This script produces an archive containing useful information for debugging
 #####
 
 set -eo pipefail
@@ -50,13 +50,13 @@ fi
 # but using a separate command doesn't...  :shrugs:
 
 # Things that we include:
-#   * List of pods
-#   * List of PVCs
-#   * List of installed CaaS cluster types and clusters
-#   * List of installed Kubernetes templates and clusters
-#   * List of installed app templates
+#   * List of pods
+#   * List of PVCs
+#   * List of installed CaaS cluster types and clusters
+#   * List of installed Kubernetes templates and clusters
+#   * List of installed app templates
 #   * List of installed Cluster API resources
-#   * The last hour of logs from some key components
+#   * The last hour of logs from some key components
 echo "[INFO] Collecting debug information"
 "$AZIMUTH_CONFIG_ROOT/bin/seed-ssh" <<EOF
 set -e

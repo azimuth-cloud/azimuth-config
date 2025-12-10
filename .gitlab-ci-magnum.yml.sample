@@ -5,7 +5,7 @@ default:
 
 variables:
   # Because we are installing git-crypt as part of the job, we cannot reuse old
-  # checkouts where git-crypt is already initialised as this results in an error
+  # checkouts where git-crypt is already initialised as this results in an error
   GIT_STRATEGY: clone
   # Use the pipeline credentials for Terraform
   # This assumes that we are using GitLab-managed Terraform state (recommended when available)
@@ -23,13 +23,13 @@ stages:
 #####
 # This job checks to see if there is a new release that needs to be merged
 #
-# If there is, it will create a new branch containing the changes and a corresponding merge request
+# If there is, it will create a new branch containing the changes and a corresponding merge request
 #
 # It runs as a scheduled job, for which a suitable schedule must be defined, e.g. daily or weekly
 #
 # This job writes back to the repository and to the merge requests API
 # To do this, it needs more power than is granted to the CI token
-# So CI variables must be set that contain an access token and the corresponding username
+# So CI variables must be set that contain an access token and the corresponding username
 # This can be a Project Access Token (paid feature, recommended if available) or a Personal Access Token (not ideal)
 #####
 check_for_release:
@@ -75,8 +75,8 @@ check_for_release:
 # This job deploys a staging/test version of the Magnum CAPI management cluster
 #
 # It runs automatically for every commit to main that changes one of the files
-# that affects the environment.
-# 
+# that affects the environment.
+#
 # NOTE: If the target site doesn't have a separate staging cloud with it's own Magnum
 # deployment then it may still be worth including a management cluster staging env in
 # this config repo which is a stripped down (1 master, 1 worker) version of the prod

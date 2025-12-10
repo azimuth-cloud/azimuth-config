@@ -128,7 +128,7 @@ mixin environments):
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 
-# Azimuth cloud name
+# Azimuth cloud name
 #   This can use the environment name if desired, e.g.:
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"
 azimuth_current_cloud_label: "{{ lookup('env', 'CI_ENVIRONMENT_NAME') }}"

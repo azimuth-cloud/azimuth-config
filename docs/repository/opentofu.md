@@ -77,7 +77,7 @@ gitlab_project_url: "https://gitlab.com/api/v4/projects/<project id>"
 #
 # Using the azimuth_environment variable as the state name means that each
 # concrete environment gets a separate managed Terraform state even if this
-# configuration is in a shared mixin environment
+# configuration is in a shared mixin environment
 terraform_http_address: "{{ gitlab_project_url }}/terraform/state/{{ azimuth_environment }}"
 
 # The state-locking and unlocking endpoints for the environment
@@ -172,15 +172,15 @@ terraform_s3_bucket: azimuth-opentofu-states
 # The key to use for the state for the environment
 #
 # Using the azimuth_environment variable in the key means that the state
-# for each concrete environment is stored in a separate key, even if this
-# configuration is in a shared mixin environment
+# for each concrete environment is stored in a separate key, even if this
+# configuration is in a shared mixin environment
 terraform_s3_key: "{{ azimuth_environment }}.tfstate"
 
 # The STS API doesn't exist for Ceph
 terraform_s3_skip_credentials_validation: "true"
 
 # Tell OpenTofu to use path-style URLs, e.g. <host>/<bucket>, instead of
-# subdomain-style URLs, e.g. <bucket>.<host>
+# subdomain-style URLs, e.g. <bucket>.<host>
 terraform_s3_use_path_style: "true"
 
 terraform_backend_config:
@@ -214,7 +214,7 @@ terraform_s3_secret_key: "<secret key>"
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 terraform_backend_config:
-  # ... other options ...
+  # ... other options ...
   access_key: "{{ terraform_s3_access_key }}"
   secret_key: "{{ terraform_s3_secret_key }}"
 ```

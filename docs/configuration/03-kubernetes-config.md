@@ -157,7 +157,7 @@ capi_cluster_etcd_blockdevice_volume_type: nvme
 
 # The Cinder availability zone to use for the etcd block device
 # Only used if "Volume" is specified as block device type
-# Defaults to "nova"
+# Defaults to "nova"
 capi_cluster_etcd_blockdevice_volume_az: nova
 ```
 
@@ -247,7 +247,7 @@ To use specific availability zones for Kubernetes nodes, the following variables
 
 # A list of failure domains that should be considered for control plane nodes
 capi_cluster_control_plane_failure_domains: [az1, az2]
-# The failure domain for worker nodes
+# The failure domain for worker nodes
 capi_cluster_worker_failure_domain: az1
 
 #### For tenant clusters ####
