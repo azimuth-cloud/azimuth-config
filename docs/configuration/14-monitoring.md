@@ -18,8 +18,6 @@ In addition to the monitoring and alerting stack, several additional dashboards 
   for browsing the current state of Kubernetes resources.
 - The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
   state of Helm releases.
-- The [Consul UI](https://developer.hashicorp.com/consul/tutorials/certification-associate-tutorials/get-started-explore-the-ui)
-  for browsing the Consul state (used by Cluster-as-a-Service and Zenith).
 - The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
   Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
 
@@ -32,7 +30,6 @@ The monitoring and alerting web dashboards are exposed as subdomains under the `
 - `grafana` for the Grafana dashboards
 - `prometheus` for the Prometheus web interface
 - `alertmanager` for the Alertmanager web interface
-- `consul` for the Consul UI
 - `ara` for the ARA web interface
 - `helm` for the Helm dashboard
 - `kubernetes` for the Kubernetes dashboard

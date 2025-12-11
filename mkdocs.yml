@@ -48,7 +48,6 @@ nav:
       - debugging/using-k9s.md
       - debugging/access-monitoring.md
       - debugging/zenith-services.md
-      - debugging/consul.md
       - debugging/kubernetes.md
       - debugging/caas.md
   - Developing:
