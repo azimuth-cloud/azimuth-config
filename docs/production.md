@@ -1,4 +1,4 @@
-# Best practice for production deployments
+# Production Checklist
 
 This document guides you through the process of setting up a production-ready Azimuth
 deployment following recommended best practice.
