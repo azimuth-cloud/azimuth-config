@@ -15,7 +15,7 @@ TILT_IMAGE_REGEX = r"^TILT_IMAGE_(\d+)$"
 def exec_cmd(cmd, **kwargs):
     # Log the command we are about to execute
     print("Executing cmd: {}".format(" ".join(cmd)), file = sys.stderr)
-    # By default, redirect stdout to stderr and raise on error
+    # By default, redirect stdout to stderr and raise on error
     kwargs.setdefault("stdout", sys.stderr)
     kwargs.setdefault("check", True)
     # Run the command and return the process instance

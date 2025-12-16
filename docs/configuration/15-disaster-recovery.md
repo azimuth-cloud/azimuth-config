@@ -40,6 +40,13 @@ velero_bucket_name: <bucket-name>
     The specified bucket must already exist - neither azimuth-ops nor Velero will create it.
 <!-- prettier-ignore-end -->
 
+<!-- prettier-ignore-start -->
+!!! warning "Do not use single bucket for multiple environments"
+    Velero does not track which Kubernetes cluster a particular backup is taken on, so there is a
+    risk of seeing unexpected behaviours (e.g. expired backups and volume snapshots not being
+    deleted cleanly).
+<!-- prettier-ignore-end -->
+
 You will also need to consult the documentation for your S3 provider to obtain S3 credentials for
 the bucket, and add the access key ID and secret to the following variables:
 

@@ -20,13 +20,6 @@ azimuth-capi-operator-reloader-78f879c866-k4r5w               1/1     Running   
 azimuth-capi-operator-789b5c8f44-2g4wx                        1/1     Running   0          55m
 azimuth-identity-operator-778c87548b-dkcpn                    1/1     Running   0          55m
 azimuth-ui-fc556-cjwq2                                        1/1     Running   0          55m
-consul-client-8zbnx                                           1/1     Running   0          55m
-consul-client-kf8fl                                           1/1     Running   0          55m
-consul-client-n4w2x                                           1/1     Running   0          55m
-consul-exporter-prometheus-consul-exporter-74bdc5dbc7-l7cb7   1/1     Running   0          55m
-consul-server-0                                               1/1     Running   0          55m
-consul-server-1                                               1/1     Running   0          55m
-consul-server-2                                               1/1     Running   0          55m
 zenith-registrar-86df769979-z2cgb                             1/1     Running   0          55m
 zenith-sshd-768794b88b-48rcf                                  1/1     Running   0          55m
 zenith-sync-8f55f978c-v6czg                                   1/1     Running   0          55m

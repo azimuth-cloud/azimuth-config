@@ -102,8 +102,6 @@ ingress_grafana_subdomain: grafana
 ingress_prometheus_subdomain: prometheus
 # The subdomain that should be used for Alertmanager
 ingress_alertmanager_subdomain: alertmanager
-# The subdomain that should be used for Consul
-ingress_consul_subdomain: consul
 # The subdomain that should be used for ARA
 ingress_ara_subdomain: ara
 # The subdomain that should be used for the Helm dashboard

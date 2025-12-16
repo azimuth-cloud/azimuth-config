@@ -97,7 +97,7 @@ azimuth_capi_operator_cluster_templates_extra:
       # A brief description of the template
       description: >-
         Kubernetes 1.31.2 with HA control plane and high-performance networking.
-      # Values for the openstack-cluster Helm chart
+      # Values for the openstack-cluster Helm chart
       values:
         # Specify the image and version for the cluster
         # These are the only required values
@@ -192,10 +192,10 @@ harbor_proxy_cache_extra_projects:
 
     # The type of the upstream registry, e.g.:
     #   aws-ecr
-    #   azure-acr
-    #   docker-hub
-    #   docker-registry
-    #   gitlab
+    #   azure-acr
+    #   docker-hub
+    #   docker-registry
+    #   gitlab
     #   google-gcr
     #   harbor
     #   jfrog-artifactory

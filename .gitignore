@@ -1,3 +1,4 @@
+.DS_Store
 .ansible
 .bin
 .venv
@@ -5,7 +6,12 @@
 .python-version
 /clouds.yaml*
 tilt-settings.yaml
+# Ignore local mkdocs builds
+site
 # Ignore generated secrets in demo and CI environments
 environments/demo/inventory/group_vars/all/secrets.yml
 environments/standalone/inventory/group_vars/all/secrets.yml
 .github/environments/**/secrets.yml
+# Ignore other types of secrets in CI environments
+.github/environments/**/env.secret
+.github/environments/**/clouds.yaml

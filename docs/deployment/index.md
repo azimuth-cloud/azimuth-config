@@ -2,8 +2,18 @@
 
 ## Python dependencies
 
-The Python requirements for an Azimuth deployment host, including Ansible itself,
-are contained in
+The Azimuth deployment tooling requires Python 3.10 or newer. If the Azimuth deployment
+host's system Python is too old, you can explicitly install a newer Python version
+using the OS package manager, for example:
+
+```bash
+dnf install python3.10
+# OR
+apt install python3.10 python3.10-venv
+```
+
+The Python package requirements for an Azimuth deployment host, including Ansible
+itself, are contained in
 [requirements.txt](https://github.com/azimuth-cloud/azimuth-config/blob/stable/requirements.txt)
 and must be installed before you can proceed with a deployment. It is recommended
 to use a [virtual environment](https://docs.python.org/3/library/venv.html) in order

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # pylint: disable=invalid-name
+#!/usr/bin/env python3
 
 """Generates release notes for a GitHub release by comparing the current and previous
 releases, and fetching the release notes for each component in azimuth-ops."""

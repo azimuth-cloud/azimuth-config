@@ -42,7 +42,7 @@ if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml" ]; then
   export OS_CLOUD="${OS_CLOUD:-"openstack"}"
 elif [ -n "$OS_CLOUD" ]; then
   # If a clouds.yaml file is otherwise specified, use it but make sure OS_CLIENT_CONFIG_FILE
-  # is also exported
+  # is also exported
   # To do this, we search for the same files as the OpenStack SDK and set it
   if [ -z "$OS_CLIENT_CONFIG_FILE" ]; then
     # Use the first file that we find

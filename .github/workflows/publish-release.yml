@@ -1,8 +1,9 @@
 ---
-name: Publish release
+name: Update release notes
 
 permissions:
-  contents: read
+  # need to be able to update releases
+  contents: write
 
 on:
   release:
