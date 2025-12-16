@@ -64,7 +64,7 @@ export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
 # Activate the dev config environment with a specific instance name
 #
 # This means that resources created for the instance will not collide
-# with other deployments that use the dev environment
+# with other deployments that use the dev environment
 source ./bin/activate dev jbloggs-dev
 
 # Generate secrets locally for the active environment, if required
@@ -133,9 +133,9 @@ To configure the prefix for images built by Tilt, use the following setting:
 
 ```yaml title="tilt-settings.yaml"
 # Images will be pushed to:
-#   ghcr.io/jbloggs/azimuth-api
-#   ghcr.io/jbloggs/azimuth-ui
-#   ghcr.io/jbloggs/azimuth-caas-operator
+#   ghcr.io/jbloggs/azimuth-api
+#   ghcr.io/jbloggs/azimuth-ui
+#   ghcr.io/jbloggs/azimuth-caas-operator
 #   ...
 image_prefix: ghcr.io/jbloggs
 ```

@@ -21,10 +21,6 @@ capi_cluster_worker_flavor: vm.azimuth.ci.en1.medium
 capi_cluster_control_plane_count: 1
 capi_cluster_worker_count: 2
 
-# Use a single replica for Consul
-# The risk of failed upgrades is too great, and it is going away soon
-consul_server_replicas: 1
-
 # Pick up the reserved IP for the Zenith SSHD LB
 zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
 

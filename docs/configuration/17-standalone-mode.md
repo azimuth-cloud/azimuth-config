@@ -66,7 +66,7 @@ ansible-galaxy install -f -r requirements.yml
 # N.B. these are excluded from git using .gitignore
 ./bin/generate-secrets
 
-# Run playbook to setup your VM amd Deploy Azimuth
+# Run playbook to setup your VM and deploy Azimuth
 ansible-playbook azimuth_cloud.azimuth_ops.deploy_standalone
 ```
 
@@ -113,7 +113,7 @@ ansible-galaxy install -f -r requirements.yml
 # N.B. these are excluded from git using .gitignore
 ./bin/generate-secrets
 
-# Run playbook to setup your VM amd Deploy Azimuth
+# Run playbook to setup your VM and deploy Azimuth
 ansible-playbook azimuth_cloud.azimuth_ops.deploy
 ```
 

@@ -37,6 +37,3 @@ _zenith_exposed_port_ranges: >-
     else []
   }}
 infra_exposed_port_ranges: "{{ _ingress_exposed_port_ranges + _zenith_exposed_port_ranges }}"
-
-# Use a single replica for Consul
-consul_server_replicas: 1

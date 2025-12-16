@@ -12,7 +12,7 @@ if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; t
   exit 1
 fi
 
-# Check that the Tilt settings file exists
+# Check that the Tilt settings file exists
 if [ ! -f "$AZIMUTH_CONFIG_ROOT/tilt-settings.yaml" ]; then
   echo "[ERROR] Could not find tilt-settings.yaml" 1>&2
   exit 1
