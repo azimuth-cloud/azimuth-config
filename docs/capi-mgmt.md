@@ -43,7 +43,7 @@ following differences:
 
 The only networking requirement is that there is a network path between the CAPI
 management cluster and the API server load balancer IP for each workload
-clusters. This could either be achieved by either deploying all clusters on a
+clusters. This is achievable by either deploying all clusters on a
 single tenant network shared between all OpenStack projects, or by ensuring all
 tenant clusters use a load balancer with a public IP for their API server
 (relevant CAPO docs
@@ -104,7 +104,7 @@ alert generation based on those metrics and
 
 All sections of the [main documentation](./configuration/14-monitoring.md) are
 applicable to a standalone CAPI management cluster deployment apart from the
-'Accessing web interfaces' section. In the CAPI-only case, since their is no
+'Accessing web interfaces' section. In the CAPI-only case, since there is no
 ingress controller and no [wildcard DNS](#wildcard-dns) entry, the monitoring
 and alerting services are only accessible from within the management cluster.
 However, a
@@ -130,9 +130,9 @@ recovery solution. The Azimuth documentation on
 [disaster recovery](./configuration/15-disaster-recovery) is directly applicable
 to CAPI-only deployments and allows relevant CAPI Kubernetes resources to be
 periodically backed up to an external S3 bucket. An Ansible playbook is also
-provided in the advent that an operator needs to
+provided in the event of an operator needing to
 [restore from a backup](./configuration/15-disaster-recovery/#restoring-from-a-backup).
 The sole difference between Azimuth and CAPI-only backups is that Azimuth
 includes some Cinder volume snapshots as part of each backup, whereas all CAPI
-state is stored in Kubernetes API resources, so Velero will only take an S3
+states are stored in Kubernetes API resources, so Velero will only take an S3
 backup of resource manifests and avoid creating any Cinder snapshots.
