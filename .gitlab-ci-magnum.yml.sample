@@ -88,7 +88,7 @@ deploy_staging:
   stage: staging
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"
