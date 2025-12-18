@@ -35,7 +35,7 @@ stages:
 check_for_release:
   stage: scheduled
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   variables:
     GIT_STRATEGY: none
   before_script:
@@ -60,7 +60,7 @@ check_for_release:
             \"id\": ${CI_PROJECT_ID},
             \"title\": \"Upgrade config to upstream version ${RELEASE_TAG}\",
             \"source_branch\": \"${BRANCH_NAME}\",
-            \"target_branch\": \"main\",
+            \"target_branch\": ${CI_DEFAULT_BRANCH},
             \"remove_source_branch\": true,
             \"assignee_id\": \"${GITLAB_USER_ID}\"
           }"
@@ -88,7 +88,7 @@ deploy_staging:
   stage: staging
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -128,7 +128,7 @@ deploy_production:
   stage: production
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"

@@ -4,7 +4,7 @@
 install_mode: ha
 
 # Define Kubernetes version so it is accessible to capi_cluster defaults and capi_mgmt environment
-capi_cluster_kubernetes_version: v1.32.9
+capi_cluster_kubernetes_version: v1.33.7
 
 # Give the seed node a name corresponding to the environment
 infra_name: "azimuth-{{ azimuth_environment }}-seed"

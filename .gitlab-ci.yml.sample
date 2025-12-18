@@ -43,7 +43,7 @@ stages:
 check_for_release:
   stage: scheduled
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   variables:
     GIT_STRATEGY: none
   before_script:
@@ -68,7 +68,7 @@ check_for_release:
             \"id\": ${CI_PROJECT_ID},
             \"title\": \"Upgrade Azimuth to ${RELEASE_TAG}\",
             \"source_branch\": \"${BRANCH_NAME}\",
-            \"target_branch\": \"main\",
+            \"target_branch\": ${CI_DEFAULT_BRANCH},
             \"remove_source_branch\": true,
             \"assignee_id\": \"${GITLAB_USER_ID}\"
           }"
@@ -96,14 +96,14 @@ deploy_aio:
   stage: aio
   rules:
     # Do not run for commits to main
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered even when there are no changed files
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
     # Run when there is a push to a branch with a merge request to main
     - if: >-
         $CI_PIPELINE_SOURCE == "merge_request_event" &&
-        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
     on_stop: stop_aio
@@ -123,12 +123,12 @@ deploy_aio:
 test_aio:
   stage: aio_test
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
     - if: >-
         $CI_PIPELINE_SOURCE == "merge_request_event" &&
-        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   environment:
     name: aio/$CI_COMMIT_REF_SLUG
   variables:
@@ -152,14 +152,14 @@ stop_aio:
   rules:
     # These rules must match deploy_aio, but with manual trigger
     # Allow the job to fail so it does not block merges
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: never
     - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE == "web"
       when: manual
       allow_failure: true
     - if: >-
         $CI_PIPELINE_SOURCE == "merge_request_event" &&
-        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+        $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
       when: manual
       allow_failure: true
   environment:
@@ -174,7 +174,7 @@ stop_aio:
     - cd ${CI_PROJECT_NAME}
     # Use the commit SHA if it still exists because git garbage collection hasn't run yet
     # If not, assume the branch has been merged and run the destroy from main instead
-    - git checkout ${CI_COMMIT_SHA} || git checkout main
+    - git checkout ${CI_COMMIT_SHA} || git checkout "$CI_DEFAULT_BRANCH"
     - source ./bin/ci-setup
   script:
     - ansible-playbook azimuth_cloud.azimuth_ops.destroy
@@ -189,7 +189,7 @@ deploy_staging:
   stage: staging
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -221,7 +221,7 @@ test_staging:
   stage: staging_test
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -261,7 +261,7 @@ deploy_production:
   stage: production
   rules:
     # Prevent the job from running on any branch that is not main
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     # Allow deployments to be manually triggered on main even when there are no changed files
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -293,7 +293,7 @@ deploy_production:
 test_production:
   stage: production_test
   rules:
-    - if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "push"

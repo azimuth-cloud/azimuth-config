@@ -8,8 +8,9 @@ set -e
 
 # Only allow running on main
 CURRENT_BRANCH="$(git branch --show-current)"
-if [ "$CURRENT_BRANCH" != "main" ]; then
-  echo "[ERROR] This script can only be run on the main branch" >&2
+DEFAULT_BRANCH="${DEFAULT_BRANCH:-"main"}"
+if [ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]; then
+  echo "[ERROR] This script can only be run on the $DEFAULT_BRANCH branch" >&2
   exit 1
 fi
 
@@ -64,9 +65,9 @@ if [ -n "$(git status --short)" ]; then
     echo "[INFO] Pushing changes to origin"
     git push --set-upstream origin "$BRANCH_NAME"
 
-    # Go back to the main branch at the end
-    echo "[INFO] Reverting back to main"
-    git checkout main
+    # Go back to the default branch at the end
+    echo "[INFO] Reverting back to $DEFAULT_BRANCH"
+    git checkout "$DEFAULT_BRANCH"
 
     echo "[INFO] Removing temporary branch"
     git branch -d "$BRANCH_NAME"
