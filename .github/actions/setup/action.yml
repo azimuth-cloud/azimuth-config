@@ -162,7 +162,7 @@ runs:
 
         ansible_var() {
             ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
-            ANSIBLE_STDOUT_CALLBACK=json \
+            ANSIBLE_CALLBACK_RESULT_FORMAT=json \
             ANSIBLE_JSON_INDENT=0 \
             ansible -m debug -a "var=$1" -e @extra-vars.yml all | \
                jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
