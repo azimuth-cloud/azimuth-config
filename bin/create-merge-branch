@@ -45,6 +45,7 @@ if git show-branch "remotes/origin/$BRANCH_NAME" >/dev/null 2>&1; then
 fi
 
 echo "[INFO] Merging release tag - $RELEASE_TAG"
+echo "[INFO] Release tag commit - $(git rev-parse "$RELEASE_TAG")"
 git merge --strategy recursive -X theirs --no-commit "$RELEASE_TAG"
 
 # Check if the merge resulted in any changes being staged
