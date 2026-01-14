@@ -60,7 +60,7 @@ check_for_release:
             \"id\": ${CI_PROJECT_ID},
             \"title\": \"Upgrade config to upstream version ${RELEASE_TAG}\",
             \"source_branch\": \"${BRANCH_NAME}\",
-            \"target_branch\": ${CI_DEFAULT_BRANCH},
+            \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
             \"remove_source_branch\": true,
             \"assignee_id\": \"${GITLAB_USER_ID}\"
           }"
