@@ -1,4 +1,4 @@
-# Best practice for production deployments
+# Production Checklist
 
 This document guides you through the process of setting up a production-ready Azimuth
 deployment following recommended best practice.
@@ -147,3 +147,49 @@ the [Deployment method](./configuration/02-deployment-method.md).
 !!! tip
     Remember to share as much configuration as possible between all your [environments](./environments.md)!
 <!-- prettier-ignore-end -->
+
+## Security Model
+
+Having completed all of the above steps, your production Azimuth configuration
+is ready for deployment. However, before doing so, it is important to understand
+the security model of an Azimuth deployment.
+
+Since Azimuth follows an infrastructure-as-code model, where all configuration
+is stored in a Git repository, the foundational security layer for the Azimuth
+control plane is the `git-crypt` encrypted secrets in the repository. If a
+person is [granted access](./repository/secrets.md#granting-access-to-others) to
+the repository secrets, they can:
+
+- Fetch the Azimuth seed node's [OpenTofu state](#opentofu-state) from the
+  remote state store.
+
+- Use the provided
+  [seed-ssh](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/seed-ssh)
+  script (which requires access to OpenTofu state) to access the Azimuth seed
+  node.
+
+- From the Azimuth seed node, it is possible to access the entire Azimuth
+  management cluster with unrestricted admin access using the HA cluster's
+  kubeconfig file which is written to `~/kubeconfig-<environment-name>.yml`
+  during the provisioning process. The management cluster contains OpenStack
+  application credentials and other sensitive information.
+
+- Access all Azimuth
+  [monitoring dashboards](./configuration/14-monitoring.md#accessing-web-interfaces)
+
+This leads to two important security recommendations:
+
+- _**Only trusted operators should be granted access to the encrypted secrets in
+  the repository.**_
+
+By using git-crypt's GPG key support, granting access involves adding a new
+commit to the repository; this provides a clear and version-controlled history
+of who has access (although it's worth being aware of git-crypt's
+[limitations](https://github.com/AGWA/git-crypt?tab=readme-ov-file#limitations)
+around [revoking access](https://github.com/AGWA/git-crypt/issues/47)).
+
+- _**A trusted operator should never share or copy any kubeconfig file from the
+  Azimuth seed node to another location.**_
+
+Keeping the kubeconfig file within the access-controlled seed node ensures only
+trusted operators can access the Azimuth management infrastructure.

@@ -32,10 +32,6 @@ capi_cluster_addons_csi_cinder_availability_zone: europe-nl-ams1
 capi_cluster_root_volume_type: unencrypted
 capi_cluster_addons_csi_cinder_volume_type: unencrypted
 
-# Use a single replica for Consul
-# The risk of failed upgrades is too great, and it is going away soon
-consul_server_replicas: 1
-
 # Pick up the reserved IP for the Zenith SSHD LB
 zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
 

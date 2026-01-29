@@ -1,8 +1,10 @@
-ansible-core>=2.12,<2.19 # require undef filter
+# Ansible 2.17 contains fix for https://github.com/ansible/ansible/issues/80514
+# See https://github.com/azimuth-cloud/ansible-collection-terraform/pull/27
+ansible-core>=2.17,<2.19
 azimuth-robotframework
 bcrypt==4.0.1  # this is the latest version that doesn't emit a warning
 jmespath
-git+https://github.com/stackhpc/jsonschema-default.git@master#egg=jsonschema_default
+jsonschema-default
 munch
 passlib
 python-octaviaclient

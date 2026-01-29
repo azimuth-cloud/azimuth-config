@@ -1,7 +1,7 @@
-# This file exists so that Ansible treats the directory as an inventory
+# This file exists so that Ansible treats the directory as an inventory
 
 [terraform_provision]
 # This group should contain the hosts that are used to provision the infrastructure
 # onto which Azimuth will be deployed
-# E.g.:
+# E.g.:
 # localhost  ansible_connection=local  ansible_python_interpreter="{{ ansible_playbook_python }}"

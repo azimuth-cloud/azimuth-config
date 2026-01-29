@@ -48,7 +48,7 @@ ansible-galaxy install -f -r requirements.yml
 # N.B. for the demo environment, these are excluded from git using .gitignore
 ./bin/generate-secrets
 
-# Deploy Azimuth
+# Deploy Azimuth
 ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 

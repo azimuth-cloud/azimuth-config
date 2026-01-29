@@ -7,8 +7,8 @@ edit_uri: ''
 nav:
   - Home: index.md
   - try.md
-  - best-practice.md
   - environments.md
+  - production.md
   - Repository:
       - repository/index.md
       - repository/secrets.md
@@ -48,7 +48,6 @@ nav:
       - debugging/using-k9s.md
       - debugging/access-monitoring.md
       - debugging/zenith-services.md
-      - debugging/consul.md
       - debugging/kubernetes.md
       - debugging/caas.md
   - Developing:

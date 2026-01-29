@@ -2,7 +2,7 @@
 
 #####
 ## This script sets up a port-forward to the specified Azimuth service, via the K3s
-## node for the environment
+## node for the environment
 #####
 
 set -eo pipefail
@@ -42,18 +42,6 @@ ara)
   namespace="azimuth"
   service="azimuth-caas-operator-ara"
   remote_port="8000"
-  ;;
-awx)
-  name="AWX"
-  namespace="azimuth"
-  service="awx-service"
-  remote_port="80"
-  ;;
-consul)
-  name="Consul"
-  namespace="azimuth"
-  service="consul-ui"
-  remote_port="80"
   ;;
 grafana)
   name="Grafana"

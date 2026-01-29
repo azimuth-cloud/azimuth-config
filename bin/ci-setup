@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-# This script performs setup for a CI job in a clean Ubuntu Jammy environment
+# This script performs setup for a CI job in a clean Ubuntu Jammy environment
 #####
 
 set -eo pipefail
@@ -34,7 +34,7 @@ if [ -z "$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
 fi
 
 # If no environment name is specified, use the GitLab CI environment name or
-# the config environment
+# the config environment
 if [ -z "$AZIMUTH_ENVIRONMENT" ]; then
   AZIMUTH_ENVIRONMENT="${CI_ENVIRONMENT_SLUG:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
 fi

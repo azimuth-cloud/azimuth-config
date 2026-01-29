@@ -128,7 +128,7 @@ mixin environments):
 infra_external_network_id: "<network id>"
 infra_flavor_id: "<flavor id>"
 
-# Azimuth cloud name
+# Azimuth cloud name
 #   This can use the environment name if desired, e.g.:
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"
 azimuth_current_cloud_label: "{{ lookup('env', 'CI_ENVIRONMENT_NAME') }}"
@@ -197,7 +197,7 @@ These can be used with [GitHub Actions](https://docs.github.com/en/actions) to m
 functionality described above. Each sample file contains a top-level comment describing how to tailor these
 workflows to a site-specific configuration repository.
 
-An additional [upgrade-check](https://github.com/stackhpc/azimuth-config/blob/stable/.github-upgrade-check.yml.sample)
+An additional [upgrade-check](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.github-upgrade-check.yml.sample)
 workflow is included which will regularly check for new upstream azimuth-config releases and automatically create a
 pull request in the downstream azimuth-config repository when a new upstream version is available. See the comment
 at the top of the sample workflow file for more details.

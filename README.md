@@ -28,6 +28,9 @@ docker run --rm \
     ghcr.io/super-linter/super-linter:v7.3.0
 ```
 
+Note: For M-series Apple devices and other ARM processors, add `--platform linux/amd64`
+as an extra argument to the above `docker run ...` command.
+
 ```sh
 ansible-lint -c .ansible-lint.yml
 ```
