@@ -232,3 +232,13 @@ azimuth_capi_operator_metrics: "{{ deploy_prometheus_stack }}"
 azimuth_apps_operator_metrics: "{{ deploy_prometheus_stack }}"
 azimuth_metrics: "{{ deploy_prometheus_stack }}"
 ingress_nginx_prometheus_stack_enabled: "{{ deploy_prometheus_stack }}"
+
+# The k8s dashboard has been archived, override to the retired repo.
+kubernetes_dashboard_chart_repo: https://kubernetes-retired.github.io/dashboard/
+# If overrides are set in downstream environments, will need to copy these
+# values into them as well
+azimuth_capi_operator_capi_helm_values_overrides:
+  addons:
+    kubernetesDashboard:
+      chart:
+        repo: https://kubernetes-retired.github.io/dashboard/

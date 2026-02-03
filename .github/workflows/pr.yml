@@ -32,6 +32,7 @@ on:
       - reopened
     branches:
       - devel
+      - stable
 
 # Use the head ref for workflow concurrency, with cancellation
 # This should mean that any previous runs of this workflow for the same PR

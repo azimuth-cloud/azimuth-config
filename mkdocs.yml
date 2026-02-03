@@ -52,6 +52,7 @@ nav:
       - debugging/caas.md
   - Developing:
       - developing/index.md
+  - capi-mgmt.md
 
 theme:
   name: material
