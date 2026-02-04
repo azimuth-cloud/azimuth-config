@@ -31,6 +31,9 @@ environment:
 export OS_CLOUD=openstack
 export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
 
+# If running on macOS, work around Python crash
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config
 cd azimuth-config
