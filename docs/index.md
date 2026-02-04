@@ -18,7 +18,7 @@ To try out Azimuth on your OpenStack cloud, you can follow [these instructions](
 to get a simple single-node deployment.
 
 For a production-ready deployment, you should follow the steps in the
-[best practice document](./best-practice.md).
+[production configuration document](./production.md).
 
 ## Structure of an Azimuth deployment
 
