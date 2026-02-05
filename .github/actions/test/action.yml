@@ -31,6 +31,12 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e @extra-vars.yml
 
+    - name: Setup upterm session
+      uses: owenthereal/action-upterm@v1
+      with:
+        limit-access-to-actor: true
+        limit-access-to-users: wtripp180901
+
     - name: Run test suite
       shell: bash
       run: |
