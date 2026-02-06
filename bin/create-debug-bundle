@@ -95,6 +95,16 @@ kubectl -n capi-kubeadm-control-plane-system logs --since=1h deploy/capi-kubeadm
 kubectl -n capi-system logs --since=1h deploy/capi-controller-manager > debug-bundle/logs-capi-controller-manager.txt 2>&1 || true
 kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bundle/logs-capo-controller-manager.txt 2>&1 || true
 
+KUBECONFIGS=$(kubectl get secrets -A --no-headers | awk -v q="kubeconfig" 'index($2, q) {print $1, $2}')
+if [ -n "$KUBECONFIGS" ]; then
+	echo $KUBECONFIGS | while read -r ns name; do
+    kubectl get secret $name -n $ns -o jsonpath="{.data.value}" | base64 -d > debug-kubeconfig.yml
+    DIRNAME=debug-bundle/${name::-11}
+    mkdir $DIRNAME
+    kubectl get pods --all-namespaces -o wide --kubeconfig debug-kubeconfig.yml > $DIRNAME/list-pods.txt 2>&1 || true
+	done
+fi
+
 tar -czf debug-bundle.tar.gz -C debug-bundle \$(ls -A debug-bundle)
 EOF
 echo "[INFO] Fetching debug bundle"
