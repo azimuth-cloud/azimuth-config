@@ -14,7 +14,7 @@ be produced.
     Inferring configuration in the way that the `demo` environment does is **not recommended** as it is not guaranteed to produce the same result each time. For production deployments it is better to be explicit.
 <!-- prettier-ignore-end -->
 
-To get started with a production deployment, see the [best practice guide](./best-practice.md).
+To get started with a production deployment, see the [best practice guide](./production.md).
 
 ## Deploying a demo instance
 

@@ -82,7 +82,7 @@ A standard high-availability (HA) deployment with a seed node, 3 control plane n
 - 500GB Cinder storage
 - 3 x floating IPs
   - One for accessing the seed node
-  - One fo the ingress controller for accessing HTTP services
+  - One for the ingress controller for accessing HTTP services
   - One for the Zenith SSHD server
 
 <!-- prettier-ignore-start -->

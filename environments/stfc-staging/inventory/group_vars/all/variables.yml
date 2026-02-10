@@ -26,26 +26,6 @@ azimuth_openstack_verify_ssl: false
 platforms_tenancy_allow_list:
   - 89ab3c08e3794532acb354ff11693fad # azimuth-staging
 
-##################################################################################
-# Clusters as a service
-
-azimuth_clusters_enabled: true
-azimuth_caas_rstudio_enabled: true
-azimuth_caas_stackhpc_slurm_appliance_enabled: false
-azimuth_caas_repo2docker_enabled: true
-azimuth_caas_workstation_ssh_enabled: false
-
-# These were built using cloud-image-builders - see https://github.com/stfc/cloud-image-builders/blob/main/os_builders/README.md
-azimuth_caas_workstation_image: "690a52f1-3f75-4a57-8116-226d9b46fbbf"
-azimuth_caas_rstudio_image: "2d8dbb78-7376-4522-86af-46d051476645"
-azimuth_caas_repo2docker_image: "200b3793-a209-4a4a-8a52-3065f1838c00"
-azimuth_caas_stackhpc_slurm_appliance_image: "690a52f1-3f75-4a57-8116-226d9b46fbbf"
-
-
-# prevent any community images from being used by other projects
-community_images_default_visibility: private
-community_images: {}
-
 #############################################################################
 # Azimuth configuration
 
@@ -76,7 +56,6 @@ fluent_operator_user_opensearch_logstash_prefix: "{{ '{%- endraw %}' }}{% raw %}
 ##################################################################################
 # Alertmanager
 capi_cluster_alertmanager_env: staging
-
 
 ### CAPI Cluster Overrides for Staging on Dev Openstack ###
 
