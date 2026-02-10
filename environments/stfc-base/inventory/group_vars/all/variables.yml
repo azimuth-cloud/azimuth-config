@@ -2,58 +2,33 @@
 # common variables for all stfc environments - stfc-development, stfc-production, stfc-staging 
 
 #############################################################################
-# Images configuration
+# Community Images configuration
 
-community_images_custom_properties:
-  - "hw_scsi_model=virtio-scsi"
-  - "hw_disk_bus=scsi"
-
-# don't want any kubernetes images so ignore them
-# we use our own capi images
-community_images_azimuth_images_manifest: >-
-  {{ lookup('url', community_images_azimuth_images_manifest_url, split_lines = False) | from_json | dict2items | rejectattr('key', 'match', '^kubernetes.*') | items2dict
-  }}
-
-# prefix all azimuth community image names with azimuth-* 
-parsed_community_images: >-
-  {% set result = {} %}
-  {% for dict in [community_images_default, community_images_extra] %}
-  {%   for key, image in dict.items() %}
-  {%     if "name" in image %}
-  {%        set _ = image.update({'name': 'azimuth-' + image.name}) %}
-  {%     endif %}
-  {%     set _ = result.update({key: image}) %}
-  {%   endfor %}
-  {% endfor %}
-  {{ result }}
-
-# convert string outputted by jinja into a dictionary
-# community_images: "{{ parsed_community_images | replace('\"', '') | trim }}"
+# Turn off community images as we build our own versions
 community_images: {}
 
-#############################################################################
-# Ansible Playbooks For STFC Security Compliance 
+##################################################################################
+# Clusters as a service
 
-# Define common variables to be reused
-stfc_compliance_extra_vars:
-  ansible_init_collections:
-    - name: https://github.com/stfc/cloud-image-builders.git
-      version: "main"
-      type: git
-  ansible_init_playbooks:
-    - name: azimuth.security.prepare_user_image
+azimuth_caas_rstudio_enabled: true
+azimuth_caas_stackhpc_slurm_appliance_enabled: false
+azimuth_caas_repo2docker_enabled: true
+azimuth_caas_workstation_ssh_enabled: false
 
-# Workstation configuration
-azimuth_caas_stackhpc_workstation_extra_vars_overrides: "{{ stfc_compliance_extra_vars }}"
+# lookup CAAS images by name
+# These images are built using cloud-image-builders - see https://github.com/stfc/cloud-image-builders/tree/main/os_builders
+azimuth_caas_workstation_image: >-
+  {{ (lookup('pipe', 'openstack image list -c Name -c ID -f json') | from_json | selectattr('Name', '==', "azimuth-workstation"))[0].ID }}
 
-# RStudio configuration
-azimuth_caas_stackhpc_rstudio_extra_vars_overrides: "{{ stfc_compliance_extra_vars }}"
 
-# Repo2Docker configuration
-azimuth_caas_stackhpc_repo2docker_extra_vars_overrides: "{{ stfc_compliance_extra_vars }}"
+azimuth_caas_rstudio_image: >-
+  {{ (lookup('pipe', 'openstack image list -c Name -c ID -f json') | from_json | selectattr('Name', '==', "azimuth-rstudio"))[0].ID }}
 
-# Slurm configuration
-azimuth_caas_stackhpc_slurm_appliance_extra_vars_overrides: "{{ stfc_compliance_extra_vars }}"
+azimuth_caas_repo2docker_image: >-
+  {{ (lookup('pipe', 'openstack image list -c Name -c ID -f json') | from_json | selectattr('Name', '==', "azimuth-jupyter-repo2docker"))[0].ID }}
+
+# TODO - create slurm appliance image
+azimuth_caas_stackhpc_slurm_appliance_image: "none" 
 
 #############################################################################
 # STFC Cloud CAPI Cluster Templates
@@ -154,8 +129,7 @@ azimuth_apps_enabled: true
 # Indicates if Kubernetes support should be enabled
 azimuth_kubernetes_enabled: true
 # Indicates if Cluster-as-a-Service (CaaS) should be enabled
-azimuth_clusters_enabled: false
-
+azimuth_clusters_enabled: true
 # The name of the current cloud
 azimuth_current_cloud_name: stfc-cloud
 # The label for the current cloud
