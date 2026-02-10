@@ -13,7 +13,7 @@ fi
 
 ansible_variable() {
   ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
-    ANSIBLE_CALLBACK_RESULT_FORMAT=json \
+    ANSIBLE_STDOUT_CALLBACK=ansible.posix.json \
     ANSIBLE_JSON_INDENT=0 \
     ansible -m debug -a "var=$1" all |
     jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
