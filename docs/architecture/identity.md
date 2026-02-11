@@ -63,8 +63,8 @@ resources). Currently, these tenancies have a one-to-one mapping with OpenStack 
 In order to manage platform resources in the underlying cloud on behalf of users, Azimuth needs
 to be able to translate an authenticated Azimuth session into two things:
 
-  1. A list of Azimuth tenancies that a user is permitted to access
-  2. A credential that is able to manage resources in the corresponding OpenStack project
+1. A list of Azimuth tenancies that a user is permitted to access
+2. A credential that is able to manage resources in the corresponding OpenStack project
 
 This section documents how this is acheived for each authentication method.
 
@@ -132,14 +132,13 @@ sequenceDiagram
 
 ### Using a Keycloak realm
 
-!!! warning  "Technology preview"
-
-    This authentication method is currently in technology preview and not recommended for
-    production.
-
-    Fully automated configuration of the Keycloak realm is not yet supported in `azimuth-ops`,
-    so it is recommended that you enable backups for your Azimuth installation in order to
-    preserve the Keycloak database in the case of an unrecoverable failure.
+<!-- prettier-ignore-start -->
+!!! warning
+    This authentication method is currently in technology preview and not recommended for production. Fully automated
+    configuration of the Keycloak realm is not yet supported in `azimuth-ops`, so it is recommended that you enable
+    backups for your Azimuth installation in order to preserve the Keycloak database in the case of an unrecoverable
+    failure.
+<!-- prettier-ignore-end -->
 
 Azimuth also supports authenticating against a special realm in the Keycloak instance that is
 deployed as part of an Azimuth installation. When using this authentication method, it is no
@@ -168,20 +167,19 @@ stored in a `Secret` in the corresponding Azimuth tenant namespace. `azimuth-ops
 creation of these secrets, but not the creation of the application credentials themselves -
 these must be created ahead of time and placed in your Azimuth configuration.
 
-!!! warning  "Unrestricted application credentials"
-
-    The application credentials must be **unrestricted**, meaning that they have the ability
-    to create additional application credentials. This is so that Azimuth can still create the
+<!-- prettier-ignore-start -->
+!!! warning
+    The application credentials must be **unrestricted**, meaning that they have the ability to
+    create additional application credentials. This is so that Azimuth can still create the
     per-platform application credentials that are used to manage platform resources.
 
-!!! tip  "Service account recommended"
-
+!!! tip
     It is recommended that Azimuth has a service account in the underlying OpenStack that owns
     the application credentials used by Azimuth. This service account will need to belong to all
-    the projects that you wish to use Azimuth with.
-
-    This avoids all of the application credentials used by Azimuth being tied to an individual
-    OpenStack user who may have access to the cloud revoked, e.g. if they leave the organisation.
+    the projects that you wish to use Azimuth with. This avoids all of the application credentials
+    used by Azimuth being tied to an individual OpenStack user who may have access to the cloud
+    revoked, e.g. if they leave the organisation.
+<!-- prettier-ignore-end -->
 
 The following sequence diagram shows a typical flow for creating a platform in an Azimuth
 tenancy using the Keycloak realm for authentication:
