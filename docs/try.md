@@ -14,7 +14,7 @@ be produced.
     Inferring configuration in the way that the `demo` environment does is **not recommended** as it is not guaranteed to produce the same result each time. For production deployments it is better to be explicit.
 <!-- prettier-ignore-end -->
 
-To get started with a production deployment, see the [best practice guide](./best-practice.md).
+To get started with a production deployment, see the [best practice guide](./production.md).
 
 ## Deploying a demo instance
 
@@ -30,6 +30,9 @@ environment:
 # Set OpenStack configuration variables
 export OS_CLOUD=openstack
 export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
+
+# If running on macOS, work around Python crash
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 # Clone the azimuth-config repository
 git clone https://github.com/azimuth-cloud/azimuth-config

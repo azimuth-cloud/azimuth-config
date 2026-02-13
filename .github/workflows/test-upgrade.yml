@@ -103,6 +103,18 @@ jobs:
         # other tasks in the job
         timeout-minutes: 180
 
+      - name: Generate S3 credentials for Velero
+        run: |
+          set -e
+          source ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          VELERO_S3_ACCESS_KEY="$(openstack ec2 credentials create -f value -c access)"
+          VELERO_S3_SECRET_KEY="$(openstack ec2 credentials show -f value -c secret "$VELERO_S3_ACCESS_KEY")"
+          cat >> ci.env <<EOF
+          export VELERO_S3_ACCESS_KEY="$VELERO_S3_ACCESS_KEY"
+          export VELERO_S3_SECRET_KEY="$VELERO_S3_SECRET_KEY"
+          EOF
+
       - name: Provision Azimuth
         uses: ./.github/actions/provision
 
@@ -231,4 +243,12 @@ jobs:
 
       - name: Destroy Azimuth
         uses: ./.github/actions/destroy
+        if: ${{ always() }}
+
+      - name: Delete Velero S3 credentials
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          openstack ec2 credentials delete "$VELERO_S3_ACCESS_KEY"
         if: ${{ always() }}

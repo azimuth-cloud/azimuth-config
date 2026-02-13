@@ -50,6 +50,8 @@ fi
 # but using a separate command doesn't...  :shrugs:
 
 # Things that we include:
+#   * Seed uptime and load
+#   * List of processes on the seed
 #   * List of pods
 #   * List of PVCs
 #   * List of installed CaaS cluster types and clusters
@@ -65,6 +67,9 @@ rm -rf debug-bundle
 mkdir debug-bundle
 
 ${additional_commands}
+
+uptime > debug-bundle/uptime.txt 2>&1 || true
+top -b -n 1 > debug-bundle/top.txt 2>&1 || true
 
 kubectl get pods --all-namespaces -o wide > debug-bundle/list-pods.txt 2>&1 || true
 kubectl get pvc --all-namespaces -o wide > debug-bundle/list-pvcs.txt 2>&1 || true
