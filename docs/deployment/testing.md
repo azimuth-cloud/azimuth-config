@@ -407,5 +407,7 @@ against your deployments.
 
 As an example, the
 [sample GitLab CI/CD configuration file](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.gitlab-ci.yml.sample)
-includes jobs that run after each deployment to execute the configured tests against
-the deployment.
+and [sample GitHub CI/CD deployment workflow](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.github-deploy-prod.yml.sample)
+include jobs that run after each deployment to execute the configured tests against
+the deployment. There is also a [sample GitHub workflow](https://github.com/azimuth-cloud/azimuth-config/blob/stable/.github-test.yml.sample)
+to just run these tests.
