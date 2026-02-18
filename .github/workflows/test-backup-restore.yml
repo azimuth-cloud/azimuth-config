@@ -22,6 +22,11 @@ on:
           - ""
           - arcus
           - leafcloud
+      azimuth-ops-version:
+        description: >
+          The azimuth-ops version to use. If not given, the default version is used.
+        required: true
+        default: ""
 
 jobs:
   # Tests that a backup and restore re-adopts all the existing platforms
@@ -50,6 +55,7 @@ jobs:
           target-cloud: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
           install-mode: ha
           environment-prefix: ci-restore
+          azimuth-ops-version: ${{ inputs.azimuth-ops-version }}
         # GitHub terminates jobs after 6 hours
         # We don't want jobs to acquire the lock then get timed out before they
         # can finish
