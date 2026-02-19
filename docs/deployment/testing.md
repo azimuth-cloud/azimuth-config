@@ -320,8 +320,7 @@ generate_tests_kubernetes_test_case_worker_size:
 # The number of workers that should be deployed for each test case
 generate_tests_kubernetes_test_case_worker_count: 2
 
-# Indicates whether the dashboard and monitoring should be enabled for tests
-generate_tests_kubernetes_test_case_dashboard_enabled: true
+# Indicates whether the monitoring should be enabled for tests
 generate_tests_kubernetes_test_case_monitoring_enabled: true
 ```
 
