@@ -28,6 +28,7 @@ export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
 exec robot \
   --loglevel debug \
   --consolecolors on \
+  --listener RetryFailed:2 \
   --variablefile "$test_vars_file" \
   "$@" \
   "$test_directory"
