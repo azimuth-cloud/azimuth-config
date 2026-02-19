@@ -94,7 +94,6 @@ jobs:
                 control_plane_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
                 worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"
                 worker_count: "{{ generate_tests_kubernetes_test_case_worker_count }}"
-                dashboard_enabled: "{{ generate_tests_kubernetes_test_case_dashboard_enabled }}"
                 monitoring_enabled: "{{ generate_tests_kubernetes_test_case_monitoring_enabled }}"
         # GitHub terminates jobs after 6 hours
         # We don't want jobs to acquire the lock then get timed out before they
