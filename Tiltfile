@@ -263,8 +263,10 @@ def load_component(name, spec):
 
     # Create any local resources for the component
     for name, lr_spec in component_spec.get("local_resources", {}).items():
-        lr_spec.setdefault("dir", location)
-        lr_spec.setdefault("serve_dir", location)
+        if "cmd" in lr_spec:
+            lr_spec.setdefault("dir", location)
+        if "serve_cmd" in lr_spec:
+            lr_spec.setdefault("serve_dir", location)
         local_resource(name, **lr_spec)
 
 
