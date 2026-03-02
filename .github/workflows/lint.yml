@@ -6,9 +6,6 @@ on:  # yamllint disable-line rule:truthy
 
 permissions:
   contents: read
-  packages: read
-  # To report GitHub Actions status checks
-  statuses: write
 
 jobs:
   lint:
@@ -16,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
-      # To report GitHub Actions status checks
-      statuses: write
 
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +23,7 @@ jobs:
           submodules: true
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@v25.4.0
+        uses: ansible/ansible-lint@v26.2.0
 
       - name: Load super-linter configuration
         # Use grep inverse matching to exclude eventual comments in the .env file
@@ -41,7 +35,7 @@ jobs:
         if: always()
 
       - name: Run super-linter
-        uses: super-linter/super-linter@v7.3.0
+        uses: super-linter/super-linter@v8.5.0
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
