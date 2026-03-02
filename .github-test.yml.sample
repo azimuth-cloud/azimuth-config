@@ -1,4 +1,3 @@
-# This example workflow can be used to perform manually-triggered Azimuth deployments targeting production environments.
 # The workflow requires a GitHub environment (https://docs.github.com/en/actions/using-jobs/using-environments-for-jobs) to
 # be created in the site-specific config repo with a name which exactly matches the azimuth-config environment to be used
 # for production deployments. For security, this GitHub environment should also have a deployment protection rule which
@@ -15,67 +14,48 @@
 # from within an unlocked checkout of the repository. For information on defining GitHub repo secrets, see:
 # https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
 
-name: Azimuth deployment
+name: Azimuth tests
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "The Azimuth config environment to deploy"
+        description: "The Azimuth config environment to test"
         type: environment
         required: true
-      run-tests:
-        description: "Run the Azimuth tests after deploy"
-        type: boolean
-        default: true
 jobs:
-  deploy_azimuth:
+  test_azimuth:
     environment: ${{ inputs.environment }}
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - ${{ inputs.environment }}
     steps:
 
       - name: Ensure required host packages are installed
         run: |
           set -xe
           sudo apt update
-          sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt
+          sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt jq
 
       - name: Checkout the config repo
         uses: actions/checkout@v4
-
-      - name: Deploy Azimuth
-        shell: bash
-        env:
-          ANSIBLE_FORCE_COLOR: True
-        # Here we just decrypt the repo checkout then follow the steps from the Azimuth deployment docs.
-        # The GitHub repo should have an environment configured with a name which matches the Azimuth config environment.
-        # This GitHub environment should also have a branch protection rule which only allows deployments on chosen production branch (e.g. main).
-        # https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
-        run: |
-          set -e
-          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
-          ./bin/ensure-venv
-          source ./bin/activate  ${{ inputs.environment }}
-          ansible-galaxy install -fr ./requirements.yml
-          ansible-playbook azimuth_cloud.azimuth_ops.provision
 
       - name: Generate test suite
         shell: bash
         run: |
           set -e
           echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          ./bin/ensure-venv
           source ./bin/activate  ${{ inputs.environment }}
+          ansible-galaxy install -fr ./requirements.yml
           ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
-        if: inputs.run-tests
 
       - name: Run test suite
         shell: bash
         run: |
           set -e
-          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
           source ./bin/activate  ${{ inputs.environment }}
           export OS_CLOUD=unrestricted
           ./bin/run-tests
-        if: inputs.run-tests
 
       - name: Upload test report artifacts
         uses: actions/upload-artifact@v4
@@ -91,7 +71,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
           source ./bin/activate  ${{ inputs.environment }}
           export OS_CLOUD=unrestricted
           ./bin/run-tests --include delete
