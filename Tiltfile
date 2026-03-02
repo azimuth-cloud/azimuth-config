@@ -128,8 +128,7 @@ def build_image(name, context, build_args=None):
         ]
     )
     build_command = (
-        "%s build -t $EXPECTED_REF --platform linux/amd64 %s %s && "
-        % (build_engine, build_args, context)
+        "%s build -t $EXPECTED_REF --platform linux/amd64 %s %s && " % (build_engine, build_args, context)
         + "%s push $EXPECTED_REF" % build_engine
     )
     custom_build(image, build_command, [context], skips_local_docker=True)
@@ -149,9 +148,7 @@ def mirror_image(name, source_image):
             + "%s push $EXPECTED_REF" % mirror_engine
         )
     elif mirror_engine == "skopeo":
-        mirror_command = (
-            "skopeo copy --all docker://%s docker://$EXPECTED_REF" % source_image
-        )
+        mirror_command = "skopeo copy --all docker://%s docker://$EXPECTED_REF" % source_image
     else:
         fail("unrecognised mirror engine - %s" % mirror_engine)
     custom_build(image, mirror_command, [], skips_local_docker=True)
