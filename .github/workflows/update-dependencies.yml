@@ -4,11 +4,7 @@ name: Update dependencies
 
 permissions:
   contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
   security-events: write
-  id-token: write
 
 on:
   # Allow manual executions

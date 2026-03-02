@@ -3,10 +3,6 @@ name: HA test
 
 permissions:
   contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
 
 on:
   # Allow manual execution on any branch

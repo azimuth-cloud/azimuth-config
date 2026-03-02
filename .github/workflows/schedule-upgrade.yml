@@ -3,8 +3,6 @@ name: Scheduled upgrade
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 on:
   # Run weekly on a Thursday at 6am
