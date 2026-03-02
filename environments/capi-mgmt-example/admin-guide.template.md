@@ -15,7 +15,7 @@ The core tenet of Cluster API is to use a separate Kubernetes 'management' clust
 The Magnum Cluster API Helm driver itself is decoupled from the Cluster API management cluster and Magnum simply expects to be provided a [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file for the target management cluster as part of the Magnum driver set up to allow it to talk to an existing management cluster.
 It will then use this management cluster to provision Magnum user clusters (otherwise known as 'workload' clusters in CAPI terminology).
 
-Since the management cluster provisioning is outside of Magnum's scope, the cloud-name deployment re-uses StackHPC's [Azimuth](https://azimuth-config.readthedocs.io/en/stable/) tooling for provisioning and maintaining a production-ready management cluster.
+Since the management cluster provisioning is outside of Magnum's scope, the cloud-name deployment reuses StackHPC's [Azimuth](https://azimuth-config.readthedocs.io/en/stable/) tooling for provisioning and maintaining a production-ready management cluster.
 The Magnum CAPI management cluster is effectively a stripped-down version of an Azimuth deployment with only the bare-minimum feature set required to manage CAPI workload clusters.
 As such, some (but not all) sections of the [Azimuth operator documentation](https://azimuth-config.readthedocs.io) are relevant to Magnum. The goal of this admin guide is to distill the relevant information from the Azimuth documentation into something more applicable to the cloud-name Magnum service.
 
@@ -27,7 +27,7 @@ The CAPI management cluster is provisioned using the [azimuth-ops](https://githu
 This downstream repository still 'tracks' the upstream azimuth-config in the sense that updating the cloud-name CAPI management cluster involves syncing this downstream repository with the latest upstream config. (In practice, this should be done via a GitHub / GitLab [scheduled pipeline](https://azimuth-config.readthedocs.io/en/stable/deployment/automation/#automated-upgrades).)
 
 This repository defines a set of cloud-name-specific [config environments](https://azimuth-config.readthedocs.io/en/stable/environments/) which hold configuration overrides required for the cloud-name cloud (e.g. OpenStack network IDs, flavor names, etc).
-This config is organised into a `cloud-name-base` 'mixin' environment and one ore more 'concrete' environments, for the each CAPI management cluster deployed on the cloud-name system.
+This config is organised into a `cloud-name-base` 'mixin' environment and one or more 'concrete' environments, for the each CAPI management cluster deployed on the cloud-name system.
 
 In addition, the cloud-name config follows the recommended best practices for [managing secrets](https://azimuth-config.readthedocs.io/en/stable/repository/secrets/) and [storing infrastructure state](https://azimuth-config.readthedocs.io/en/stable/repository/opentofu/); therefore, both of these upstream documentation sections can be read as-is in relation to the cloud-name management cluster deployment.
 
@@ -46,7 +46,8 @@ The remainder of this document explains how to access and troubleshoot each of t
 ### Accessing the Seed VM
 
 The seed VM is the admin's gateway into the CAPI management infrastructure. The seed VM's SSH key and IP address are stored in the GitLab-backed terraform state within the config repository. Therefore, by being granted access to the config repositories secrets, an admin can use the provided helper scripts to fetch this securely stored terraform state and use it to SSH into the seed.
-A more detailed explanation of this process can be found [here](https://azimuth-config.readthedocs.io/en/stable/debugging/access-k3s/) but the TL;DR is to run the following shell commands from the repository root:
+A more detailed explanation of this process can be found in the [Azimuth documentation](https://azimuth-config.readthedocs.io/en/stable/debugging/access-k3s/)
+but the TL;DR is to run the following shell commands from the repository root:
 
 ```sh
 # Ensure that the Python venv is set up

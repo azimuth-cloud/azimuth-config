@@ -42,7 +42,7 @@ By default, the playbook will:
 - All of these steps can be disabled if needed, for example If you are running the playbook against an existing VM with some tools preinstalled or are targeting an existing Kubernetes cluster from your local machine.
 - Steps can be disabled in `environments/existing-k8s/inventory/group_vars/all/variables.yml` by setting the appropriate variable to false.
 
-- The VM needs to be Ubuntu 24.04 or similar, with at least 2 VCPUs, 8GB of ram and 30GB of disk space (with monitoring disabled, if monitoring is enabled then at least 50GB of disk space is reccomended)
+- The VM needs to be Ubuntu 24.04 or similar, with at least 2 VCPUs, 8GB of ram and 30GB of disk space (with monitoring disabled, if monitoring is enabled then at least 50GB of disk space is recommended)
 - Ports 6443, 443, 80, 22 and 2222 should be open.
 
 ```bash
