@@ -56,9 +56,10 @@ jobs:
     steps:
 
       - name: Checkout the initial git ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           ref: ${{ inputs.from-ref }}
+          persist-credentials: false
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
@@ -143,11 +144,12 @@ jobs:
 
       - name: Checkout code under test
         id: checkout-latest
-        uses: actions/checkout@v4
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           # Make sure not to remove working directories
           clean: false
           ref: ${{ inputs.to-ref }}
+          persist-credentials: false
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies
@@ -217,7 +219,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload test report artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: azimuth-upgrade-test-reports
           path: reports/*
@@ -232,7 +234,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload debug bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: azimuth-upgrade-debug-bundle
           path: debug-bundle.tar.gz

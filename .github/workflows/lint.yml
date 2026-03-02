@@ -15,12 +15,13 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           # super-linter needs the full git history to get the
           # list of files that changed across commits
           fetch-depth: 0
           submodules: true
+          persist-credentials: false
 
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v26.2.0

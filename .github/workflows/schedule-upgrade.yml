@@ -20,7 +20,9 @@ jobs:
       latest_release: ${{ steps.get-tag.outputs.latest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
 
       - name: Find latest tagged release
         id: get-tag

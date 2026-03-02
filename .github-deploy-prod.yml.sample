@@ -36,7 +36,7 @@ jobs:
           sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt
 
       - name: Checkout the config repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       - name: Deploy Azimuth
         shell: bash

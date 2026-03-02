@@ -29,24 +29,26 @@ jobs:
     name: ${{ matrix.key }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
 
       - name: Check for most recent GitHub release
         id: next
-        uses: azimuth-cloud/github-actions/github-latest-release@master
+        uses: azimuth-cloud/github-actions/github-latest-release@c0e88a34bb32bb8f2b703f7168f91cdb51d9b761
         with:
           repository: ${{ matrix.repository }}
           prereleases: ${{ matrix.prereleases || 'no' }}
 
       - name: Update dependency key
-        uses: azimuth-cloud/github-actions/config-update@master
+        uses: azimuth-cloud/github-actions/config-update@c0e88a34bb32bb8f2b703f7168f91cdb51d9b761
         with:
           path: ${{ matrix.path }}
           updates: |
             ${{ matrix.version_jsonpath }}=${{ steps.next.outputs.version }}
 
       - name: Generate app token for PR
-        uses: azimuth-cloud/github-actions/generate-app-token@master
+        uses: azimuth-cloud/github-actions/generate-app-token@c0e88a34bb32bb8f2b703f7168f91cdb51d9b761
         id: generate-app-token
         with:
           repository: ${{ github.repository }}
@@ -54,7 +56,7 @@ jobs:
           app-private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
 
       - name: Propose changes via PR if required
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@3499eb61835cc0015c0b786e203d74b1e8f55e43
         with:
           token: ${{ steps.generate-app-token.outputs.token }}
           commit-message: >-

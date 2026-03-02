@@ -51,7 +51,7 @@ runs:
       if: ${{ always() }}
 
     - name: Release S3 lock
-      uses: azimuth-cloud/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@c0e88a34bb32bb8f2b703f7168f91cdb51d9b761
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}

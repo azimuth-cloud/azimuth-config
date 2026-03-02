@@ -45,11 +45,12 @@ runs:
   using: composite
   steps:
     - name: Checkout azimuth-config repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
         clean: false
+        persist-credentials: false
 
     - name: Write clouds.yaml
       shell: bash
@@ -92,7 +93,7 @@ runs:
           ${{ inputs.extra-vars }}
 
     - name: Ensure Python 3.10
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
       with:
         python-version: "3.10"
         check-latest: true
@@ -144,7 +145,7 @@ runs:
         echo "bucket=${CI_S3_LOCK_BUCKET}" >> "$GITHUB_OUTPUT"
 
     - name: Acquire S3 lock
-      uses: azimuth-cloud/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@c0e88a34bb32bb8f2b703f7168f91cdb51d9b761
       with:
         host: ${{ steps.s3-lock-config.outputs.host }}
         access-key: ${{ steps.s3-lock-config.outputs.access-key }}
