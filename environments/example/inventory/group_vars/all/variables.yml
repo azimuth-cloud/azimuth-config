@@ -49,11 +49,11 @@ infra_data_volume_size: 100
 ## https://azimuth-config.readthedocs.io/en/stable/configuration/03-kubernetes-config/
 
 # The name of the flavor to use for control plane nodes
-# A flavor with at least 2 CPUs, 8GB RAM and 100GB root disk is recommended
+# A flavor with at least 4 CPUs, 8GB RAM and 100GB root disk is recommended
 capi_cluster_control_plane_flavor: "<flavor name>"
 
 # The name of the flavor to use for worker nodes
-# A flavor with at least 4 CPUs, 16GB RAM and 100GB root disk is recommended
+# A flavor with at least 8 CPUs, 16GB RAM and 100GB root disk is recommended
 capi_cluster_worker_flavor: "<flavor name>"
 
 # The number of worker nodes
