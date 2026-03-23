@@ -35,6 +35,7 @@ nav:
       - configuration/15-disaster-recovery.md
       - configuration/16-local-customisations.md
       - configuration/17-standalone-mode.md
+      - configuration/18-hardware-specific-config.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md
