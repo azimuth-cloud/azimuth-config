@@ -5,7 +5,8 @@ Additional configuration may be required to utilise specialised hardware in Kube
 ## Multiple GPUs per-node
 
 If running flavors with multiple GPUs per node, additional image properties may be required for cards to be recognised seperately with Azimuth's community images, for example:
-```
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 community_images_custom_properties:
   - hw_machine_type=q35
   - hw_architecture=x86_64
@@ -18,7 +19,7 @@ community_images_custom_properties:
 ## Vendor-specific config
 
 Addons to manage resources such as GPUs are provided in `capi-helm-charts` for supported hardware, however some of these components
-are not enabled by default and assume vendor-specific drivers to be installed on the host machines. 
+are not enabled by default and assume vendor-specific drivers to be installed on the host machines.
 
 ### Nvidia
 
@@ -27,22 +28,25 @@ The Nvidia GPU operator and Mellanox operator are enabled by default for Kuberne
 ### Intel GPU Drivers (i915)
 
 The Intel Device Plugin is provided as an addon to manage Intel GPUs inside the Kubernetes cluster, it can be enabled with:
-```
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_capi_helm_values_overrides:
   addons:
     intelDevicePlugin:
       enabled: true
 ```
+
 The device plugin requires drivers to be installed on the host. Due to licensing restrictions, Azimuth cannot include these drivers in upstream images, but they can be
 installed at boot for flavors using Intel GPU nodes with the `flavorSpecificNodeGroupOverrides` of `azimuth-capi-operator`, which can override `capi-helm-charts` values for
 flavors matching a specified `fnmatch` string. This can be used to inject pre-KubeADM commands to install host packages. For example, to install Intel drivers on flavors
 with '.intel.' in their name:
-```
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_release_overrides:
   config:
     capiHelm:
       flavorSpecificNodeGroupOverrides:
-        '*.intel.*': # This assumes your Intel GPU flavors contain '.intel.' in their name
+        "*.intel.*": # This assumes your Intel GPU flavors contain '.intel.' in their name
           kubeadmConfigSpec:
             preKubeadmCommands:
               - |
@@ -71,19 +75,22 @@ azimuth_capi_operator_release_overrides:
 ### AMD GPU drivers
 
 Similarly to installing Intel GPUs as above, enable the AMD GPU operator addons for `capi-helm-charts`:
-```
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_capi_helm_values_overrides:
   addons:
     amdGPUOperator:
       enabled: true
 ```
+
 and set up flavor-specific pre-KubeADM commands to install the appropriate drivers:
-```
+
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_release_overrides:
   config:
     capiHelm:
       flavorSpecificNodeGroupOverrides:
-        '*.amd.*': # This assumes your AMD GPU flavors contain '.amd.' in their name
+        "*.amd.*": # This assumes your AMD GPU flavors contain '.amd.' in their name
           kubeadmConfigSpec:
             preKubeadmCommands:
               - |
