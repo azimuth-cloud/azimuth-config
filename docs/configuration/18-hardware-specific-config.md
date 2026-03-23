@@ -83,7 +83,7 @@ azimuth_capi_operator_release_overrides:
   config:
     capiHelm:
       flavorSpecificNodeGroupOverrides:
-        'ec1.*':
+        '*.amd.*': # This assumes your AMD GPU flavors contain '.amd.' in their name
           kubeadmConfigSpec:
             preKubeadmCommands:
               - |
