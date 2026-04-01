@@ -22,7 +22,7 @@ jobs:
       latest_release: ${{ steps.get-tag.outputs.latest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Find latest tagged release
         id: get-tag
@@ -47,7 +47,7 @@ jobs:
     needs: test_upgrade
     steps:
       - name: Send message to Slack
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: "${{ secrets.SLACK_WEBHOOK_URL }}"
           webhook-type: incoming-webhook

@@ -33,7 +33,7 @@ jobs:
       # We need to check out the code under test first in order to use local
       # actions
       - name: Checkout code under test
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
