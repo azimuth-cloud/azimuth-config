@@ -9,3 +9,10 @@ want to debug using:
 ```sh
 source ./bin/activate my-site
 ```
+
+## Azimuth component map
+
+The Azimuth ecosystem has many interconnected components. The image below provides a high-level
+view of their interactions.
+
+![Azimuth components](./repo-map.png)
