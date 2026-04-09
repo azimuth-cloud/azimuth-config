@@ -1,3 +1,5 @@
+<!-- markdownlint-disable-file MD046 -->
+
 # Recovery of the Seed Node
 
 The Seed Node is not a mission-critical component, but is important
@@ -22,7 +24,7 @@ A console log ending in text of this form indicates that the Seed
 Node root filesystem has become corrupted and requires manual
 operator intervention for recovery:
 
-```
+```sh
 [/usr/sbin/fsck.ext4 (1) -- /dev/vda1] fsck.ext4 -a -C0 /dev/vda1
 cloudimg-rootfs contains a file system with errors, check forced.
 cloudimg-rootfs: Inodes that were part of a corrupted orphan linked list found.
@@ -49,7 +51,7 @@ OS image with the original disk present as a secondary device.
 This process can be instigated from the Horizon web interface,
 or from the OpenStack command line:
 
-```
+```sh
 openstack server rescue <seed-node>
 ```
 
@@ -58,14 +60,14 @@ Choose the same OS image that was originally used for the Seed Node
 
 The rescued Seed Node can be accessed using the seed-ssh script:
 
-```
+```sh
 ./bin/seed-ssh
 ```
 
 Once access has been gained, recover the root filesystem using the
 usual tools:
 
-```
+```sh
 fsck -t ext4 /dev/vdb1
 ```
 
@@ -73,6 +75,6 @@ Once recovery has been completed, the Seed Node can be booted again
 using the recovered root disk through an `unrescue` process, either
 via Horizon or the OpenStack command line:
 
-```
+```sh
 openstack server unrescue <seed-node>
 ```
