@@ -15,7 +15,7 @@ that can be applied to bring it back into service.
 
 As an administrator, or a user with membership of the Azimuth service
 project, the instance consoles and logs for Azimuth's CAPI management
-cluster can be accessed.  This should provide useful information
+cluster can be accessed. This should provide useful information
 about the root cause of the Seed Node's issues.
 
 A console log ending in text of this form indicates that the Seed
@@ -23,12 +23,12 @@ Node root filesystem has become corrupted and requires manual
 operator intervention for recovery:
 
 ```
-[/usr/sbin/fsck.ext4 (1) -- /dev/vda1] fsck.ext4 -a -C0 /dev/vda1 
+[/usr/sbin/fsck.ext4 (1) -- /dev/vda1] fsck.ext4 -a -C0 /dev/vda1
 cloudimg-rootfs contains a file system with errors, check forced.
-cloudimg-rootfs: Inodes that were part of a corrupted orphan linked list found.  
+cloudimg-rootfs: Inodes that were part of a corrupted orphan linked list found.
 
 cloudimg-rootfs: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-	(i.e., without -a or -p options)
+ (i.e., without -a or -p options)
 fsck exited with status code 4
 done.
 Failure: File system check of the root filesystem failed
