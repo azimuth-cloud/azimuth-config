@@ -60,6 +60,7 @@ runs:
           report.html
           *.tar.gz
           *.json
+          *.log
       if: ${{ always() }}
 
     - name: Clean up test platforms
