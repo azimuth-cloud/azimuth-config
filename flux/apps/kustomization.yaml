@@ -6,4 +6,3 @@ resources:
   - cert-manager/
   - sealed-secrets/
   - cluster-api/
-  - capi-providers/
