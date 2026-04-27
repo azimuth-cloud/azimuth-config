@@ -30,6 +30,11 @@ resource "random_password" "zenith_token_signing_key" {
   special = false
 }
 
+resource "random_password" "azimuth_django_secret_key" {
+  length  = 64
+  special = false
+}
+
 provider "openstack" {
   auth_url                        = var.openstack_auth_url
   application_credential_id       = var.openstack_application_credential_id
@@ -122,6 +127,7 @@ module "flux" {
   flux_path                  = "flux/clusters/all-in-one"
   base_domain                = local.base_domain
   zenith_token_signing_key   = random_password.zenith_token_signing_key.result
+  azimuth_django_secret_key  = random_password.azimuth_django_secret_key.result
 }
 
 # ── Persist kubeconfig locally ────────────────────────────────────────────────

@@ -26,5 +26,5 @@ spec:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
-    # Environment-specific values (ingress, OIDC, etc.) should be overridden
-    # via ValuesFrom referencing a ConfigMap or SealedSecret in this namespace.
+    settings:
+      secretKey: "${azimuth_django_secret_key}"

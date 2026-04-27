@@ -78,8 +78,9 @@ resource "null_resource" "cluster_secrets" {
   depends_on = [null_resource.flux_install]
 
   triggers = {
-    kubeconfig_hash          = sha256(var.kubeconfig_raw)
-    zenith_token_signing_key = sha256(var.zenith_token_signing_key)
+    kubeconfig_hash           = sha256(var.kubeconfig_raw)
+    zenith_token_signing_key  = sha256(var.zenith_token_signing_key)
+    azimuth_django_secret_key = sha256(var.azimuth_django_secret_key)
   }
 
   provisioner "local-exec" {
@@ -87,6 +88,7 @@ resource "null_resource" "cluster_secrets" {
       kubectl --kubeconfig=${local.kubeconfig_file} create secret generic cluster-secrets \
         --namespace=flux-system \
         --from-literal=zenith_token_signing_key=${var.zenith_token_signing_key} \
+        --from-literal=azimuth_django_secret_key=${var.azimuth_django_secret_key} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT

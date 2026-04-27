@@ -40,6 +40,12 @@ variable "zenith_token_signing_key" {
   sensitive   = true
 }
 
+variable "azimuth_django_secret_key" {
+  description = "Django SECRET_KEY for the Azimuth API (≥50 chars recommended)"
+  type        = string
+  sensitive   = true
+}
+
 variable "flux_namespace" {
   description = "Namespace where FluxCD components are installed"
   type        = string
