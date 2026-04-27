@@ -22,3 +22,5 @@ environments/standalone/inventory/group_vars/all/secrets.yml
 # Ignore other types of secrets in CI environments
 .github/environments/**/env.secret
 .github/environments/**/clouds.yaml
+
+flux-components.yaml

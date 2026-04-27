@@ -8,6 +8,4 @@ resources:
   - ingress-nginx/
   - cluster-api/
   - azimuth-capi-operator/
-  - zenith/
-  - azimuth/
   - kube-prometheus-stack/
