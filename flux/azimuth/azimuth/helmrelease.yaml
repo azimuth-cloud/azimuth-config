@@ -28,3 +28,7 @@ spec:
         effect: NoSchedule
     settings:
       secretKey: "${azimuth_django_secret_key}"
+    authentication:
+      type: openstack
+      openstack:
+        authUrl: "${openstack_auth_url}"
