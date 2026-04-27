@@ -59,8 +59,9 @@ resource "null_resource" "cluster_config" {
   depends_on = [null_resource.flux_install]
 
   triggers = {
-    kubeconfig_hash = sha256(var.kubeconfig_raw)
-    base_domain     = var.base_domain
+    kubeconfig_hash     = sha256(var.kubeconfig_raw)
+    base_domain         = var.base_domain
+    openstack_auth_url  = var.openstack_auth_url
   }
 
   provisioner "local-exec" {
@@ -68,6 +69,7 @@ resource "null_resource" "cluster_config" {
       kubectl --kubeconfig=${local.kubeconfig_file} create configmap cluster-config \
         --namespace=flux-system \
         --from-literal=base_domain=${var.base_domain} \
+        --from-literal=openstack_auth_url=${var.openstack_auth_url} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT

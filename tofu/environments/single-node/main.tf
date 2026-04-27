@@ -140,6 +140,7 @@ module "flux" {
   git_token      = var.git_token
   flux_path                  = "flux/clusters/single-node"
   base_domain                = local.base_domain
+  openstack_auth_url         = var.openstack_auth_url
   zenith_token_signing_key   = random_password.zenith_token_signing_key.result
   azimuth_django_secret_key  = random_password.azimuth_django_secret_key.result
 }

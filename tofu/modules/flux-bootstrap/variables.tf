@@ -34,6 +34,11 @@ variable "base_domain" {
   type        = string
 }
 
+variable "openstack_auth_url" {
+  description = "OpenStack Keystone authentication URL (injected into Azimuth chart)"
+  type        = string
+}
+
 variable "zenith_token_signing_key" {
   description = "Secret key (≥32 chars) for signing Zenith subdomain tokens"
   type        = string
