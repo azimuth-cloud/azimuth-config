@@ -5,5 +5,10 @@ resources:
   - _sources/
   - cert-manager/
   - sealed-secrets/
+  - ingress-nginx/
+  - kube-prometheus-stack/
   - cluster-api/
   - capi-providers/
+  - azimuth/
+  - azimuth-capi-operator/
+  - zenith/
