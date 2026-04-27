@@ -113,10 +113,9 @@ resource "null_resource" "talos_health" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      talosctl health \
-        --talosconfig=${abspath(path.module)}/.work/talosconfig \
-        -n ${module.infra.internal_ip} \
-        -e ${local.seed_ip}
+      while ! talosctl health --talosconfig=${abspath(path.module)}/.work/talosconfig -n ${module.infra.internal_ip} -e ${local.seed_ip}; do
+        sleep 10
+      done
     EOT
   }
 }
