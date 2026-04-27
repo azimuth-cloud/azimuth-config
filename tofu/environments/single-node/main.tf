@@ -61,6 +61,7 @@ locals {
   # Use the pre-allocated FIP so machine config and VM are created in one pass
   floatingip_pool = var.floatingip_pool != "" ? var.floatingip_pool : data.openstack_networking_network_v2.external.name
   seed_ip         = openstack_networking_floatingip_v2.seed.address
+  base_domain     = var.base_domain != "" ? var.base_domain : "${local.seed_ip}.sslip.io"
 
   exposed_ports = [
     { name = "http",  min = 80,   max = 80 },
@@ -133,7 +134,7 @@ module "flux" {
   git_branch     = var.git_branch
   git_token      = var.git_token
   flux_path                  = "flux/clusters/single-node"
-  base_domain                = "${local.seed_ip}.sslip.io"
+  base_domain                = local.base_domain
   zenith_token_signing_key   = random_password.zenith_token_signing_key.result
 }
 

@@ -102,3 +102,9 @@ variable "floatingip_pool" {
   type        = string
   default     = ""
 }
+
+variable "base_domain" {
+  description = "Base domain for Zenith ingresses. Defaults to <floating-ip>.sslip.io if empty."
+  type        = string
+  default     = ""
+}
