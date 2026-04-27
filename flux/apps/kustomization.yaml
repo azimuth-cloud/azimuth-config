@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - _sources/
+  - cert-manager/
+  - sealed-secrets/
+  - ingress-nginx/
+  - cluster-api/
+  - azimuth-capi-operator/
+  - zenith/
+  - azimuth/
+  - kube-prometheus-stack/

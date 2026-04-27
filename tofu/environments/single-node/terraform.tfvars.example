@@ -1,0 +1,21 @@
+# Copy to terraform.tfvars and fill in your values
+
+openstack_auth_url                      = "https://your-openstack:5000"
+openstack_application_credential_id     = ""
+openstack_application_credential_secret = ""
+openstack_region_name                   = "RegionOne"
+
+name                = "azimuth"
+external_network_id = ""   # ID of the public/external network
+flavor_id           = ""   # e.g. "8c-16gb"
+talos_image_id      = ""   # Glance image ID — see docs/talos-image.md
+
+# Optional
+data_volume_size    = 100
+root_volume_enabled = false
+talos_version       = "v1.9.5"
+kubernetes_version  = "v1.32.0"
+
+git_url    = "https://github.com/your-org/azimuth-config"
+git_branch = "main"
+git_token  = ""   # GitHub PAT or equivalent

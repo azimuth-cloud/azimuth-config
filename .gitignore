@@ -3,6 +3,13 @@
 .bin
 .venv
 .work
+# OpenTofu local state and work files
+tofu/**/.work/
+tofu/**/.terraform/
+tofu/**/terraform.tfvars
+tofu/**/*.tfstate
+tofu/**/*.tfstate.backup
+tofu/**/.terraform.lock.hcl
 .python-version
 /clouds.yaml*
 tilt-settings.yaml

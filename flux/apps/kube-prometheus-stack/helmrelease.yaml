@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-system
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring-system
+spec:
+  interval: 10m
+  timeout: 20m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "82.15.1"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    defaultRules:
+      create: true
+    prometheus:
+      prometheusSpec:
+        retention: 90d
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+    alertmanager:
+      alertmanagerSpec:
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+    grafana:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
