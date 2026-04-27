@@ -39,11 +39,6 @@ locals {
             ]
           }
         ]
-        kubelet = {
-          extraArgs = {
-            "node-labels" = "node-role.kubernetes.io/worker="
-          }
-        }
         # OpenStack cloud-provider integration
         features = {
           kubePrism = {
@@ -78,9 +73,20 @@ resource "talos_machine_bootstrap" "this" {
 
 # ── Retrieve kubeconfig ───────────────────────────────────────────────────────
 
-data "talos_cluster_kubeconfig" "this" {
+# ── Retrieve kubeconfig (resource, not data source) ──────────────────────────
+
+resource "talos_cluster_kubeconfig" "this" {
   depends_on           = [talos_machine_bootstrap.this]
   client_configuration = talos_machine_secrets.this.client_configuration
   node                 = var.cluster_endpoint_ip
   endpoint             = var.cluster_endpoint_ip
+}
+
+# ── Build talosconfig YAML ────────────────────────────────────────────────────
+
+data "talos_client_configuration" "this" {
+  cluster_name         = var.cluster_name
+  client_configuration = talos_machine_secrets.this.client_configuration
+  nodes                = [var.cluster_endpoint_ip]
+  endpoints            = [var.cluster_endpoint_ip]
 }

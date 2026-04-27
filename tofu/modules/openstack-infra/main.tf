@@ -159,17 +159,20 @@ resource "openstack_compute_volume_attach_v2" "data" {
 # ── Floating IP ───────────────────────────────────────────────────────────────
 
 data "openstack_networking_network_v2" "external" {
-  count      = var.use_floatingip && var.provisioning_network_id == "" && var.fixed_floatingip == "" && var.floatingip_pool == "" ? 1 : 0
+ #count      = var.use_floatingip && var.provisioning_network_id == "" && var.fixed_floatingip == "" && var.floatingip_pool == "" ? 1 : 0
+  count = 1
   network_id = var.external_network_id
 }
 
 resource "openstack_networking_floatingip_v2" "this" {
-  count = var.use_floatingip && var.provisioning_network_id == "" && var.fixed_floatingip == "" ? 1 : 0
+  #count = var.use_floatingip && var.provisioning_network_id == "" && var.fixed_floatingip == "" ? 1 : 0
+  count = 1
   pool  = var.floatingip_pool != "" ? var.floatingip_pool : data.openstack_networking_network_v2.external[0].name
 }
 
-resource "openstack_compute_floatingip_associate_v2" "this" {
-  count       = var.use_floatingip && var.provisioning_network_id == "" ? 1 : 0
+resource "openstack_networking_floatingip_associate_v2" "this" {
+  #count       = var.use_floatingip && var.provisioning_network_id == "" ? 1 : 0
+  count = 1
   floating_ip = var.fixed_floatingip != "" ? var.fixed_floatingip : openstack_networking_floatingip_v2.this[0].address
-  instance_id = openstack_compute_instance_v2.node.id
+  port_id     = openstack_networking_port_v2.internal.id
 }

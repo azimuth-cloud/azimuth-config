@@ -20,9 +20,8 @@ spec:
         name: azimuth-cloud-zenith
         namespace: flux-system
   values:
-    # Base domain — override via ValuesFrom or environment patch
-    # ingress:
-    #   baseDomain: "apps.<floating-ip>.sslip.io"
+    ingress:
+      baseDomain: "${base_domain}"
     sshd:
       service:
         type: LoadBalancer

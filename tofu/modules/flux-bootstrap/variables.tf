@@ -16,15 +16,10 @@ variable "git_branch" {
 }
 
 variable "git_token" {
-  description = "Personal access token (or app password) for Git authentication"
+  description = "Personal access token for Git authentication. Leave empty for public repositories."
   type        = string
   sensitive   = true
-}
-
-variable "git_username" {
-  description = "Git username for authentication"
-  type        = string
-  default     = "git"
+  default     = ""
 }
 
 variable "flux_path" {
@@ -33,10 +28,10 @@ variable "flux_path" {
   default     = "flux/clusters/single-node"
 }
 
-variable "flux_version" {
-  description = "FluxCD version to bootstrap (e.g. v2.4.0)"
+
+variable "base_domain" {
+  description = "Base domain for Zenith ingresses (e.g. 1.2.3.4.sslip.io)"
   type        = string
-  default     = "v2.4.0"
 }
 
 variable "flux_namespace" {
@@ -45,8 +40,3 @@ variable "flux_namespace" {
   default     = "flux-system"
 }
 
-variable "components_extra" {
-  description = "Additional FluxCD components to install (e.g. image-reflector-controller)"
-  type        = list(string)
-  default     = []
-}

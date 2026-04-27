@@ -86,9 +86,10 @@ variable "git_url" {
 }
 
 variable "git_token" {
-  description = "Personal access token for Git authentication"
+  description = "Personal access token for Git authentication. Leave empty for public repositories."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "git_branch" {

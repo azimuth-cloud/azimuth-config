@@ -10,17 +10,13 @@ terraform {
       source  = "siderolabs/talos"
       version = "~> 0.7"
     }
-    flux = {
-      source  = "fluxcd/flux"
-      version = "~> 1.4"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.35"
-    }
     local = {
       source  = "hashicorp/local"
       version = "~> 2.5"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
     }
   }
 }
@@ -44,12 +40,8 @@ provider "openstack" {
 # the machine config to openstack-infra as user_data.
 
 resource "openstack_networking_floatingip_v2" "seed" {
-  pool = var.floatingip_pool != "" ? var.floatingip_pool : null
-
-  # When no pool is specified we need the external network name
-  lifecycle {
-    ignore_changes = [pool]
-  }
+  # pool is required — use explicit pool name or derive from external network
+  pool = local.floatingip_pool
 }
 
 data "openstack_networking_network_v2" "external" {
@@ -101,19 +93,39 @@ module "infra" {
   user_data = module.talos.machine_config
 }
 
-# ── Step 4: Bootstrap FluxCD ──────────────────────────────────────────────────
+# ── Step 4: Validate cluster health ──────────────────────────────────────────
+
+resource "null_resource" "talos_health" {
+  depends_on = [local_sensitive_file.talosconfig, module.infra]
+
+  triggers = {
+    cluster_endpoint = local.seed_ip
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      talosctl health \
+        --talosconfig=${abspath(path.module)}/.work/talosconfig \
+        -n ${module.infra.internal_ip} \
+        -e ${local.seed_ip}
+    EOT
+  }
+}
+
+# ── Step 5: Bootstrap FluxCD ──────────────────────────────────────────────────
 
 module "flux" {
   source = "../../modules/flux-bootstrap"
 
-  # Wait for the cluster to be fully bootstrapped before installing Flux
-  depends_on = [module.infra, module.talos]
+  # Wait for cluster health check before installing Flux
+  depends_on = [null_resource.talos_health]
 
   kubeconfig_raw = module.talos.kubeconfig_raw
   git_url        = var.git_url
   git_branch     = var.git_branch
   git_token      = var.git_token
   flux_path      = "flux/clusters/single-node"
+  base_domain    = "${local.seed_ip}.sslip.io"
 }
 
 # ── Persist kubeconfig locally ────────────────────────────────────────────────
@@ -125,7 +137,7 @@ resource "local_sensitive_file" "kubeconfig" {
 }
 
 resource "local_sensitive_file" "talosconfig" {
-  content         = module.talos.client_configuration.talos_config
+  content         = module.talos.talosconfig
   filename        = "${path.module}/.work/talosconfig"
   file_permission = "0600"
 }

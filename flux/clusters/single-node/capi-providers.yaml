@@ -2,17 +2,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: apps
+  name: capi-providers
   namespace: flux-system
 spec:
   interval: 10m
+  timeout: 15m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./flux/apps
+  path: ./flux/apps/capi-providers
   prune: true
-  wait: false
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-config
+  wait: true
+  dependsOn:
+    - name: apps

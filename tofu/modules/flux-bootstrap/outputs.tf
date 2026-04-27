@@ -1,4 +1,4 @@
-output "repository_files" {
-  description = "Files committed to the Git repository by flux bootstrap"
-  value       = flux_bootstrap_git.this.repository_files
+output "kubeconfig_path" {
+  description = "Path to the kubeconfig file written by this module"
+  value       = local_sensitive_file.kubeconfig.filename
 }
