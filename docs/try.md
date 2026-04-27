@@ -1,89 +1,83 @@
 # Try Azimuth
 
-If you have access to a project on an OpenStack cloud, you can try Azimuth!
+If you have access to a project on an OpenStack cloud, you can try Azimuth using the
+`all-in-one` environment. This deploys the full Azimuth stack — including Zenith and
+the Azimuth portal — onto a single Talos Linux node.
 
-The [azimuth-config repository](https://github.com/azimuth-cloud/azimuth-config)
-contains a special [environment](./environments.md) called `demo` that will
-provision a short-lived Azimuth deployment **for demonstration purposes
-only**. This environment attempts to infer all required configuration from
-the target OpenStack cloud - if this process is unsuccessful, an error will
-be produced.
+## Prerequisites
 
-<!-- prettier-ignore-start -->
-!!! danger
-    Inferring configuration in the way that the `demo` environment does is **not recommended** as it is not guaranteed to produce the same result each time. For production deployments it is better to be explicit.
-<!-- prettier-ignore-end -->
+- [OpenTofu](https://opentofu.org/) ≥ 1.6
+- [talosctl](https://www.talos.dev/latest/talos-guides/install/talosctl/)
+- [flux](https://fluxcd.io/flux/installation/) CLI
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- An OpenStack project with a floating IP pool and sufficient quota
+- An OpenStack [Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
+- A Talos RAW image uploaded to Glance (see [Talos image guide](./talos-image.md))
 
-To get started with a production deployment, see the [best practice guide](./production.md).
-
-## Deploying a demo instance
-
-The Azimuth deployment requires a
-[clouds.yaml](https://docs.openstack.org/python-openstackclient/latest/configuration/index.html#clouds-yaml)
-to run. Ideally, this should be an
-[Application Credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html).
-
-Once you have a `clouds.yaml`, run the following to deploy the Azimuth demo
-environment:
+## Deploy
 
 ```sh
-# Set OpenStack configuration variables
-export OS_CLOUD=openstack
-export OS_CLIENT_CONFIG_FILE=/path/to/clouds.yaml
+cd tofu/environments/all-in-one
 
-# If running on macOS, work around Python crash
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+cat > terraform.tfvars <<EOF
+openstack_auth_url                      = "https://cloud.example.com:5000"
+openstack_application_credential_id     = "<id>"
+openstack_application_credential_secret = "<secret>"
+external_network_id                     = "<network-uuid>"
+talos_image_id                          = "<glance-image-uuid>"
+flavor_name                             = "m1.xlarge"
+git_url                                 = "https://github.com/your-org/azimuth-config"
+git_branch                              = "main"
+# Optional — defaults to <floating-ip>.sslip.io
+# base_domain = "azimuth.example.com"
+EOF
 
-# Clone the azimuth-config repository
-git clone https://github.com/azimuth-cloud/azimuth-config
-cd azimuth-config
-
-# Set up the virtual environment
-./bin/ensure-venv
-
-# Activate the demo environment
-source ./bin/activate demo
-
-# Install Ansible dependencies
-ansible-galaxy install -f -r requirements.yml
-
-# Generate deployment secrets
-# N.B. for the demo environment, these are excluded from git using .gitignore
-./bin/generate-secrets
-
-# Deploy Azimuth
-ansible-playbook azimuth_cloud.azimuth_ops.provision
+tofu init
+tofu apply
 ```
 
-The URL for the Azimuth UI is printed at the end of the playbook run. The
-credentials you use to authenticate with Azimuth are the same as you would
-use with the underlying OpenStack cloud.
+`tofu apply` will:
 
-<!-- prettier-ignore-start -->
-!!! warning
-    Azimuth is deployed using Ansible, which does not support Windows as a controller.
-    Azimuth deployment has been tested on Linux and macOS.
-<!-- prettier-ignore-end -->
+1. Allocate a floating IP on OpenStack
+2. Generate a Talos machine config and provision the VM
+3. Wait for `talosctl health` to confirm the cluster is ready
+4. Run `flux install` and create the GitRepository + Kustomization pointing to
+   `flux/clusters/all-in-one`
+5. Create the `cluster-config` ConfigMap and `cluster-secrets` Secret in `flux-system`
 
-See [Ansible FAQ regarding running on Windows](https://docs.ansible.com/ansible/2.5/user_guide/windows_faq.html#can-ansible-run-on-windows)
+## Monitor reconciliation
+
+```sh
+export KUBECONFIG=$PWD/.work/kubeconfig.yaml
+
+# Watch Flux Kustomizations
+flux get kustomizations --watch
+
+# Watch HelmReleases
+kubectl get helmreleases -A --watch
+```
+
+## Access Azimuth
+
+Once all HelmReleases are `Ready`, open the Azimuth portal:
+
+```sh
+# Print the portal URL
+echo "https://azimuth.$(tofu output -raw seed_ip).sslip.io"
+```
+
+Log in with the same credentials you use on the target OpenStack cloud.
+
+## Tear down
+
+```sh
+tofu destroy
+```
 
 ## Limitations
 
-The demo deployment has a number of limitations in order to give it the best
-chance of running on any given cloud:
-
-- It uses the
-  [single node deployment method](./configuration/02-deployment-method.md#single-node).
-- [Community images](./configuration/09-community-images.md) are uploaded
-  as private images, so Azimuth will only be able to provision Kubernetes
-  clusters and Cluster-as-a-Service appliances in the same project as it
-  is deployed in.
-- [sslip.io](https://sslip.io) is used to provide DNS. This avoids the need
-  for a DNS entry to be provisioned in advance.
-- TLS is disabled for [ingress](./configuration/06-ingress.md), allowing the
-  Azimuth to work even when the deployment is not reachable from the
-  internet (_outbound_ internet connectivity is still required).
-- Verification of SSL certificates for the OpenStack API is disabled,
-  allowing Azimuth to work even when the target cloud uses a custom CA.
-- The deployment secrets are **not secret**, as they are stored in plain
-  text in the `azimuth-config` repository on GitHub.
+- Uses [sslip.io](https://sslip.io) for DNS — no DNS record required.
+- TLS certificates are issued automatically by cert-manager using the ACME HTTP-01
+  challenge (requires the floating IP to be reachable from the internet).
+- Community images are uploaded as private images within the same project.
+- This is a single-node topology — not suitable for production use.
