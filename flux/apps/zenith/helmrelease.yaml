@@ -20,8 +20,12 @@ spec:
         name: azimuth-cloud-zenith
         namespace: flux-system
   values:
-    ingress:
-      baseDomain: "${base_domain}"
+    global:
+      ingress:
+        baseDomain: "${base_domain}"
+    registrar:
+      config:
+        subdomainTokenSigningKey: "${zenith_token_signing_key}"
     sshd:
       service:
         type: LoadBalancer

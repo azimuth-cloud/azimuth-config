@@ -74,6 +74,25 @@ resource "null_resource" "cluster_config" {
   }
 }
 
+resource "null_resource" "cluster_secrets" {
+  depends_on = [null_resource.flux_install]
+
+  triggers = {
+    kubeconfig_hash          = sha256(var.kubeconfig_raw)
+    zenith_token_signing_key = sha256(var.zenith_token_signing_key)
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl --kubeconfig=${local.kubeconfig_file} create secret generic cluster-secrets \
+        --namespace=flux-system \
+        --from-literal=zenith_token_signing_key=${var.zenith_token_signing_key} \
+        --dry-run=client -o yaml | \
+        kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
+    EOT
+  }
+}
+
 resource "null_resource" "flux_create_kustomization" {
   depends_on = [null_resource.flux_create_source, null_resource.cluster_config]
 

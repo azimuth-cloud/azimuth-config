@@ -18,7 +18,16 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.2"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
+}
+
+resource "random_password" "zenith_token_signing_key" {
+  length  = 32
+  special = false
 }
 
 provider "openstack" {
@@ -124,8 +133,9 @@ module "flux" {
   git_url        = var.git_url
   git_branch     = var.git_branch
   git_token      = var.git_token
-  flux_path      = "flux/clusters/single-node"
-  base_domain    = "${local.seed_ip}.sslip.io"
+  flux_path                  = "flux/clusters/single-node"
+  base_domain                = "${local.seed_ip}.sslip.io"
+  zenith_token_signing_key   = random_password.zenith_token_signing_key.result
 }
 
 # ── Persist kubeconfig locally ────────────────────────────────────────────────

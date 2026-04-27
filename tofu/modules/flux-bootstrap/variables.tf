@@ -34,6 +34,12 @@ variable "base_domain" {
   type        = string
 }
 
+variable "zenith_token_signing_key" {
+  description = "Secret key (≥32 chars) for signing Zenith subdomain tokens"
+  type        = string
+  sensitive   = true
+}
+
 variable "flux_namespace" {
   description = "Namespace where FluxCD components are installed"
   type        = string
