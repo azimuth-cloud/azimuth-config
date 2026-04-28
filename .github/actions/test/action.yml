@@ -31,6 +31,17 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e @extra-vars.yml
 
+    - name: Install logcli
+      shell: bash
+      run: |
+        set -e
+        LOKI_VERSION="$(curl -s https://api.github.com/repos/grafana/loki/releases/latest | jq -r .tag_name)"
+        curl -fSL "https://github.com/grafana/loki/releases/download/${LOKI_VERSION}/logcli-linux-amd64.zip" -o /tmp/logcli.zip
+        unzip -o /tmp/logcli.zip -d /tmp
+        chmod +x /tmp/logcli-linux-amd64
+        sudo mv /tmp/logcli-linux-amd64 /usr/local/bin/logcli
+        logcli --version
+
     - name: Run test suite
       shell: bash
       run: |
@@ -40,13 +51,16 @@ runs:
         ./bin/run-tests
 
     - name: Upload test report artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.test-report-artifact-name }}
         path: |
           output.xml
           log.html
           report.html
+          *.tar.gz
+          *.json
+          *.log
       if: ${{ always() }}
 
     - name: Clean up test platforms
@@ -68,7 +82,7 @@ runs:
       if: ${{ always() }}
 
     - name: Upload debug bundle
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: ${{ inputs.debug-bundle-artifact-name }}
         path: debug-bundle.tar.gz
