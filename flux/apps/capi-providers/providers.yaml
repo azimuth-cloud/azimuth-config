@@ -6,11 +6,12 @@ metadata:
   namespace: capi-system
 spec:
   version: v1.10.4
-  featureGates:
-    ClusterResourceSet: "true"
-    ClusterTopology: "true"
-    RuntimeSDK: "true"
-    MachineSetPreflightChecks: "true"
+  manager:
+    featureGates:
+      ClusterResourceSet: "true"
+      ClusterTopology: "true"
+      RuntimeSDK: "true"
+      MachineSetPreflightChecks: "true"
 ---
 apiVersion: operator.cluster.x-k8s.io/v1alpha2
 kind: InfrastructureProvider
