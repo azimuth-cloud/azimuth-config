@@ -35,8 +35,25 @@ variable "base_domain" {
 }
 
 variable "openstack_auth_url" {
-  description = "OpenStack Keystone authentication URL (injected into Azimuth chart)"
+  description = "OpenStack Keystone authentication URL"
   type        = string
+}
+
+variable "openstack_region_name" {
+  description = "OpenStack region name"
+  type        = string
+}
+
+variable "openstack_application_credential_id" {
+  description = "OpenStack application credential ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "openstack_application_credential_secret" {
+  description = "OpenStack application credential secret"
+  type        = string
+  sensitive   = true
 }
 
 variable "zenith_token_signing_key" {

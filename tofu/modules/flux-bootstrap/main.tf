@@ -59,9 +59,10 @@ resource "null_resource" "cluster_config" {
   depends_on = [null_resource.flux_install]
 
   triggers = {
-    kubeconfig_hash     = sha256(var.kubeconfig_raw)
-    base_domain         = var.base_domain
-    openstack_auth_url  = var.openstack_auth_url
+    kubeconfig_hash       = sha256(var.kubeconfig_raw)
+    base_domain           = var.base_domain
+    openstack_auth_url    = var.openstack_auth_url
+    openstack_region_name = var.openstack_region_name
   }
 
   provisioner "local-exec" {
@@ -70,6 +71,7 @@ resource "null_resource" "cluster_config" {
         --namespace=flux-system \
         --from-literal=base_domain=${var.base_domain} \
         --from-literal=openstack_auth_url=${var.openstack_auth_url} \
+        --from-literal=openstack_region_name=${var.openstack_region_name} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT
@@ -80,9 +82,11 @@ resource "null_resource" "cluster_secrets" {
   depends_on = [null_resource.flux_install]
 
   triggers = {
-    kubeconfig_hash           = sha256(var.kubeconfig_raw)
-    zenith_token_signing_key  = sha256(var.zenith_token_signing_key)
-    azimuth_django_secret_key = sha256(var.azimuth_django_secret_key)
+    kubeconfig_hash                         = sha256(var.kubeconfig_raw)
+    zenith_token_signing_key                = sha256(var.zenith_token_signing_key)
+    azimuth_django_secret_key               = sha256(var.azimuth_django_secret_key)
+    openstack_application_credential_id     = sha256(var.openstack_application_credential_id)
+    openstack_application_credential_secret = sha256(var.openstack_application_credential_secret)
   }
 
   provisioner "local-exec" {
@@ -91,6 +95,8 @@ resource "null_resource" "cluster_secrets" {
         --namespace=flux-system \
         --from-literal=zenith_token_signing_key=${var.zenith_token_signing_key} \
         --from-literal=azimuth_django_secret_key=${var.azimuth_django_secret_key} \
+        --from-literal=openstack_application_credential_id=${var.openstack_application_credential_id} \
+        --from-literal=openstack_application_credential_secret=${var.openstack_application_credential_secret} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT

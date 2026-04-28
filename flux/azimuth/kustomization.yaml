@@ -7,3 +7,4 @@ resources:
   - azimuth-capi-operator/
   - zenith/
   - azimuth/
+  - openstack-cloud-controller/
