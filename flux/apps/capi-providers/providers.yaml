@@ -23,6 +23,16 @@ spec:
       RuntimeSDK: true
       MachineSetPreflightChecks: true
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: capi-kubeadm-bootstrap-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: capi-kubeadm-control-plane-system
+---
 apiVersion: operator.cluster.x-k8s.io/v1alpha2
 kind: InfrastructureProvider
 metadata:
@@ -30,3 +40,19 @@ metadata:
   namespace: capo-system
 spec:
   version: v0.10.5
+---
+apiVersion: operator.cluster.x-k8s.io/v1alpha2
+kind: BootstrapProvider
+metadata:
+  name: kubeadm
+  namespace: capi-kubeadm-bootstrap-system
+spec:
+  version: v1.10.4
+---
+apiVersion: operator.cluster.x-k8s.io/v1alpha2
+kind: ControlPlaneProvider
+metadata:
+  name: kubeadm
+  namespace: capi-kubeadm-control-plane-system
+spec:
+  version: v1.10.4

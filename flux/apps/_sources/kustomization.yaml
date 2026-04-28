@@ -8,3 +8,4 @@ resources:
   - jetstack.yaml
   - prometheus-community.yaml
   - cloud-provider-openstack.yaml
+  - azimuth-schedule-operator.yaml

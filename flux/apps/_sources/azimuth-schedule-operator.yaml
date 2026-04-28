@@ -1,0 +1,9 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: azimuth-cloud-schedule-operator
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://azimuth-cloud.github.io/azimuth-schedule-operator
