@@ -60,7 +60,7 @@ locals {
   exposed_ports = [
     { name = "http",        min = 80,   max = 80 },
     { name = "https",       min = 443,  max = 443 },
-    { name = "zenith_sshd", min = 2222, max = 2222 },
+    { name = "zenith_sshd", min = 32222, max = 32222 },
   ]
 }
 

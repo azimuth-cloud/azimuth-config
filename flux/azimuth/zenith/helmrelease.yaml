@@ -26,10 +26,20 @@ spec:
     registrar:
       config:
         subdomainTokenSigningKey: "${zenith_token_signing_key}"
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
     sshd:
+      replicaCount: 1
       service:
-        type: LoadBalancer
+        type: NodePort
         port: 2222
+        nodePort: 32222
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
     tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
