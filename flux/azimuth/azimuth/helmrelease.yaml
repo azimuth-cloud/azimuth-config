@@ -28,6 +28,8 @@ spec:
         effect: NoSchedule
     settings:
       secretKey: "${azimuth_django_secret_key}"
+    ingress:
+      host: "portal.${base_domain}"
     authentication:
       type: openstack
       openstack:
