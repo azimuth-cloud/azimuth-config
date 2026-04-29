@@ -32,7 +32,6 @@ spec:
       host: "portal.${base_domain}"
     tags:
       apps: true
-      clusters: true
     apps:
       baseDomain: "${base_domain}"
       sshdHost: "${base_domain}"

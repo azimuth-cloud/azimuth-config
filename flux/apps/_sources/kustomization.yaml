@@ -9,3 +9,6 @@ resources:
   - prometheus-community.yaml
   - cloud-provider-openstack.yaml
   - azimuth-schedule-operator.yaml
+  - metrics-server.yaml
+  - azimuth-cloud-capi-helm-charts.yaml
+  - grafana.yaml
