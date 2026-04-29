@@ -105,7 +105,7 @@ resource "openstack_networking_port_v2" "internal" {
 # ── Compute instance ──────────────────────────────────────────────────────────
 
 resource "openstack_compute_instance_v2" "node" {
-  name      = var.name
+  name      = var.machine_name != "" ? var.machine_name : var.name
   flavor_id = var.flavor_id != "" ? var.flavor_id : null
   flavor_name = var.flavor_id == "" ? var.flavor_name : null
 

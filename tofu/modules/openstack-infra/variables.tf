@@ -1,6 +1,12 @@
 variable "name" {
-  description = "Name prefix for all provisioned resources"
+  description = "Name prefix for all provisioned resources (network, security group, volumes…)"
   type        = string
+}
+
+variable "machine_name" {
+  description = "Name of the compute instance. Defaults to var.name when empty."
+  type        = string
+  default     = ""
 }
 
 variable "external_network_id" {

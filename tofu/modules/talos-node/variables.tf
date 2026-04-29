@@ -38,6 +38,12 @@ variable "data_volume_device" {
   default     = "/dev/vdb"
 }
 
+variable "machine_name" {
+  description = "Hostname of the Talos node (injected via machine config). Defaults to cluster_name."
+  type        = string
+  default     = ""
+}
+
 variable "config_patches_extra" {
   description = "Additional Talos machine config patches (list of JSON-encoded patch objects)"
   type        = list(string)

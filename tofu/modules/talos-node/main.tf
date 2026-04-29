@@ -18,6 +18,8 @@ resource "talos_machine_secrets" "this" {
 # ── Machine configuration for the single control-plane node ──────────────────
 
 locals {
+  effective_machine_name = var.machine_name != "" ? var.machine_name : var.cluster_name
+
   # Allow scheduling workloads on the control-plane (single-node mode)
   base_patches = [
     jsonencode({
@@ -27,6 +29,9 @@ locals {
     }),
     jsonencode({
       machine = {
+        network = {
+          hostname = local.effective_machine_name
+        }
         # Mount the data volume for etcd and kubelet state
         disks = [
           {

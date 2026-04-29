@@ -81,6 +81,7 @@ module "talos" {
   source = "../../modules/talos-node"
 
   cluster_name        = var.name
+  machine_name        = "azimuth-seed"
   cluster_endpoint_ip = local.seed_ip
   talos_version       = var.talos_version
   kubernetes_version  = var.kubernetes_version
@@ -92,6 +93,7 @@ module "infra" {
   source = "../../modules/openstack-infra"
 
   name                = var.name
+  machine_name        = "azimuth-seed"
   image_id            = var.talos_image_id
   flavor_id           = var.flavor_id
   flavor_name         = var.flavor_name
