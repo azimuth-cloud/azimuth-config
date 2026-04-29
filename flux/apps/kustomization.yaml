@@ -4,5 +4,6 @@ kind: Kustomization
 resources:
   - _sources/
   - cert-manager/
-  - sealed-secrets/
   - cluster-api/
+  - cluster-api-addon-provider/
+  - capi-janitor/

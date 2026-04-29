@@ -8,7 +8,6 @@ resources:
   - zenith/
   - azimuth/
   - openstack-cloud-controller/
-  - cluster-api-addon-provider/
   - azimuth-schedule-operator/
   - metrics-server/
   - etcd-defrag/
