@@ -148,6 +148,11 @@ module "flux" {
   openstack_application_credential_secret = var.openstack_application_credential_secret
   zenith_token_signing_key                = random_password.zenith_token_signing_key.result
   azimuth_django_secret_key               = random_password.azimuth_django_secret_key.result
+  external_network_id                     = var.external_network_id
+  talos_image_id                          = var.talos_image_id
+  kubernetes_version                      = var.kubernetes_version
+  azimuth_cluster_machine_name            = var.azimuth_cluster_machine_name
+  azimuth_cluster_flavor                  = var.azimuth_cluster_flavor
 }
 
 # ── Persist kubeconfig locally ────────────────────────────────────────────────

@@ -1,0 +1,57 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: azimuth-cluster
+  namespace: azimuth-cluster
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    services:
+      cidrBlocks: ["10.96.0.0/12"]
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: TalosControlPlane
+    name: azimuth-cluster-cp
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: OpenStackCluster
+    name: azimuth-cluster
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: OpenStackCluster
+metadata:
+  name: azimuth-cluster
+  namespace: azimuth-cluster
+spec:
+  identityRef:
+    cloudName: openstack
+    name: azimuth-cluster-cloud-config
+  externalNetwork:
+    id: ${external_network_id}
+  managedSecurityGroups:
+    allNodesSecurityGroupRules:
+      - direction: ingress
+        etherType: IPv4
+        protocol: tcp
+        portRangeMin: 80
+        portRangeMax: 80
+        remoteIPPrefix: "0.0.0.0/0"
+        description: "HTTP"
+      - direction: ingress
+        etherType: IPv4
+        protocol: tcp
+        portRangeMin: 443
+        portRangeMax: 443
+        remoteIPPrefix: "0.0.0.0/0"
+        description: "HTTPS"
+      - direction: ingress
+        etherType: IPv4
+        protocol: tcp
+        portRangeMin: 32222
+        portRangeMax: 32222
+        remoteIPPrefix: "0.0.0.0/0"
+        description: "Zenith SSHD NodePort"
+  apiServerLoadBalancer:
+    enabled: false

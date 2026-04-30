@@ -74,3 +74,35 @@ variable "flux_namespace" {
   default     = "flux-system"
 }
 
+# ── Workload cluster (propagated to cluster-config) ───────────────────────────
+
+variable "external_network_id" {
+  description = "OpenStack external network ID (passed to cluster-config for CAPO)"
+  type        = string
+  default     = ""
+}
+
+variable "talos_image_id" {
+  description = "Glance image ID of the Talos image (passed to cluster-config for CAPO)"
+  type        = string
+  default     = ""
+}
+
+variable "kubernetes_version" {
+  description = "Kubernetes version (passed to cluster-config for TalosControlPlane)"
+  type        = string
+  default     = "v1.32.0"
+}
+
+variable "azimuth_cluster_machine_name" {
+  description = "Hostname Talos du nœud de contrôle du cluster applicatif Azimuth"
+  type        = string
+  default     = "azimuth-apps"
+}
+
+variable "azimuth_cluster_flavor" {
+  description = "Flavor OpenStack pour le nœud du cluster applicatif Azimuth"
+  type        = string
+  default     = ""
+}
+

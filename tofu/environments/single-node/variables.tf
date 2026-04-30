@@ -78,6 +78,20 @@ variable "kubernetes_version" {
   default = "v1.32.0"
 }
 
+# ── Azimuth workload cluster ──────────────────────────────────────────────────
+
+variable "azimuth_cluster_machine_name" {
+  description = "Hostname Talos du nœud de contrôle du cluster applicatif Azimuth"
+  type        = string
+  default     = "azimuth-apps"
+}
+
+variable "azimuth_cluster_flavor" {
+  description = "Flavor OpenStack pour le nœud du cluster applicatif Azimuth"
+  type        = string
+  default     = ""
+}
+
 # ── FluxCD / Git ──────────────────────────────────────────────────────────────
 
 variable "git_url" {

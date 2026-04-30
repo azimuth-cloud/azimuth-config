@@ -1,0 +1,44 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: OpenStackMachineTemplate
+metadata:
+  name: azimuth-cluster-cp
+  namespace: azimuth-cluster
+spec:
+  template:
+    spec:
+      flavor: ${azimuth_cluster_flavor}
+      image:
+        id: ${talos_image_id}
+      identityRef:
+        cloudName: openstack
+        name: azimuth-cluster-cloud-config
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: TalosControlPlane
+metadata:
+  name: azimuth-cluster-cp
+  namespace: azimuth-cluster
+spec:
+  version: ${kubernetes_version}
+  replicas: 1
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: OpenStackMachineTemplate
+    name: azimuth-cluster-cp
+  controlPlaneConfig:
+    controlplane:
+      generateType: controlplane
+      talosVersion: v1.9
+      configPatches:
+        - op: add
+          path: /cluster/allowSchedulingOnControlPlanes
+          value: true
+        - op: add
+          path: /machine/network/hostname
+          value: ${azimuth_cluster_machine_name}
+        - op: add
+          path: /machine/features/kubePrism
+          value:
+            enabled: true
+            port: 7445
