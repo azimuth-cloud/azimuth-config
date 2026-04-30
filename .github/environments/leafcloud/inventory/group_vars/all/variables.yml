@@ -52,3 +52,12 @@ azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-
 # Use the unencrypted volume type for Kubernetes volumes
 azimuth_capi_operator_capi_helm_root_volume_type: unencrypted
 azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
+
+# Don't have direct control of cert for Leafcloud auth endpoint so disabled
+# to avoid CI being blocked on alerts
+capi_cluster_release_overrides:
+  addons:
+    monitoring:
+      blackboxExporter:
+        openstackAuthUrlTarget:
+          enabled: false
