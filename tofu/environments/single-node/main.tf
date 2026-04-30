@@ -152,7 +152,6 @@ module "flux" {
   talos_image_id                          = var.talos_image_id
   kubernetes_version                      = var.kubernetes_version
   azimuth_cluster_machine_name            = var.azimuth_cluster_machine_name
-  azimuth_cluster_flavor                  = var.azimuth_cluster_flavor
 }
 
 # ── Persist kubeconfig locally ────────────────────────────────────────────────

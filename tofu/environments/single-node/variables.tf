@@ -86,12 +86,6 @@ variable "azimuth_cluster_machine_name" {
   default     = "azimuth-apps"
 }
 
-variable "azimuth_cluster_flavor" {
-  description = "Flavor OpenStack pour le nœud du cluster applicatif Azimuth"
-  type        = string
-  default     = ""
-}
-
 # ── FluxCD / Git ──────────────────────────────────────────────────────────────
 
 variable "git_url" {

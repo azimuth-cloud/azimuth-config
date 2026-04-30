@@ -20,3 +20,5 @@ spec:
         name: cluster-config
       - kind: Secret
         name: cluster-secrets
+      - kind: ConfigMap
+        name: cluster-overrides

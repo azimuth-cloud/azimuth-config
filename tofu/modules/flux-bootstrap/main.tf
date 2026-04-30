@@ -67,7 +67,6 @@ resource "null_resource" "cluster_config" {
     talos_image_id               = var.talos_image_id
     kubernetes_version           = var.kubernetes_version
     azimuth_cluster_machine_name = var.azimuth_cluster_machine_name
-    azimuth_cluster_flavor       = var.azimuth_cluster_flavor
   }
 
   provisioner "local-exec" {
@@ -81,7 +80,6 @@ resource "null_resource" "cluster_config" {
         --from-literal=talos_image_id=${var.talos_image_id} \
         --from-literal=kubernetes_version=${var.kubernetes_version} \
         --from-literal=azimuth_cluster_machine_name=${var.azimuth_cluster_machine_name} \
-        --from-literal=azimuth_cluster_flavor=${var.azimuth_cluster_flavor} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT
