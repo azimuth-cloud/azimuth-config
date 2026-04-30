@@ -51,16 +51,31 @@ Secret created during `tofu apply`.
 
 ## Variable injection
 
-The `flux-bootstrap` module creates two Kubernetes objects in `flux-system` before
-Flux reconciles:
+Flux Kustomizations use `postBuild.substituteFrom` to inject runtime values into
+manifests via `${variable}` syntax. Three sources are used, in order:
 
-| Object | Kind | Key | Source |
-|--------|------|-----|--------|
-| `cluster-config` | ConfigMap | `base_domain` | `var.base_domain` (defaults to `<floating-ip>.sslip.io`) |
-| `cluster-secrets` | Secret | `zenith_token_signing_key` | `random_password` resource (32 chars) |
+| Object | Kind | Managed by | Purpose |
+|--------|------|------------|---------|
+| `cluster-config` | ConfigMap | Tofu (`flux-bootstrap` module) | Infrastructure values: `base_domain`, `external_network_id`, `talos_image_id`, `kubernetes_version`, `azimuth_cluster_machine_name`, … |
+| `cluster-secrets` | Secret | Tofu (`flux-bootstrap` module) | Sensitive values: `zenith_token_signing_key`, `azimuth_django_secret_key`, OpenStack credentials |
+| `cluster-overrides` | ConfigMap | **Operator (kubectl)** | Cloud-specific values that cannot have a default: `azimuth_cluster_flavor` |
 
-HelmRelease manifests reference these values via `${variable}` syntax and
-`postBuild.substituteFrom` in the root Kustomization.
+`cluster-config` and `cluster-secrets` are created automatically by `tofu apply`.
+
+`cluster-overrides` must be created manually by the operator after `tofu apply`, since
+it contains values that are specific to each OpenStack cloud and cannot be determined
+from the Tofu configuration alone:
+
+```sh
+KUBECONFIG=tofu/environments/single-node/.work/kubeconfig.yaml \
+kubectl -n flux-system create configmap cluster-overrides \
+  --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+The `azimuth-cluster` Kustomization will fail with a clear error if `cluster-overrides`
+is absent, prompting the operator to create it before the workload cluster can be
+provisioned.
 
 ## Adding a new environment
 

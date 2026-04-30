@@ -76,6 +76,39 @@ tofu apply
 
 Access the Azimuth portal at `https://azimuth.<floating-ip>.sslip.io`.
 
+### Deploy single-node
+
+```sh
+cd tofu/environments/single-node
+
+# Create terraform.tfvars
+cat > terraform.tfvars <<EOF
+openstack_auth_url                      = "https://cloud.example.com:5000"
+openstack_application_credential_id     = "<id>"
+openstack_application_credential_secret = "<secret>"
+external_network_id                     = "<network-uuid>"
+talos_image_id                          = "<glance-image-uuid>"
+flavor_id                               = "m1.xlarge"
+git_url                                 = "https://github.com/your-org/azimuth-config"
+git_branch                              = "main"
+EOF
+
+tofu init
+tofu apply
+```
+
+After `tofu apply`, create the `cluster-overrides` ConfigMap with the OpenStack flavor
+for the Azimuth workload cluster. This value is cloud-specific and is not managed by Tofu:
+
+```sh
+KUBECONFIG=.work/kubeconfig.yaml \
+kubectl -n flux-system create configmap cluster-overrides \
+  --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Flux will then provision the workload cluster via CAPO and deploy the Azimuth portal on it.
+
 ## Documentation
 
 Full documentation is in the [docs/](./docs/) directory:
