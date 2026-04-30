@@ -79,9 +79,9 @@ jobs:
               - .gitignore
               - .gitattributes
               - .github/actions/**
-              - .github/environments/common
-              - .github/environments/arcus
-              - .github/environments/leafcloud
+              - .github/environments/common/**
+              - .github/environments/arcus/**
+              - .github/environments/leafcloud/**
               - .github/workflows/pr.yml
               - .github/workflows/test-singlenode.yml
               - bin/activate
