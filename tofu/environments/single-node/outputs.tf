@@ -17,3 +17,8 @@ output "talosconfig_path" {
   description = "Local path where the talosconfig was written"
   value       = local_sensitive_file.talosconfig.filename
 }
+
+output "internal_network_id" {
+  description = "Network ID created to host the seed VM"
+  value = module.infra.network_id
+}
