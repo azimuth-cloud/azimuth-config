@@ -34,6 +34,14 @@ spec:
     id: "${azimuth_cluster_network_id}"
   managedSecurityGroups:
     allNodesSecurityGroupRules:
+      - name: talos-api
+        direction: ingress
+        etherType: IPv4
+        protocol: tcp
+        portRangeMin: 50000
+        portRangeMax: 50000
+        remoteIPPrefix: "0.0.0.0/0"
+        description: "Talos API (CACPPT bootstrap from management cluster)"
       - name: http
         direction: ingress
         etherType: IPv4
