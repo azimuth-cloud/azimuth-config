@@ -30,6 +30,10 @@ spec:
     name: azimuth-cluster-cloud-config
   externalNetwork:
     id: ${external_network_id}
+  managedSubnets:
+    - cidr: "10.6.0.0/24"
+      dnsNameservers:
+        - "8.8.8.8"
   managedSecurityGroups:
     allNodesSecurityGroupRules:
       - name: http
