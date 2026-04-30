@@ -15,3 +15,12 @@ spec:
   wait: true
   dependsOn:
     - name: apps
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cabpt-controller-manager
+      namespace: capi-talos-bootstrap-system
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cacppt-controller-manager
+      namespace: capi-talos-control-plane-system
