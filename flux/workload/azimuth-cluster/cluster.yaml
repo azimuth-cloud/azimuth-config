@@ -32,21 +32,24 @@ spec:
     id: ${external_network_id}
   managedSecurityGroups:
     allNodesSecurityGroupRules:
-      - direction: ingress
+      - name: http
+        direction: ingress
         etherType: IPv4
         protocol: tcp
         portRangeMin: 80
         portRangeMax: 80
         remoteIPPrefix: "0.0.0.0/0"
         description: "HTTP"
-      - direction: ingress
+      - name: https
+        direction: ingress
         etherType: IPv4
         protocol: tcp
         portRangeMin: 443
         portRangeMax: 443
         remoteIPPrefix: "0.0.0.0/0"
         description: "HTTPS"
-      - direction: ingress
+      - name: zenith-sshd
+        direction: ingress
         etherType: IPv4
         protocol: tcp
         portRangeMin: 32222
