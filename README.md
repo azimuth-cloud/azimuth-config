@@ -97,13 +97,19 @@ tofu init
 tofu apply
 ```
 
-After `tofu apply`, create the `cluster-overrides` ConfigMap with the OpenStack flavor
-for the Azimuth workload cluster. This value is cloud-specific and is not managed by Tofu:
+After `tofu apply`, create the `cluster-overrides` ConfigMap with cloud-specific values
+for the Azimuth workload cluster. These are not managed by Tofu:
+
+| Variable | Description |
+|----------|-------------|
+| `azimuth_cluster_flavor` | OpenStack flavor for the workload cluster node |
+| `azimuth_cluster_network_id` | OpenStack internal network ID for the workload cluster nodes |
 
 ```sh
 KUBECONFIG=.work/kubeconfig.yaml \
 kubectl -n flux-system create configmap cluster-overrides \
   --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
+  --from-literal=azimuth_cluster_network_id=<network-uuid> \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 

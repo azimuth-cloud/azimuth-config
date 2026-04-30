@@ -58,7 +58,7 @@ manifests via `${variable}` syntax. Three sources are used, in order:
 |--------|------|------------|---------|
 | `cluster-config` | ConfigMap | Tofu (`flux-bootstrap` module) | Infrastructure values: `base_domain`, `external_network_id`, `talos_image_id`, `kubernetes_version`, `azimuth_cluster_machine_name`, … |
 | `cluster-secrets` | Secret | Tofu (`flux-bootstrap` module) | Sensitive values: `zenith_token_signing_key`, `azimuth_django_secret_key`, OpenStack credentials |
-| `cluster-overrides` | ConfigMap | **Operator (kubectl)** | Cloud-specific values that cannot have a default: `azimuth_cluster_flavor` |
+| `cluster-overrides` | ConfigMap | **Operator (kubectl)** | Cloud-specific values that cannot have a default: `azimuth_cluster_flavor`, `azimuth_cluster_network_id` |
 
 `cluster-config` and `cluster-secrets` are created automatically by `tofu apply`.
 
@@ -66,10 +66,16 @@ manifests via `${variable}` syntax. Three sources are used, in order:
 it contains values that are specific to each OpenStack cloud and cannot be determined
 from the Tofu configuration alone:
 
+| Variable | Description |
+|----------|-------------|
+| `azimuth_cluster_flavor` | OpenStack flavor name or ID for the workload cluster node |
+| `azimuth_cluster_network_id` | OpenStack internal network ID on which workload cluster nodes are attached (`spec.network` in `OpenStackCluster`) |
+
 ```sh
 KUBECONFIG=tofu/environments/single-node/.work/kubeconfig.yaml \
 kubectl -n flux-system create configmap cluster-overrides \
   --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
+  --from-literal=azimuth_cluster_network_id=<network-uuid> \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
