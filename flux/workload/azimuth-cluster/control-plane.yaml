@@ -35,6 +35,10 @@ spec:
           path: /cluster/allowSchedulingOnControlPlanes
           value: true
         - op: add
+          path: /cluster/network/cni
+          value:
+            name: none
+        - op: add
           path: /machine/network/hostname
           value: ${azimuth_cluster_machine_name}
         - op: add
