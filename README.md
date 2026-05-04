@@ -104,13 +104,29 @@ for the Azimuth workload cluster. These are not managed by Tofu:
 |----------|-------------|
 | `azimuth_cluster_flavor` | OpenStack flavor for the workload cluster node |
 | `azimuth_cluster_network_id` | OpenStack internal network ID for the workload cluster nodes |
+| `azimuth_cluster_base_domain` | Base domain for Azimuth ingresses — set after CAPO assigns the FIP |
+
+**Step 1** — create the ConfigMap before provisioning (use a placeholder for the domain):
 
 ```sh
 KUBECONFIG=.work/kubeconfig.yaml \
 kubectl -n flux-system create configmap cluster-overrides \
   --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
   --from-literal=azimuth_cluster_network_id=<network-uuid> \
+  --from-literal=azimuth_cluster_base_domain=placeholder \
   --dry-run=client -o yaml | kubectl apply -f -
+```
+
+**Step 2** — once CAPO has provisioned the workload node and auto-assigned a floating IP,
+patch the domain:
+
+```sh
+WORKER_IP=$(kubectl get openstackmachine -n azimuth-cluster -o json | jq ".items[0].status.addresses[] | select(.type == \"ExternalIP\").address")
+FIP=$(openstack floating ip list --fixed-ip-address $WORKER_IP -f value -c "Floating IP Address")
+KUBECONFIG=.work/kubeconfig.yaml \
+kubectl -n flux-system patch configmap cluster-overrides \
+  --type merge -p "{\"data\":{\"azimuth_cluster_base_domain\":\"${FIP}.sslip.io\"}}"
+flux -n flux-system reconcile kustomization azimuth-cluster
 ```
 
 Flux will then provision the workload cluster via CAPO and deploy the Azimuth portal on it.
