@@ -23,8 +23,7 @@ spec:
       enabled: true
 
     cni:
-      enabled: true
-      type: calico
+      enabled: false
 
     metricsServer:
       enabled: true
