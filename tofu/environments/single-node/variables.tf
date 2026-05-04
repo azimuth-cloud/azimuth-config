@@ -19,6 +19,10 @@ variable "openstack_region_name" {
   default = "RegionOne"
 }
 
+variable "openstack_tenant_name" {
+  type = string
+}
+
 # ── Infrastructure ────────────────────────────────────────────────────────────
 
 variable "name" {

@@ -44,6 +44,12 @@ variable "openstack_region_name" {
   type        = string
 }
 
+variable "openstack_tenant_name" {
+  description = "OpenStack project / tenant name (used in clouds.yaml for the workload cluster)"
+  type        = string
+  default     = ""
+}
+
 variable "openstack_application_credential_id" {
   description = "OpenStack application credential ID"
   type        = string

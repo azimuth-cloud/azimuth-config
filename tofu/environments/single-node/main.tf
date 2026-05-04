@@ -40,6 +40,7 @@ provider "openstack" {
   application_credential_id       = var.openstack_application_credential_id
   application_credential_secret   = var.openstack_application_credential_secret
   region                          = var.openstack_region_name
+  tenant_name                     = var.openstack_tenant_name
 }
 
 # ── Step 1: Generate Talos machine config ─────────────────────────────────────
@@ -144,6 +145,7 @@ module "flux" {
   base_domain                             = local.base_domain
   openstack_auth_url                      = var.openstack_auth_url
   openstack_region_name                   = var.openstack_region_name
+  openstack_tenant_name                   = var.openstack_tenant_name
   openstack_application_credential_id     = var.openstack_application_credential_id
   openstack_application_credential_secret = var.openstack_application_credential_secret
   zenith_token_signing_key                = random_password.zenith_token_signing_key.result

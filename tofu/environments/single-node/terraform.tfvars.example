@@ -4,6 +4,7 @@ openstack_auth_url                      = "https://your-openstack:5000"
 openstack_application_credential_id     = ""
 openstack_application_credential_secret = ""
 openstack_region_name                   = "RegionOne"
+openstack_tenant_name                   = "my-tenant"
 
 name                = "azimuth"
 external_network_id = ""   # ID of the public/external network

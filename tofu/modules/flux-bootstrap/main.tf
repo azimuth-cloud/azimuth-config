@@ -63,6 +63,7 @@ resource "null_resource" "cluster_config" {
     base_domain                  = var.base_domain
     openstack_auth_url           = var.openstack_auth_url
     openstack_region_name        = var.openstack_region_name
+    openstack_tenant_name        = var.openstack_tenant_name
     external_network_id          = var.external_network_id
     talos_image_id               = var.talos_image_id
     kubernetes_version           = var.kubernetes_version
@@ -76,6 +77,7 @@ resource "null_resource" "cluster_config" {
         --from-literal=base_domain=${var.base_domain} \
         --from-literal=openstack_auth_url=${var.openstack_auth_url} \
         --from-literal=openstack_region_name=${var.openstack_region_name} \
+        --from-literal=openstack_tenant_name=${var.openstack_tenant_name} \
         --from-literal=external_network_id=${var.external_network_id} \
         --from-literal=talos_image_id=${var.talos_image_id} \
         --from-literal=kubernetes_version=${var.kubernetes_version} \
