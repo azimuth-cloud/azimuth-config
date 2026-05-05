@@ -28,6 +28,9 @@ spec:
     metricsServer:
       enabled: true
 
+    monitoring:
+      enabled: true
+
     etcdDefrag:
       enabled: false
 
@@ -96,6 +99,24 @@ spec:
               kind: Namespace
               metadata:
                 name: network-operator
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: monitoring-system
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: harbor
                 labels:
                   pod-security.kubernetes.io/enforce: privileged
                   pod-security.kubernetes.io/audit: privileged
@@ -175,3 +196,129 @@ spec:
               type: openstack
               openstack:
                 authUrl: "${openstack_auth_url}"
+
+      # ── Azimuth operators ─────────────────────────────────────────────────────
+
+      azimuth-capi-operator:
+        kind: HelmRelease
+        spec:
+          namespace: azimuth-capi-operator
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-capi-operator
+            name: azimuth-capi-operator
+            version: "0.18.0"
+          values: {}
+
+      azimuth-apps-operator:
+        kind: HelmRelease
+        spec:
+          namespace: azimuth-apps-operator
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-apps-operator
+            name: azimuth-apps-operator
+            version: "0.4.2"
+          values: {}
+
+      azimuth-caas-operator:
+        kind: HelmRelease
+        spec:
+          namespace: azimuth-caas-operator
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-caas-operator
+            name: azimuth-caas-operator
+            version: "0.20.0"
+          values: {}
+
+      azimuth-identity-operator:
+        kind: HelmRelease
+        spec:
+          namespace: azimuth-identity-operator
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-identity-operator
+            name: azimuth-identity-operator
+            version: "0.10.0"
+          values: {}
+
+      azimuth-schedule-operator:
+        kind: HelmRelease
+        spec:
+          namespace: azimuth-schedule-operator
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-schedule-operator
+            name: azimuth-schedule-operator
+            version: "0.8.0"
+          values: {}
+
+      # ── CAPI management addons ────────────────────────────────────────────────
+
+      cluster-api-addon-provider:
+        kind: HelmRelease
+        spec:
+          namespace: capi-addon-provider
+          chart:
+            repo: https://azimuth-cloud.github.io/cluster-api-addon-provider
+            name: cluster-api-addon-provider
+            version: "0.11.0"
+          values: {}
+
+      cluster-api-janitor-openstack:
+        kind: HelmRelease
+        spec:
+          namespace: capi-janitor-system
+          chart:
+            repo: https://azimuth-cloud.github.io/cluster-api-janitor-openstack
+            name: cluster-api-janitor-openstack
+            version: "0.10.6"
+          values: {}
+
+      sealed-secrets:
+        kind: HelmRelease
+        spec:
+          namespace: sealed-secrets-system
+          chart:
+            repo: https://bitnami-labs.github.io/sealed-secrets
+            name: sealed-secrets
+            version: "2.18.4"
+          values: {}
+
+      # ── Auth & UI ─────────────────────────────────────────────────────────────
+
+      dex:
+        kind: HelmRelease
+        spec:
+          namespace: dex
+          chart:
+            repo: https://charts.dexidp.io
+            name: dex
+            version: "0.6.4"
+          values: {}
+
+      harbor:
+        kind: HelmRelease
+        spec:
+          namespace: harbor
+          chart:
+            repo: https://helm.goharbor.io
+            name: harbor
+            version: "1.18.3"
+          values: {}
+
+      kubernetes-dashboard:
+        kind: HelmRelease
+        spec:
+          namespace: kubernetes-dashboard
+          chart:
+            repo: https://kubernetes.github.io/dashboard
+            name: kubernetes-dashboard
+            version: "7.14.0"
+          values: {}
+
+      helm-dashboard:
+        kind: HelmRelease
+        spec:
+          namespace: helm-dashboard
+          chart:
+            repo: https://helm-charts.komodor.io
+            name: helm-dashboard
+            version: "2.0.4"
+          values: {}
