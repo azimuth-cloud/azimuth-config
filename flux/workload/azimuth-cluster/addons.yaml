@@ -21,6 +21,10 @@ spec:
 
     openstack:
       enabled: true
+      csiCinder:
+        defaultStorageClass:
+          # Override the default "nova" AZ — set empty so Cinder uses its own default AZ
+          availabilityZone: ""
 
     cni:
       enabled: false
