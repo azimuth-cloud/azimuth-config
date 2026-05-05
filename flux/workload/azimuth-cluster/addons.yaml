@@ -34,18 +34,68 @@ spec:
     # ── Apps Azimuth (custom addons) ───────────────────────────────────────────
 
     custom:
-      # Label the ingress-nginx namespace as privileged so hostNetwork/hostPort
-      # pods are allowed (Kubernetes PodSecurity baseline blocks them otherwise).
-      ingress-nginx-ns:
+      # Label system namespaces as privileged.
+      # Kubernetes PodSecurity baseline (the default for unlabelled namespaces)
+      # blocks hostNetwork, hostPath, hostPort, and privileged containers — all
+      # of which are required by infrastructure components (CCM, Cinder CSI,
+      # ingress-nginx, node-feature-discovery, node-problem-detector, GPU/network
+      # operators).
+      system-ns-privileged:
         kind: Manifests
         spec:
-          namespace: ingress-nginx
+          namespace: kube-system
           manifests:
-            label: |
+            namespaces: |
+              ---
               apiVersion: v1
               kind: Namespace
               metadata:
                 name: ingress-nginx
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: openstack-system
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: node-feature-discovery
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: node-problem-detector
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: gpu-operator
+                labels:
+                  pod-security.kubernetes.io/enforce: privileged
+                  pod-security.kubernetes.io/audit: privileged
+                  pod-security.kubernetes.io/warn: privileged
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: network-operator
                 labels:
                   pod-security.kubernetes.io/enforce: privileged
                   pod-security.kubernetes.io/audit: privileged
