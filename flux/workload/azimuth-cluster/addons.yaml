@@ -52,6 +52,83 @@ spec:
         spec:
           namespace: kube-system
           manifests:
+            # Pre-install hook: adopt any pre-existing namespaces into this Helm release.
+            # Bootstrap addons create namespaces via `helm install --create-namespace`,
+            # which sets no Helm ownership labels. Without adoption, Helm refuses to
+            # manage those namespaces and the install fails.
+            hook-rbac: |
+              ---
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: ns-labeler
+                namespace: kube-system
+                annotations:
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
+              ---
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: ns-labeler
+                annotations:
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
+              rules:
+                - apiGroups: [""]
+                  resources: ["namespaces"]
+                  verbs: ["get", "list", "patch", "update"]
+              ---
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRoleBinding
+              metadata:
+                name: ns-labeler
+                annotations:
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: ClusterRole
+                name: ns-labeler
+              subjects:
+                - kind: ServiceAccount
+                  name: ns-labeler
+                  namespace: kube-system
+            hook-adopt: |
+              ---
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ns-adopt
+                namespace: kube-system
+                annotations:
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "0"
+                  helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+              spec:
+                backoffLimit: 3
+                template:
+                  spec:
+                    serviceAccountName: ns-labeler
+                    restartPolicy: OnFailure
+                    containers:
+                      - name: adopter
+                        image: bitnami/kubectl:1.32
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor; do
+                              kubectl get ns "$ns" >/dev/null 2>&1 || continue
+                              kubectl annotate ns "$ns" \
+                                meta.helm.sh/release-name=system-ns-privileged \
+                                meta.helm.sh/release-namespace=kube-system \
+                                --overwrite
+                              kubectl label ns "$ns" app.kubernetes.io/managed-by=Helm --overwrite
+                              echo "Adopted: $ns"
+                            done
             namespaces: |
               ---
               apiVersion: v1
