@@ -51,7 +51,7 @@ while true; do
     echo "$ALERTS" |
       jq '.data.alerts[].labels.alertname' |
       grep -v -E -c "Watchdog|BlackboxSslCertificateWillExpire(Soon|VerySoon)"
-  )"
+  )" || true
   echo "  Found $ALERT_COUNT pending or firing alerts:"
   echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
   echo ""
