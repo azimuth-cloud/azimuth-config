@@ -46,12 +46,13 @@ while true; do
 
   ALERTS="$(curl -fsSL http://localhost:9090/api/v1/alerts)"
   ALERT_COUNT="$(echo "$ALERTS" | jq -r '.data.alerts | length')"
+  # Ignore Watchdog and cert expiries we can't control
+  REAL_ALERT_COUNT="$(echo $ALERTS | jq '.data.alerts[].labels.alertname' | grep -v "Watchdog\|BlackboxSslCertificateWillExpireSoon\|BlackboxSslCertificateWillExpireVerySoon" | wc -l)"
   echo "  Found $ALERT_COUNT pending or firing alerts:"
   echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
   echo ""
 
-  # Check that only the Watchdog is firing
-  if [[ ${ALERT_COUNT} -eq 1 ]]; then
+  if [[ ${REAL_ALERT_COUNT} -eq 0 ]]; then
     exit
   elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
     exit 1
