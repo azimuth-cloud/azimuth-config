@@ -18,27 +18,39 @@ OpenTofu (provisioning)
 └── FluxCD bootstrap (flux install + kustomization)
 
 Git repo (GitOps — flux/)
-├── clusters/<environment>/   ← Flux Kustomizations per environment
-│   ├── apps.yaml             → flux/apps/
-│   └── capi-providers.yaml   → CAPI CoreProvider + InfrastructureProvider
-└── apps/                     ← shared HelmRelease manifests
-    ├── cert-manager/
-    ├── ingress-nginx/
-    ├── sealed-secrets/
-    ├── cluster-api/          ← capi-operator + CAPO
-    ├── azimuth-capi-operator/
-    ├── zenith/
-    ├── azimuth/
-    └── kube-prometheus-stack/
+├── clusters/<environment>/         ← Flux Kustomizations per environment
+│   ├── apps.yaml                   → flux/apps/  (cert-manager, sealed-secrets, CAPI…)
+│   ├── capi-providers.yaml         → CAPI CoreProvider + InfrastructureProvider (Talos)
+│   ├── azimuth.yaml                → flux/azimuth/  (portal — all-in-one only)
+│   └── azimuth-cluster.yaml        → flux/workload/azimuth-cluster/  (single-node only)
+├── apps/                           ← seed infrastructure
+│   ├── _sources/                   ← HelmRepository definitions
+│   ├── cert-manager/
+│   ├── sealed-secrets/
+│   ├── cluster-api/                ← capi-operator + CAPO
+│   ├── cluster-api-addon-provider/
+│   └── capi-janitor/
+├── azimuth/                        ← Azimuth portal + operators (all-in-one or seed)
+│   ├── ingress-nginx/
+│   ├── kube-prometheus-stack/
+│   ├── loki-stack/
+│   ├── zenith/
+│   ├── azimuth/
+│   ├── azimuth-capi-operator/
+│   └── …
+└── workload/azimuth-cluster/       ← CAPI workload cluster manifests (single-node)
+    ├── cluster.yaml                ← OpenStackCluster + Cluster
+    ├── control-plane.yaml          ← TalosControlPlane + OpenStackMachineTemplate
+    ├── addons.yaml                 ← HelmRelease (cluster-addons chart)
+    └── openstack-credentials.yaml  ← clouds.yaml Secret
 ```
 
 ### Environment taxonomy
 
-| Environment  | Seed VM topology | Workload cluster       | Zenith + Azimuth portal |
-|--------------|-----------------|------------------------|-------------------------|
-| `all-in-one` | Talos, 1 node   | none (seed = workload) | On the seed VM          |
-| `single-node`| Talos, 1 node (management) | CAPO → 1 node | On the workload cluster |
-| `multi-node` | Talos, 1 node (management) | CAPO → 3 nodes | On the workload cluster |
+| Environment  | Seed VM topology            | Workload cluster | Azimuth portal          |
+|--------------|-----------------------------|------------------|-------------------------|
+| `all-in-one` | Talos, 1 node               | none (seed = workload) | On the seed VM    |
+| `single-node`| Talos, 1 node (management)  | CAPO → 1 node    | On the workload cluster |
 
 The seed VM always runs CAPI + CAPO. Only `all-in-one` runs the Azimuth portal directly on it.
 
@@ -63,6 +75,7 @@ cat > terraform.tfvars <<EOF
 openstack_auth_url                      = "https://cloud.example.com:5000"
 openstack_application_credential_id     = "<id>"
 openstack_application_credential_secret = "<secret>"
+openstack_region_name                   = "RegionOne"
 external_network_id                     = "<network-uuid>"
 talos_image_id                          = "<glance-image-uuid>"
 flavor_name                             = "m1.xlarge"
@@ -81,55 +94,32 @@ Access the Azimuth portal at `https://azimuth.<floating-ip>.sslip.io`.
 ```sh
 cd tofu/environments/single-node
 
-# Create terraform.tfvars
-cat > terraform.tfvars <<EOF
-openstack_auth_url                      = "https://cloud.example.com:5000"
-openstack_application_credential_id     = "<id>"
-openstack_application_credential_secret = "<secret>"
-external_network_id                     = "<network-uuid>"
-talos_image_id                          = "<glance-image-uuid>"
-flavor_id                               = "m1.xlarge"
-git_url                                 = "https://github.com/your-org/azimuth-config"
-git_branch                              = "main"
-EOF
+# Copy and fill in the variables
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your OpenStack credentials, image ID, Git URL, etc.
 
-tofu init
-tofu apply
+# Run the fully-automated deployment script
+bash apply.sh
 ```
 
-After `tofu apply`, create the `cluster-overrides` ConfigMap with cloud-specific values
-for the Azimuth workload cluster. These are not managed by Tofu:
+`apply.sh` handles the full lifecycle end-to-end:
+1. `tofu init && tofu apply` — provisions the seed VM, pre-allocates the FIP, bootstraps Flux
+2. Creates the `cluster-overrides` ConfigMap with network/flavor/placeholder domain
+3. Waits for CAPI + CAPO to become ready
+4. Waits for the CAPO `OpenStackCluster` object to reach `READY=true`
+5. Discovers the workload node floating IP from `openstackmachine` status
+6. Patches `cluster-overrides` with the real base domain (`<fip>.sslip.io`)
+7. Triggers `flux reconcile kustomization azimuth-cluster`
+8. Saves the workload cluster kubeconfig to `.work/azimuth.kubeconfig.yaml`
+9. Polls until the Azimuth portal responds
 
-| Variable | Description |
-|----------|-------------|
-| `azimuth_cluster_flavor` | OpenStack flavor for the workload cluster node |
-| `azimuth_cluster_network_id` | OpenStack internal network ID for the workload cluster nodes |
-| `azimuth_cluster_base_domain` | Base domain for Azimuth ingresses — set after CAPO assigns the FIP |
+On completion, outputs:
 
-**Step 1** — create the ConfigMap before provisioning (use a placeholder for the domain):
-
-```sh
-KUBECONFIG=.work/kubeconfig.yaml \
-kubectl -n flux-system create configmap cluster-overrides \
-  --from-literal=azimuth_cluster_flavor=<flavor-name-or-id> \
-  --from-literal=azimuth_cluster_network_id=<network-uuid> \
-  --from-literal=azimuth_cluster_base_domain=placeholder \
-  --dry-run=client -o yaml | kubectl apply -f -
 ```
-
-**Step 2** — once CAPO has provisioned the workload node and auto-assigned a floating IP,
-patch the domain:
-
-```sh
-WORKER_IP=$(kubectl get openstackmachine -n azimuth-cluster -o json | jq ".items[0].status.addresses[] | select(.type == \"ExternalIP\").address")
-FIP=$(openstack floating ip list --fixed-ip-address $WORKER_IP -f value -c "Floating IP Address")
-KUBECONFIG=.work/kubeconfig.yaml \
-kubectl -n flux-system patch configmap cluster-overrides \
-  --type merge -p "{\"data\":{\"azimuth_cluster_base_domain\":\"${FIP}.sslip.io\"}}"
-flux -n flux-system reconcile kustomization azimuth-cluster
+  Seed kubeconfig:     .work/kubeconfig.yaml
+  Workload kubeconfig: .work/azimuth.kubeconfig.yaml
+  Azimuth portal:      https://portal.<fip>.sslip.io
 ```
-
-Flux will then provision the workload cluster via CAPO and deploy the Azimuth portal on it.
 
 ## Documentation
 
