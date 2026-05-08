@@ -95,6 +95,11 @@ jobs:
                 worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"
                 worker_count: "{{ generate_tests_kubernetes_test_case_worker_count }}"
                 monitoring_enabled: "{{ generate_tests_kubernetes_test_case_monitoring_enabled }}"
+                loki_query: "{{ generate_tests_kubernetes_test_case_loki_query | default('{}') | to_json }}"
+                loki_limit: "{{ generate_tests_kubernetes_test_case_loki_limit | default(omit) }}"
+                loki_namespace: "{{ generate_tests_kubernetes_test_case_loki_namespace | default(omit) }}"
+                loki_service: "{{ generate_tests_kubernetes_test_case_loki_service | default(omit) }}"
+                loki_port: "{{ generate_tests_kubernetes_test_case_loki_port | default(omit) }}"
         # GitHub terminates jobs after 6 hours
         # We don't want jobs to acquire the lock then get timed out before they
         # can finish
