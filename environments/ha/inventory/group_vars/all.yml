@@ -15,3 +15,17 @@ capi_cluster_release_name: "azimuth-{{ azimuth_environment }}"
 # assigned to the ingress controller's load balancer
 ingress_base_domain: >-
   apps.{{ capi_cluster_addons_ingress_load_balancer_ip | replace('.', '-') }}.sslip.io
+
+# Add mitigation for CVE-2026-31431 to Azimuth management cluster hosts
+# This can be removed after the 2026.6.x Azimuth release
+capi_cluster_release_overrides:
+  addons:
+    custom:
+      patch-copy-fail:
+        kind: HelmRelease
+        spec:
+          namespace: kube-system
+          chart:
+            repo: https://azimuth-cloud.github.io/azimuth-charts
+            name: patch-copy-fail
+            version: 0.7.0
