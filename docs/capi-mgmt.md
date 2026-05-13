@@ -17,7 +17,7 @@ any Azimuth deployment is also a fully functioning
 [CAPI management cluster](https://cluster-api.sigs.k8s.io/user/concepts#management-cluster)
 (albeit with some additional components installed on top, such as
 [Zenith](https://github.com/azimuth-cloud/zenith) and the Azimuth interface
-itself). It is therefore possible (and encouraged) to re-use this management
+itself). It is therefore possible (and encouraged) to reuse this management
 cluster for other Cluster API services, such as interfacing with the
 [Magnum CAPI Helm driver](https://opendev.org/openstack/magnum-capi-helm).
 
