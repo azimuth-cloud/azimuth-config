@@ -133,6 +133,12 @@ infra_flavor_id: "<flavor id>"
 azimuth_current_cloud_name: "{{ lookup('env', 'CI_ENVIRONMENT_SLUG') }}"
 azimuth_current_cloud_label: "{{ lookup('env', 'CI_ENVIRONMENT_NAME') }}"
 
+# Disable TLS to avoid rate limiting
+ingress_tls_enabled: false
+# Terraform names cannot contain forward slashes
+terraform_http_address: "{{ gitlab_project_url }}/terraform/state/{{ azimuth_environment | replace('/', '-') }}"
+infra_name: "azimuth-{{ azimuth_environment | replace('/', '-') }}"
+
 # "Secrets"
 #   Since the dynamic environments are short-lived, there is not much
 #   risk in using secrets that are not really secret for ease
