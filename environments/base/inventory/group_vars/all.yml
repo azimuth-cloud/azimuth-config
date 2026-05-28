@@ -245,4 +245,4 @@ azimuth_capi_operator_capi_helm_values_overrides:
           chart:
             repo: https://azimuth-cloud.github.io/azimuth-charts
             name: patch-copy-fail
-            version: 0.7.0
+            version: 0.9.0
