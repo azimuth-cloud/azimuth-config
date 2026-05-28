@@ -6,9 +6,14 @@ permissions:
   packages: write
   id-token: write
 
-on:
+on: # yamllint disable-line rule:truthy
   # Allow to be called by other workflows
   workflow_call:
+    secrets:
+      OS_CLOUDS:
+        description: clouds.yaml file
+        required: true
+
     inputs:
       from-ref:
         description: >-
@@ -22,6 +27,7 @@ on:
 
   # Allow manual execution on any branch
   workflow_dispatch:
+    # yamllint disable-line rule:line-length
     # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
@@ -61,6 +67,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.from-ref }}
+          persist-credentials: false
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
@@ -155,6 +162,7 @@ jobs:
           # Make sure not to remove working directories
           clean: false
           ref: ${{ inputs.to-ref }}
+          persist-credentials: false
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies

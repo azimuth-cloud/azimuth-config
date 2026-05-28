@@ -29,13 +29,13 @@ azimuth-config to deploy an Azimuth-free, standalone CAPI management cluster
 (e.g. for use with the Magnum CAPI Helm driver). For OpenStack operators using
 OpenStack Kayobe, a companion guide for deploying the Magnum CAPI Helm driver
 and configuring it to use the deployed CAPI management cluster can be found
-[here](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html).
+in the stackhpc-kayobe-config [documentation](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html).
 
 ## OpenStack Prerequisites
 
 The OpenStack prerequisites are largely the same as those for a full Azimuth
-deployment, as described [here](./configuration/01-prerequisites.md), with the
-following differences:
+deployment, as described [in the prerequisites](./configuration/01-prerequisites.md),
+with the following differences:
 
 ### Networking
 
@@ -46,8 +46,7 @@ management cluster and the API server load balancer IP for each workload
 clusters. This is achievable by either deploying all clusters on a
 single tenant network shared between all OpenStack projects, or by ensuring all
 tenant clusters use a load balancer with a public IP for their API server
-(relevant CAPO docs
-[here](https://cluster-api-openstack.sigs.k8s.io/clusteropenstack/configuration#api-server-floating-ip)).
+(relevant [CAPO docs](https://cluster-api-openstack.sigs.k8s.io/clusteropenstack/configuration#api-server-floating-ip)).
 
 A further constraint when driving Cluster API from Magnum is that the Magnum
 conductor must be able to reach the management cluster's Kubernetes API server.
@@ -118,10 +117,9 @@ environment, the script can be used from the repository root with
 ```
 
 So, for example, `./bin/port-forward grafana 3000` would make the CAPI
-management cluster's Grafana instance accessible on your laptop at
-`http://localhost:3000`. The list of service which can be port-forwarded can be
-found
-[here](https://github.com/azimuth-cloud/azimuth-config/blob/0592b6ea2bd01e5e4fec390e3e668f351d185f53/bin/port-forward#L32-L80)
+management cluster's Grafana instance accessible locally at `http://localhost:3000`.
+The list of services which can be port-forwarded can be found in the `bin/port-forward`
+script.
 
 ## Disaster Recovery
 

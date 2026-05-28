@@ -46,7 +46,8 @@ The remainder of this document explains how to access and troubleshoot each of t
 ### Accessing the Seed VM
 
 The seed VM is the admin's gateway into the CAPI management infrastructure. The seed VM's SSH key and IP address are stored in the GitLab-backed terraform state within the config repository. Therefore, by being granted access to the config repositories secrets, an admin can use the provided helper scripts to fetch this securely stored terraform state and use it to SSH into the seed.
-A more detailed explanation of this process can be found [here](https://azimuth-config.readthedocs.io/en/stable/debugging/access-k3s/) but the TL;DR is to run the following shell commands from the repository root:
+A more detailed explanation of this process can be found in the [Azimuth documentation](https://azimuth-config.readthedocs.io/en/stable/debugging/access-k3s/)
+but the TL;DR is to run the following shell commands from the repository root:
 
 ```sh
 # Ensure that the Python venv is set up

@@ -10,21 +10,25 @@ paths:
 #    ignore: []
 
   .github/workflows/cleanup-ci-resources.yml:
-    ignore: [ "string should not be empty" ]
-
+    ignore:
+      - "string should not be empty"
 
   .github/workflows/pr.yml:
-    ignore: [ "string should not be empty" ]
+    ignore:
+      - "string should not be empty"
 
   .github/workflows/test-backup-restore.yml:
-    ignore: [ "string should not be empty" ]
+    ignore:
+      - "string should not be empty"
 
   .github/workflows/test-ha.yml:
-    ignore: [ "string should not be empty" ]
+    ignore:
+      - "string should not be empty"
 
   .github/workflows/test-singlenode.yml:
-    ignore: [ "string should not be empty" ]
+    ignore:
+      - "string should not be empty"
 
   .github/workflows/test-upgrade.yml:
-    ignore: [ "string should not be empty" ]
-
+    ignore:
+      - "string should not be empty"

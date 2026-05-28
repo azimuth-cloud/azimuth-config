@@ -1,14 +1,8 @@
 ---
 name: Lint
 
-on:  # yamllint disable-line rule:truthy
+on: # yamllint disable-line rule:truthy
   workflow_call:
-
-permissions:
-  contents: read
-  packages: read
-  # To report GitHub Actions status checks
-  statuses: write
 
 jobs:
   lint:
@@ -27,6 +21,7 @@ jobs:
           # list of files that changed across commits
           fetch-depth: 0
           submodules: true
+          persist-credentials: false
 
       - name: Run ansible-lint
         uses: ansible/ansible-lint@e98f9b38769d45cbe3c55a23b2eb25631babe7c4 # v25.4.0
