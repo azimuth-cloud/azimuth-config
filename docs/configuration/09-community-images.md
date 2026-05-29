@@ -15,8 +15,7 @@ from, along with some additional metadata. The Azimuth deployment playbooks are 
 consume these manifests.
 
 Images for the Slurm cluster appliance are built using Packer from definitions in the
-[slurm-image-builder respository](https://github.com/stackhpc/slurm_image_builder), with builds uploaded
-[here](https://object.arcus.openstack.hpc.cam.ac.uk/swift/v1/AUTH_3a06571936a0424bb40bc5c672c4ccb1/openhpc-images/).
+[ansible-slurm-appliance repository](https://github.com/stackhpc/ansible-slurm-appliance).
 
 `azimuth-ops` is able to download, convert (if required) and then create
 [Glance images](https://docs.openstack.org/glance/latest/) on the target cloud from these sources.
