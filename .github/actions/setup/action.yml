@@ -50,6 +50,7 @@ runs:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
         clean: false
+        persist-credentials: false
 
     - name: Write clouds.yaml
       shell: bash

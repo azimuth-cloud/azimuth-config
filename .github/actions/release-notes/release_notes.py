@@ -226,10 +226,7 @@ def release_notes_for_component(session, name, org, from_version, to_version):
                 f"<summary><strong>{name}</strong> @ <code>{release['tag_name']}</code></summary>",
                 "",
                 # Knock the headers down by two levels for formatting
-                *[
-                    f"##{line}" if line.startswith("#") else line
-                    for line in release["body"].splitlines()
-                ],
+                *[f"##{line}" if line.startswith("#") else line for line in release["body"].splitlines()],
                 "",
                 "</details>",
             ]
@@ -239,9 +236,7 @@ def release_notes_for_component(session, name, org, from_version, to_version):
 
 def main():
     """Main function to parse arguments and generate release notes."""
-    parser = argparse.ArgumentParser(
-        description="Gets the latest release in a GitHub repository."
-    )
+    parser = argparse.ArgumentParser(description="Gets the latest release in a GitHub repository.")
     # Allow the token to come from an environment variable
     # We use this particular form so that the empty string becomes None
     env_token = os.environ.get("GITHUB_TOKEN") or None
@@ -269,13 +264,9 @@ def main():
     print(f"[INFO]   found azimuth-ops tag - {current_ops_tag}")
 
     print("[INFO] fetching previous stable release")
-    previous = next(
-        fetch_releases(session, args.repo, max=current["tag_name"], inclusive_max=False)
-    )
+    previous = next(fetch_releases(session, args.repo, max=current["tag_name"], inclusive_max=False))
     print(f"[INFO]   found release - {previous['tag_name']}")
-    previous_ops_tag = fetch_ops_tag_for_release(
-        session, args.repo, previous["tag_name"]
-    )
+    previous_ops_tag = fetch_ops_tag_for_release(session, args.repo, previous["tag_name"])
     print(f"[INFO]   found azimuth-ops tag - {previous_ops_tag}")
 
     print("[INFO] collecting release notes")
@@ -300,12 +291,8 @@ def main():
         # Produce release notes for each component in azimuth-ops
         for component in COMPONENTS:
             print(f"[INFO]   fetching versions for component - {component['name']}")
-            component_vn_current = fetch_component_version_for_ops_tag(
-                session, current_ops_tag, component
-            )
-            component_vn_previous = fetch_component_version_for_ops_tag(
-                session, previous_ops_tag, component
-            )
+            component_vn_current = fetch_component_version_for_ops_tag(session, current_ops_tag, component)
+            component_vn_previous = fetch_component_version_for_ops_tag(session, previous_ops_tag, component)
             if component_vn_current == component_vn_previous:
                 print("[WARN]     found same version at both releases - skipping")
             release_notes.extend(

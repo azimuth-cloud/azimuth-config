@@ -77,7 +77,7 @@ all major operating systems and browsers.
 <!-- prettier-ignore-start -->
 !!! danger "Let's Encrypt rate limits"
     Let's Encrypt imposes rate limits to ensure fair usage.
-    At the time of writing, **the number of new certificates that can be issued is 50 per week per registed domain**. The "registered domain" is the part of the domain that is purchased from the registrar so, for an Azimuth deployment with an ingress base domain of `*.azimuth.example.org`, the Let's Encrypt rate limit is imposed on `example.org`.
+    At the time of writing, **the number of new certificates that can be issued is 50 per week per registered domain**. The "registered domain" is the part of the domain that is purchased from the registrar so, for an Azimuth deployment with an ingress base domain of `*.azimuth.example.org`, the Let's Encrypt rate limit is imposed on `example.org`.
     If there are a large number of Zenith services and the rate limit is reached, cert-manager will not be able to obtain a certificate and Azimuth and Zenith services will never become available.
     See [Let's Encrypt rate limits](https://letsencrypt.org/docs/rate-limits/)
 <!-- prettier-ignore-end -->
