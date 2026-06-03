@@ -1,4 +1,4 @@
-# ruff: noqa: F821
+# ruff: noqa: F821, E721
 
 SETTINGS_FILE = "./tilt-settings.yaml"
 
@@ -22,7 +22,7 @@ def deep_merge(dict1, dict2):
     for key, value2 in dict2.items():
         if key in dict1:
             value1 = dict1[key]
-            if isinstance(value1, dict) and isinstance(value2, dict):
+            if type(value1) == "dict" and type(value2) == "dict":
                 merged[key] = deep_merge(value1, value2)
             else:
                 merged[key] = value2
