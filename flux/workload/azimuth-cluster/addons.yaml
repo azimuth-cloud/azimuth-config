@@ -338,6 +338,8 @@ spec:
             name: keycloak
             version: "21.6.2"
           values:
+            global:
+              imageRegistry: docker.io
             auth:
               adminUser: admin
               adminPassword: "${keycloak_admin_password}"
