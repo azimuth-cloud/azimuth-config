@@ -52,10 +52,15 @@ spec:
         spec:
           namespace: kube-system
           manifests:
-            # Pre-install hook: adopt any pre-existing namespaces into this Helm release.
+            # Apply PSA "privileged" labels to system namespaces via pre-install hooks.
+            #
+            # We intentionally do NOT include Namespace resources in this chart.
             # Bootstrap addons create namespaces via `helm install --create-namespace`,
-            # which sets no Helm ownership labels. Without adoption, Helm refuses to
-            # manage those namespaces and the install fails.
+            # which sets no Helm ownership labels. Helm validates ownership *before*
+            # running pre-install hooks, so any Namespace resource here would cause
+            # "cannot be imported into the current release" errors for namespaces that
+            # already exist (e.g. gpu-operator created by nvidia-gpu-operator).
+            # Using kubectl label --overwrite in a Job hook sidesteps ownership entirely.
             hook-rbac: |
               ---
               apiVersion: v1
@@ -97,12 +102,12 @@ spec:
                 - kind: ServiceAccount
                   name: ns-labeler
                   namespace: kube-system
-            hook-adopt: |
+            hook-psa-label: |
               ---
               apiVersion: batch/v1
               kind: Job
               metadata:
-                name: ns-adopt
+                name: ns-psa-label
                 namespace: kube-system
                 annotations:
                   helm.sh/hook: pre-install,pre-upgrade
@@ -115,93 +120,20 @@ spec:
                     serviceAccountName: ns-labeler
                     restartPolicy: OnFailure
                     containers:
-                      - name: adopter
+                      - name: labeler
                         image: bitnami/kubectl:1.32
                         command: ["/bin/sh", "-c"]
                         args:
                           - |
                             for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor; do
                               kubectl get ns "$ns" >/dev/null 2>&1 || continue
-                              kubectl annotate ns "$ns" \
-                                meta.helm.sh/release-name=system-ns-privileged \
-                                meta.helm.sh/release-namespace=kube-system \
+                              kubectl label ns "$ns" \
+                                pod-security.kubernetes.io/enforce=privileged \
+                                pod-security.kubernetes.io/audit=privileged \
+                                pod-security.kubernetes.io/warn=privileged \
                                 --overwrite
-                              kubectl label ns "$ns" app.kubernetes.io/managed-by=Helm --overwrite
-                              echo "Adopted: $ns"
+                              echo "Labeled: $ns"
                             done
-            namespaces: |
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: ingress-nginx
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: openstack-system
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: node-feature-discovery
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: node-problem-detector
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: gpu-operator
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: network-operator
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: monitoring-system
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: harbor
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
 
       cert-manager:
         kind: HelmRelease
