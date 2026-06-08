@@ -34,6 +34,32 @@ spec:
 
     monitoring:
       enabled: true
+      kubePrometheusStack:
+        values:
+          grafana:
+            grafana.ini:
+              server:
+                root_url: https://grafana.${azimuth_cluster_base_domain}
+              auth.generic_oauth:
+                enabled: true
+                name: OpenStack
+                allow_sign_up: true
+                client_id: grafana
+                client_secret: "${dex_grafana_client_secret}"
+                scopes: openid email profile groups
+                auth_url: https://dex.${azimuth_cluster_base_domain}/auth
+                token_url: https://dex.${azimuth_cluster_base_domain}/token
+                api_url: https://dex.${azimuth_cluster_base_domain}/userinfo
+                role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || 'Viewer'"
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              hosts:
+                - grafana.${azimuth_cluster_base_domain}
+              tls:
+                - hosts:
+                    - grafana.${azimuth_cluster_base_domain}
+                  secretName: grafana-tls
 
     etcdDefrag:
       enabled: false
@@ -125,7 +151,7 @@ spec:
                         command: ["/bin/sh", "-c"]
                         args:
                           - |
-                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor; do
+                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor keycloak; do
                               kubectl get ns "$ns" >/dev/null 2>&1 || continue
                               kubectl label ns "$ns" \
                                 pod-security.kubernetes.io/enforce=privileged \
@@ -250,7 +276,14 @@ spec:
             repo: https://azimuth-cloud.github.io/azimuth-identity-operator
             name: azimuth-identity-operator
             version: "0.10.0"
-          values: {}
+          values:
+            config:
+              keycloak:
+                base_url: https://keycloak.${azimuth_cluster_base_domain}
+                client_id: admin-cli
+                client_realm: master
+                username: admin
+                password: "${keycloak_admin_password}"
 
       azimuth-schedule-operator:
         kind: HelmRelease
@@ -296,6 +329,96 @@ spec:
 
       # ── Auth & UI ─────────────────────────────────────────────────────────────
 
+      keycloak:
+        kind: HelmRelease
+        spec:
+          namespace: keycloak
+          chart:
+            repo: https://charts.bitnami.com/bitnami
+            name: keycloak
+            version: "21.6.2"
+          values:
+            auth:
+              adminUser: admin
+              adminPassword: "${keycloak_admin_password}"
+            postgresql:
+              enabled: true
+              auth:
+                username: keycloak
+                password: "${keycloak_db_password}"
+                database: keycloak
+              primary:
+                persistence:
+                  enabled: true
+                  size: 10Gi
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              hostname: keycloak.${azimuth_cluster_base_domain}
+              tls: true
+            proxy: edge
+            replicaCount: 1
+
+      # Creates the "azimuth" realm and "dex" OIDC client in Keycloak.
+      # Values substituted by Flux at render time — no secretKeyRef needed.
+      keycloak-init:
+        kind: Manifests
+        spec:
+          namespace: keycloak
+          manifests:
+            init-job: |
+              ---
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: keycloak-init
+                namespace: keycloak
+              spec:
+                backoffLimit: 10
+                template:
+                  spec:
+                    restartPolicy: OnFailure
+                    initContainers:
+                      - name: wait-keycloak
+                        image: curlimages/curl:8.9.1
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            until curl -sf \
+                              https://keycloak.${azimuth_cluster_base_domain}/realms/master; do
+                              echo "Waiting for Keycloak…"
+                              sleep 15
+                            done
+                    containers:
+                      - name: init
+                        image: quay.io/keycloak/keycloak:26.0
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            /opt/keycloak/bin/kcadm.sh config credentials \
+                              --server https://keycloak.${azimuth_cluster_base_domain} \
+                              --realm master \
+                              --user admin \
+                              --password ${keycloak_admin_password}
+
+                            /opt/keycloak/bin/kcadm.sh get realms/azimuth \
+                              >/dev/null 2>&1 || \
+                              /opt/keycloak/bin/kcadm.sh create realms \
+                                -s realm=azimuth \
+                                -s enabled=true
+
+                            /opt/keycloak/bin/kcadm.sh get clients -r azimuth \
+                              --fields clientId 2>/dev/null | grep -q '"dex"' || \
+                              /opt/keycloak/bin/kcadm.sh create clients -r azimuth \
+                                -s clientId=dex \
+                                -s secret=${keycloak_dex_client_secret} \
+                                -s 'redirectUris=["https://dex.${azimuth_cluster_base_domain}/callback"]' \
+                                -s standardFlowEnabled=true \
+                                -s publicClient=false \
+                                -s enabled=true
+
+                            echo "Keycloak init done."
+
       dex:
         kind: HelmRelease
         spec:
@@ -304,7 +427,52 @@ spec:
             repo: https://charts.dexidp.io
             name: dex
             version: "0.6.4"
-          values: {}
+          values:
+            config:
+              issuer: https://dex.${azimuth_cluster_base_domain}
+              storage:
+                type: kubernetes
+                config:
+                  inCluster: true
+              oauth2:
+                skipApprovalScreen: true
+              connectors:
+                - type: oidc
+                  id: keycloak
+                  name: Keycloak
+                  config:
+                    issuer: https://keycloak.${azimuth_cluster_base_domain}/realms/azimuth
+                    clientID: dex
+                    clientSecret: "${keycloak_dex_client_secret}"
+                    redirectURI: https://dex.${azimuth_cluster_base_domain}/callback
+                    scopes:
+                      - openid
+                      - profile
+                      - email
+                      - groups
+              staticClients:
+                - id: harbor
+                  name: Harbor
+                  secret: "${dex_harbor_client_secret}"
+                  redirectURIs:
+                    - https://harbor.${azimuth_cluster_base_domain}/c/oidc/callback
+                - id: grafana
+                  name: Grafana
+                  secret: "${dex_grafana_client_secret}"
+                  redirectURIs:
+                    - https://grafana.${azimuth_cluster_base_domain}/login/generic_oauth
+            ingress:
+              enabled: true
+              className: nginx
+              hosts:
+                - host: dex.${azimuth_cluster_base_domain}
+                  paths:
+                    - path: /
+                      pathType: Prefix
+              tls:
+                - hosts:
+                    - dex.${azimuth_cluster_base_domain}
+                  secretName: dex-tls
 
       harbor:
         kind: HelmRelease
@@ -314,7 +482,72 @@ spec:
             repo: https://helm.goharbor.io
             name: harbor
             version: "1.18.3"
-          values: {}
+          values:
+            expose:
+              type: ingress
+              ingress:
+                hosts:
+                  core: harbor.${azimuth_cluster_base_domain}
+                className: nginx
+              tls:
+                enabled: true
+                certSource: auto
+            externalURL: https://harbor.${azimuth_cluster_base_domain}
+            harborAdminPassword: "${harbor_admin_password}"
+
+      # Configures Harbor OIDC auth via the admin API after Harbor is running.
+      # Harbor does not expose OIDC settings as Helm values — API call required.
+      # All secrets are Flux-substituted at render time (no secretKeyRef needed).
+      harbor-oidc-config:
+        kind: Manifests
+        spec:
+          namespace: harbor
+          manifests:
+            configure-job: |
+              ---
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: harbor-oidc-configure
+                namespace: harbor
+              spec:
+                backoffLimit: 10
+                template:
+                  spec:
+                    restartPolicy: OnFailure
+                    initContainers:
+                      - name: wait-harbor
+                        image: curlimages/curl:8.9.1
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            until curl -sf \
+                              -u "admin:${harbor_admin_password}" \
+                              https://harbor.${azimuth_cluster_base_domain}/api/v2.0/systeminfo; do
+                              echo "Waiting for Harbor…"
+                              sleep 15
+                            done
+                    containers:
+                      - name: configure
+                        image: curlimages/curl:8.9.1
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            curl -sf -X PUT \
+                              -u "admin:${harbor_admin_password}" \
+                              -H "Content-Type: application/json" \
+                              https://harbor.${azimuth_cluster_base_domain}/api/v2.0/configurations \
+                              -d '{
+                                "auth_mode": "oidc_auth",
+                                "oidc_name": "OpenStack",
+                                "oidc_endpoint": "https://dex.${azimuth_cluster_base_domain}",
+                                "oidc_client_id": "harbor",
+                                "oidc_client_secret": "${dex_harbor_client_secret}",
+                                "oidc_scope": "openid,profile,email,groups",
+                                "oidc_auto_onboard": true,
+                                "oidc_user_claim": "preferred_username"
+                              }'
+                            echo "Harbor OIDC configured."
 
       kubernetes-dashboard:
         kind: HelmRelease

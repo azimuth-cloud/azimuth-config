@@ -106,4 +106,43 @@ variable "azimuth_cluster_machine_name" {
   default     = "azimuth-apps"
 }
 
+# ── Dex OIDC ─────────────────────────────────────────────────────────────────
+
+variable "dex_harbor_client_secret" {
+  description = "OAuth2 client secret for Harbor → Dex"
+  type        = string
+  sensitive   = true
+}
+
+variable "dex_grafana_client_secret" {
+  description = "OAuth2 client secret for Grafana → Dex"
+  type        = string
+  sensitive   = true
+}
+
+variable "harbor_admin_password" {
+  description = "Harbor admin password (also used by the OIDC config Job)"
+  type        = string
+  sensitive   = true
+}
+
+# ── Keycloak ──────────────────────────────────────────────────────────────────
+
+variable "keycloak_admin_password" {
+  description = "Keycloak admin password (master realm)"
+  type        = string
+  sensitive   = true
+}
+
+variable "keycloak_db_password" {
+  description = "Keycloak PostgreSQL database password"
+  type        = string
+  sensitive   = true
+}
+
+variable "keycloak_dex_client_secret" {
+  description = "OIDC client secret for Dex → Keycloak (realm azimuth, client dex)"
+  type        = string
+  sensitive   = true
+}
 

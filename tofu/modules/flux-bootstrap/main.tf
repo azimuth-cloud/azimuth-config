@@ -97,6 +97,12 @@ resource "null_resource" "cluster_secrets" {
     azimuth_django_secret_key               = sha256(var.azimuth_django_secret_key)
     openstack_application_credential_id     = sha256(var.openstack_application_credential_id)
     openstack_application_credential_secret = sha256(var.openstack_application_credential_secret)
+    dex_harbor_client_secret                = sha256(var.dex_harbor_client_secret)
+    dex_grafana_client_secret               = sha256(var.dex_grafana_client_secret)
+    harbor_admin_password                   = sha256(var.harbor_admin_password)
+    keycloak_admin_password                 = sha256(var.keycloak_admin_password)
+    keycloak_db_password                    = sha256(var.keycloak_db_password)
+    keycloak_dex_client_secret              = sha256(var.keycloak_dex_client_secret)
   }
 
   provisioner "local-exec" {
@@ -107,6 +113,12 @@ resource "null_resource" "cluster_secrets" {
         --from-literal=azimuth_django_secret_key=${var.azimuth_django_secret_key} \
         --from-literal=openstack_application_credential_id=${var.openstack_application_credential_id} \
         --from-literal=openstack_application_credential_secret=${var.openstack_application_credential_secret} \
+        --from-literal=dex_harbor_client_secret=${var.dex_harbor_client_secret} \
+        --from-literal=dex_grafana_client_secret=${var.dex_grafana_client_secret} \
+        --from-literal=harbor_admin_password=${var.harbor_admin_password} \
+        --from-literal=keycloak_admin_password=${var.keycloak_admin_password} \
+        --from-literal=keycloak_db_password=${var.keycloak_db_password} \
+        --from-literal=keycloak_dex_client_secret=${var.keycloak_dex_client_secret} \
         --dry-run=client -o yaml | \
         kubectl --kubeconfig=${local.kubeconfig_file} apply -f -
     EOT

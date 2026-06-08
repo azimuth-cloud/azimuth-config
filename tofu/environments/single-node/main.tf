@@ -35,6 +35,36 @@ resource "random_password" "azimuth_django_secret_key" {
   special = false
 }
 
+resource "random_password" "dex_harbor_client_secret" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "dex_grafana_client_secret" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "harbor_admin_password" {
+  length  = 24
+  special = false
+}
+
+resource "random_password" "keycloak_admin_password" {
+  length  = 24
+  special = false
+}
+
+resource "random_password" "keycloak_db_password" {
+  length  = 24
+  special = false
+}
+
+resource "random_password" "keycloak_dex_client_secret" {
+  length  = 32
+  special = false
+}
+
 provider "openstack" {
   auth_url                        = var.openstack_auth_url
   application_credential_id       = var.openstack_application_credential_id
@@ -150,6 +180,12 @@ module "flux" {
   openstack_application_credential_secret = var.openstack_application_credential_secret
   zenith_token_signing_key                = random_password.zenith_token_signing_key.result
   azimuth_django_secret_key               = random_password.azimuth_django_secret_key.result
+  dex_harbor_client_secret                = random_password.dex_harbor_client_secret.result
+  dex_grafana_client_secret               = random_password.dex_grafana_client_secret.result
+  harbor_admin_password                   = random_password.harbor_admin_password.result
+  keycloak_admin_password                 = random_password.keycloak_admin_password.result
+  keycloak_db_password                    = random_password.keycloak_db_password.result
+  keycloak_dex_client_secret              = random_password.keycloak_dex_client_secret.result
   external_network_id                     = var.external_network_id
   talos_image_id                          = var.talos_image_id
   kubernetes_version                      = var.kubernetes_version
