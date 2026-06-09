@@ -151,7 +151,7 @@ spec:
                         command: ["/bin/sh", "-c"]
                         args:
                           - |
-                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor keycloak; do
+                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor; do
                               kubectl get ns "$ns" >/dev/null 2>&1 || continue
                               kubectl label ns "$ns" \
                                 pod-security.kubernetes.io/enforce=privileged \
@@ -330,36 +330,178 @@ spec:
       # ── Auth & UI ─────────────────────────────────────────────────────────────
 
       keycloak:
-        kind: HelmRelease
+        kind: Manifests
         spec:
           namespace: keycloak
-          chart:
-            repo: https://charts.bitnami.com/bitnami
-            name: keycloak
-            version: "21.6.2"
-          values:
-            global:
-              imageRegistry: docker.io
-            auth:
-              adminUser: admin
-              adminPassword: "${keycloak_admin_password}"
-            postgresql:
-              enabled: true
-              auth:
-                username: keycloak
-                password: "${keycloak_db_password}"
-                database: keycloak
-              primary:
-                persistence:
-                  enabled: true
-                  size: 10Gi
-            ingress:
-              enabled: true
-              ingressClassName: nginx
-              hostname: keycloak.${azimuth_cluster_base_domain}
-              tls: true
-            proxy: edge
-            replicaCount: 1
+          manifests:
+            postgres: |
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: keycloak
+              ---
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: keycloak-db
+                namespace: keycloak
+              type: Opaque
+              stringData:
+                POSTGRES_USER: keycloak
+                POSTGRES_PASSWORD: "${keycloak_db_password}"
+                POSTGRES_DB: keycloak
+              ---
+              apiVersion: v1
+              kind: PersistentVolumeClaim
+              metadata:
+                name: keycloak-db
+                namespace: keycloak
+              spec:
+                accessModes: [ReadWriteOnce]
+                resources:
+                  requests:
+                    storage: 10Gi
+              ---
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: keycloak-db
+                namespace: keycloak
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: keycloak-db
+                template:
+                  metadata:
+                    labels:
+                      app: keycloak-db
+                  spec:
+                    containers:
+                      - name: postgres
+                        image: postgres:16-alpine
+                        envFrom:
+                          - secretRef:
+                              name: keycloak-db
+                        volumeMounts:
+                          - name: data
+                            mountPath: /var/lib/postgresql/data
+                            subPath: pgdata
+                        readinessProbe:
+                          exec:
+                            command: [pg_isready, -U, keycloak]
+                          initialDelaySeconds: 5
+                          periodSeconds: 5
+                    volumes:
+                      - name: data
+                        persistentVolumeClaim:
+                          claimName: keycloak-db
+              ---
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: keycloak-db
+                namespace: keycloak
+              spec:
+                selector:
+                  app: keycloak-db
+                ports:
+                  - port: 5432
+                    targetPort: 5432
+            keycloak-app: |
+              ---
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: keycloak-admin
+                namespace: keycloak
+              type: Opaque
+              stringData:
+                KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/keycloak"
+                KC_DB_USERNAME: keycloak
+                KC_DB_PASSWORD: "${keycloak_db_password}"
+                KEYCLOAK_ADMIN: admin
+                KEYCLOAK_ADMIN_PASSWORD: "${keycloak_admin_password}"
+              ---
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: keycloak
+                namespace: keycloak
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: keycloak
+                template:
+                  metadata:
+                    labels:
+                      app: keycloak
+                  spec:
+                    containers:
+                      - name: keycloak
+                        image: quay.io/keycloak/keycloak:26.0
+                        args: ["start"]
+                        envFrom:
+                          - secretRef:
+                              name: keycloak-admin
+                        env:
+                          - name: KC_HOSTNAME
+                            value: keycloak.${azimuth_cluster_base_domain}
+                          - name: KC_PROXY_HEADERS
+                            value: xforwarded
+                          - name: KC_HTTP_ENABLED
+                            value: "true"
+                          - name: KC_HTTPS_ENABLED
+                            value: "false"
+                          - name: KC_DB
+                            value: postgres
+                          - name: KC_HOSTNAME_STRICT
+                            value: "false"
+                        ports:
+                          - containerPort: 8080
+                        readinessProbe:
+                          httpGet:
+                            path: /realms/master
+                            port: 8080
+                          initialDelaySeconds: 30
+                          periodSeconds: 10
+              ---
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: keycloak
+                namespace: keycloak
+              spec:
+                selector:
+                  app: keycloak
+                ports:
+                  - port: 80
+                    targetPort: 8080
+              ---
+              apiVersion: networking.k8s.io/v1
+              kind: Ingress
+              metadata:
+                name: keycloak
+                namespace: keycloak
+              spec:
+                ingressClassName: nginx
+                rules:
+                  - host: keycloak.${azimuth_cluster_base_domain}
+                    http:
+                      paths:
+                        - path: /
+                          pathType: Prefix
+                          backend:
+                            service:
+                              name: keycloak
+                              port:
+                                number: 80
+                tls:
+                  - hosts:
+                      - keycloak.${azimuth_cluster_base_domain}
+                    secretName: keycloak-tls
 
       # Creates the "azimuth" realm and "dex" OIDC client in Keycloak.
       # Values substituted by Flux at render time — no secretKeyRef needed.
@@ -386,8 +528,7 @@ spec:
                         command: ["/bin/sh", "-c"]
                         args:
                           - |
-                            until curl -sf \
-                              https://keycloak.${azimuth_cluster_base_domain}/realms/master; do
+                            until curl -sf http://keycloak/realms/master; do
                               echo "Waiting for Keycloak…"
                               sleep 15
                             done
@@ -398,7 +539,7 @@ spec:
                         args:
                           - |
                             /opt/keycloak/bin/kcadm.sh config credentials \
-                              --server https://keycloak.${azimuth_cluster_base_domain} \
+                              --server http://keycloak \
                               --realm master \
                               --user admin \
                               --password ${keycloak_admin_password}
