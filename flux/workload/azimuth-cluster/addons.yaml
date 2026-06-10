@@ -78,105 +78,96 @@ spec:
         spec:
           namespace: kube-system
           manifests:
-            # Apply PSA "privileged" labels to system namespaces declaratively.
+            # Apply PSA "privileged" labels to system namespaces via pre-install hooks.
             #
-            # These Namespace resources are managed by Helm as regular chart resources
-            # (not hooks). Helm reconciles them on every install/upgrade, so the labels
-            # are always maintained even if something removes them between reconciliations.
+            # We cannot include Namespace resources directly in this chart: Helm refuses
+            # to adopt namespaces that already exist without Helm ownership annotations
+            # (created via --create-namespace by other charts), raising
+            # "cannot be imported into the current release" errors.
             #
-            # Bootstrap addons create namespaces via `helm install --create-namespace`,
-            # which sets no Helm ownership annotations. Helm can therefore adopt these
-            # namespaces without conflict. The `helm.sh/resource-policy: keep` annotation
-            # prevents accidental deletion if this chart is ever uninstalled.
-            namespace-labels: |
+            # Instead we use a pre-install/pre-upgrade Job that patches namespace labels
+            # via the Kubernetes API using curl (curlimages/curl is already present in
+            # the cluster and includes /bin/sh). No kubectl binary is required.
+            hook-rbac: |
               ---
               apiVersion: v1
-              kind: Namespace
+              kind: ServiceAccount
               metadata:
-                name: openstack-system
+                name: ns-labeler
+                namespace: kube-system
                 annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
               ---
-              apiVersion: v1
-              kind: Namespace
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
               metadata:
-                name: ingress-nginx
+                name: ns-labeler
                 annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
+              rules:
+                - apiGroups: [""]
+                  resources: ["namespaces"]
+                  verbs: ["get", "list", "patch", "update"]
               ---
-              apiVersion: v1
-              kind: Namespace
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRoleBinding
               metadata:
-                name: node-feature-discovery
+                name: ns-labeler
                 annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "-10"
+                  helm.sh/hook-delete-policy: before-hook-creation
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: ClusterRole
+                name: ns-labeler
+              subjects:
+                - kind: ServiceAccount
+                  name: ns-labeler
+                  namespace: kube-system
+            hook-psa-label: |
               ---
-              apiVersion: v1
-              kind: Namespace
+              apiVersion: batch/v1
+              kind: Job
               metadata:
-                name: node-problem-detector
+                name: ns-psa-label
+                namespace: kube-system
                 annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: gpu-operator
-                annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: network-operator
-                annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: monitoring-system
-                annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
-              ---
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: harbor
-                annotations:
-                  helm.sh/resource-policy: keep
-                labels:
-                  pod-security.kubernetes.io/enforce: privileged
-                  pod-security.kubernetes.io/audit: privileged
-                  pod-security.kubernetes.io/warn: privileged
+                  helm.sh/hook: pre-install,pre-upgrade
+                  helm.sh/hook-weight: "0"
+                  helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+              spec:
+                backoffLimit: 3
+                template:
+                  spec:
+                    serviceAccountName: ns-labeler
+                    restartPolicy: OnFailure
+                    containers:
+                      - name: labeler
+                        image: curlimages/curl:8.9.1
+                        command: ["/bin/sh", "-c"]
+                        args:
+                          - |
+                            TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+                            CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                            PATCH='{"metadata":{"labels":{"pod-security.kubernetes.io/enforce":"privileged","pod-security.kubernetes.io/audit":"privileged","pod-security.kubernetes.io/warn":"privileged"}}}'
+                            for ns in ingress-nginx openstack-system node-feature-discovery node-problem-detector gpu-operator network-operator monitoring-system harbor; do
+                              STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                                --cacert "$CA" -H "Authorization: Bearer $TOKEN" \
+                                "https://kubernetes.default.svc/api/v1/namespaces/$ns")
+                              [ "$STATUS" = "200" ] || continue
+                              curl -s -X PATCH \
+                                --cacert "$CA" \
+                                -H "Authorization: Bearer $TOKEN" \
+                                -H "Content-Type: application/strategic-merge-patch+json" \
+                                "https://kubernetes.default.svc/api/v1/namespaces/$ns" \
+                                -d "$PATCH" > /dev/null
+                              echo "Labeled: $ns"
+                            done
 
       cert-manager:
         kind: HelmRelease
