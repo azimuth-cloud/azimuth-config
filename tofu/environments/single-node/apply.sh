@@ -16,7 +16,7 @@ ok()    { echo -e "${GREEN}✓ $*${RESET}"; }
 info()  { echo -e "${DIM}  $*${RESET}"; }
 warn()  { echo -e "${YELLOW}⚠ $*${RESET}"; }
 die()   { echo -e "${RED}✗ $*${RESET}" >&2; exit 1; }
-dot()   { echo -n "${DIM}.${RESET}"; }
+dot()   { echo -en "."; }
 
 # ── Tofu provisioning ─────────────────────────────────────────────────────────
 function apply_tofu() {
@@ -24,7 +24,7 @@ function apply_tofu() {
   tofu init -upgrade
 
   step "Applying infrastructure (OpenStack + Talos seed + Flux bootstrap)"
-  tofu apply
+  tofu apply -auto-approve
   ok "Tofu apply completed"
 }
 
@@ -67,7 +67,7 @@ function deploy() {
 
   # ── Discover FIP and patch base domain (phase 2) ───────────────────────────
   step "Waiting for the workload cluster to be provisioned"
-  while ! kubectl get openstackmachine -n azimuth-cluster -o json | jq -r ".items[0].status.ready" | grep true; do
+  while ! kubectl get openstackmachine -n azimuth-cluster -o json | jq -r ".items[0].status.ready" | grep -q true; do
     sleep 10
     dot
   done
@@ -104,7 +104,6 @@ function deploy() {
   # ── Portal -────────────────────────────────────────────────────────────────
   step "Waiting for the Azimuth cluster to be available"
   info "Waiting for the portal to appear…"
-  echo $RESET
   while ! curl -k --connect-timeout 1 "https://portal.${FIP}.sslip.io" >/dev/null 2>&1; do
     sleep 10
     dot
