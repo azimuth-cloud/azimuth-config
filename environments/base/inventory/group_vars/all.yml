@@ -63,6 +63,12 @@ harbor_proxy_cache_extra_projects: { }
 harbor_proxy_cache_projects: >-
   {{ harbor_proxy_cache_default_projects | combine(harbor_proxy_cache_extra_projects) }}
 
+capi_cluster_registry_auth:
+  - registry_url: "registry.{{ ingress_base_domain }}/dockerhub-public"
+    basic_auth:
+      username: proxy
+      password: "{{ harbor_proxy_password }}"
+
 # Indicates whether to install a Grafana to show cloud metrics
 cloud_metrics_enabled: false
 
