@@ -246,3 +246,6 @@ azimuth_capi_operator_capi_helm_values_overrides:
             repo: https://azimuth-cloud.github.io/azimuth-charts
             name: patch-copy-fail
             version: 0.7.0
+
+# Temporary override
+sealed_secrets_chart_repo: https://bitnami.github.io/sealed-secrets
