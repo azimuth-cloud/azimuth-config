@@ -232,3 +232,6 @@ azimuth_capi_operator_metrics: "{{ deploy_prometheus_stack }}"
 azimuth_apps_operator_metrics: "{{ deploy_prometheus_stack }}"
 azimuth_metrics: "{{ deploy_prometheus_stack }}"
 ingress_nginx_prometheus_stack_enabled: "{{ deploy_prometheus_stack }}"
+
+# Temporary override
+sealed_secrets_chart_repo: https://bitnami.github.io/sealed-secrets
