@@ -24,6 +24,9 @@ test_directory="$(ansible_variable generate_tests_suite_directory)"
 test_vars_file="$(ansible_variable generate_tests_vars_file)"
 # Use a headless browser by default
 export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
+# Disable request pooling by default since it causes failures when
+# ingress-nginx reloads.
+export AZIMUTH_ROBOTFRAMEWORK_POOL_REQUESTS="${AZIMUTH_ROBOTFRAMEWORK_POOL_REQUESTS:-"false"}"
 # Execute the test suite, including any args we were given
 exec robot \
   --loglevel debug \
