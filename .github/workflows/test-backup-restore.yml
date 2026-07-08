@@ -111,7 +111,7 @@ jobs:
           set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-          ./bin/seed-ssh -- \
+          ./bin/seed-ssh -- '\
             velero backup create "$AZIMUTH_ENVIRONMENT" \
               --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --logtostderr \
@@ -120,7 +120,7 @@ jobs:
             velero backup get ; \
             velero backup describe "$AZIMUTH_ENVIRONMENT" --details ; \
             velero backup logs "$AZIMUTH_ENVIRONMENT" ; \
-            velero backup-location get
+            velero backup-location get'
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Create pre-restore debug bundle
