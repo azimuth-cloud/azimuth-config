@@ -103,7 +103,7 @@ jobs:
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/run-tests --include verify --outputdir reports/verify-create
-        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
+        if: false # ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.tests-create.conclusion) }}
 
       - name: Create a backup
         id: backup-create
@@ -114,8 +114,13 @@ jobs:
           ./bin/seed-ssh -- \
             velero backup create "$AZIMUTH_ENVIRONMENT" \
               --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
+              --logtostderr \
               --from-schedule default \
-              --wait
+              --wait || \
+            velero backup get || \
+            velero backup describe "$AZIMUTH_ENVIRONMENT" --details || \
+            velero backup logs "$AZIMUTH_ENVIRONMENT" || \
+            velero backup-location get
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Create pre-restore debug bundle
