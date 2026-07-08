@@ -1,7 +1,7 @@
 # Ansible 2.17 contains fix for https://github.com/ansible/ansible/issues/80514
 # See https://github.com/azimuth-cloud/ansible-collection-terraform/pull/27
 ansible-core>=2.17,<2.19
-git+https://github.com/azimuth-cloud/azimuth-robotframework.git@b06c192dd40d5ced0153fee2b4ef87351c0bdcbf
+azimuth-robotframework
 bcrypt==4.0.1  # this is the latest version that doesn't emit a warning
 jmespath
 jsonschema-default
