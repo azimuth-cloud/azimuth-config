@@ -4,6 +4,7 @@
 .venv
 .work
 .python-version
+__pycache__
 /clouds.yaml*
 tilt-settings.yaml
 # Ignore local mkdocs builds
@@ -15,3 +16,5 @@ environments/standalone/inventory/group_vars/all/secrets.yml
 # Ignore other types of secrets in CI environments
 .github/environments/**/env.secret
 .github/environments/**/clouds.yaml
+# Ignore temporary working flux artifacts with overrides
+flux-components/working

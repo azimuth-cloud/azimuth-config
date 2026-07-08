@@ -1,0 +1,8 @@
+- kube-prometheus-stack:
+    configMapName: prom-stack-values
+    # forceReload: true
+    # disabled: true
+    values:
+      fullnameOverride: banana
+      alertmanager:
+        enabled: false

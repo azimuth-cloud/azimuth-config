@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prom-stack-values-default
+  namespace: monitoring-system
+data:
+  values.yaml: |
+    defaultRules:
+      disabled:
+        # None of these are relevant in k3s context
+        KubeSchedulerDown: true
+        KubeProxyDown: true
+        KubeControllerManagerDown: true
+    prometheus:
+      prometheusSpec:
+        externalUrl: http://prometheus.${DOMAIN}
+        podMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+        probeSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
+    grafana:
+      sidecar:
+        dashboards:
+          searchNamespace: ALL
+      grafana.ini:
+        auth.anonymous:
+          enabled: true
+    alertmanager:
+      # Don't apply the namespace grouping by default
+      config:
+        route:
+          group_by:
+            - "..."
+      alertmanagerSpec:
+        externalUrl: http://alertmanager.${DOMAIN}
+        # Make sure that alertmanager finds configurations with the alertmanager name as a label
+        alertmanagerConfigSelector:
+          matchLabels:
+            alertmanager: "monitoring-alertmanager"
+        # Do NOT add the namespace matcher to routes from AlertmanagerConfig resources
+        alertmanagerConfigMatcherStrategy:
+          type: None
