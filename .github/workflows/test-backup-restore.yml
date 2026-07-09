@@ -108,24 +108,29 @@ jobs:
       - name: Create a backup
         id: backup-create
         run: |
-          set -e
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          KUBECONFIG_ARG="--kubeconfig ./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml"
           ./bin/seed-ssh -- \
             velero backup create "$AZIMUTH_ENVIRONMENT" \
-              --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
+              $KUBECONFIG_ARG \
               --logtostderr \
               --from-schedule default \
-              --wait ; \
+              --wait
+          # Diagnostics below must not be short-circuited by an earlier failure,
+          # and each needs the workload cluster's kubeconfig (not the seed's own),
+          # otherwise they silently query the wrong cluster and error with
+          # something like "no matches for velero.io/v1".
           ./bin/seed-ssh -- \
-            velero backup get ; \
+            velero backup get $KUBECONFIG_ARG || true
           ./bin/seed-ssh -- \
-            velero backup describe "$AZIMUTH_ENVIRONMENT" --details ; \
+            velero backup describe "$AZIMUTH_ENVIRONMENT" --details $KUBECONFIG_ARG || true
           ./bin/seed-ssh -- \
-            velero backup logs "$AZIMUTH_ENVIRONMENT" ; \
+            velero backup logs "$AZIMUTH_ENVIRONMENT" $KUBECONFIG_ARG || true
           ./bin/seed-ssh -- \
-            velero backup-location get ;
-          ./bin/seed-ssh -- kubectl logs deployment/velero -n velero
+            velero backup-location get $KUBECONFIG_ARG || true
+          ./bin/seed-ssh -- \
+            kubectl --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" logs deployment/velero -n velero || true
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Create pre-restore debug bundle
