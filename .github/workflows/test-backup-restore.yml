@@ -116,15 +116,16 @@ jobs:
               --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --logtostderr \
               --from-schedule default \
-              --wait
+              --wait ; \
           ./bin/seed-ssh -- \
-            velero backup get
+            velero backup get ; \
           ./bin/seed-ssh -- \
-            velero backup describe "$AZIMUTH_ENVIRONMENT" --details
+            velero backup describe "$AZIMUTH_ENVIRONMENT" --details ; \
           ./bin/seed-ssh -- \
-            velero backup logs "$AZIMUTH_ENVIRONMENT"
+            velero backup logs "$AZIMUTH_ENVIRONMENT" ; \
           ./bin/seed-ssh -- \
-            velero backup-location get
+            velero backup-location get ;
+          ./bin/seed-ssh -- kubectl logs deployment/velero -n velero
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Create pre-restore debug bundle
