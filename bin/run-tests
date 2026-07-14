@@ -22,9 +22,9 @@ ansible_variable() {
 work_bin_dir="$(ansible_variable work_directory)/bin"
 export PATH=$PATH:$work_bin_dir
 
-extraargs=()
+extraargs=""
 if [[ $EXIT_ON_FAILURE == true ]]; then
-    extraargs+=(--exitonfailure)
+    extraargs="--exitonfailure :$extraargs"
 fi
 
 # Get the test directory
