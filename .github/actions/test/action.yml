@@ -14,7 +14,6 @@ inputs:
     description: If true, robot will exit the tests as soon as the first failure occurs.
     required: false
     default: true
-    type: boolean
 runs:
   using: composite
   steps:
