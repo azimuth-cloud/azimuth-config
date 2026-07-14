@@ -19,6 +19,9 @@ capi_cluster_worker_flavor: ec1.large  # 4 vCPUs, 8GB RAM @ leaf site
 # So one control plane node is sufficient for that
 capi_cluster_control_plane_count: 1
 capi_cluster_worker_count: 2
+# The flavors only have 20GB root disks, which is not enough to run a full Azimuth deployment
+# So we need to use a Cinder root volume
+capi_cluster_worker_root_volume_size: 30
 
 # Don't use explicit AZs for Kubernetes nodes
 capi_cluster_control_plane_omit_failure_domain: true
