@@ -24,6 +24,7 @@ generate_tests_caas_test_case_rstudio_enabled: true
 # -----
 # Generate test cases for the most recent Kubernetes versions only
 generate_tests_kubernetes_test_cases_latest_only: true
+generate_tests_kubernetes_collect_logs_from_loki: true
 
 # -----
 # Settings for the Kubernetes apps test suite

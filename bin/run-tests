@@ -19,6 +19,9 @@ ansible_variable() {
     jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
 }
 
+work_bin_dir="$(ansible_variable work_directory)/bin"
+export PATH=$PATH:$work_bin_dir
+
 # Get the test directory
 test_directory="$(ansible_variable generate_tests_suite_directory)"
 test_vars_file="$(ansible_variable generate_tests_vars_file)"
