@@ -24,7 +24,7 @@ export PATH=$PATH:$work_bin_dir
 
 extraargs=""
 if [[ $EXIT_ON_FAILURE == true ]]; then
-    extraargs="--exitonfailure :$extraargs"
+  extraargs="--exitonfailure :$extraargs"
 fi
 
 # Get the test directory
