@@ -5,6 +5,8 @@ metadata:
   namespace: monitoring-system
 data:
   values.yaml: |
+    crds:
+      enabled: false
     defaultRules:
       disabled:
         # None of these are relevant in k3s context
