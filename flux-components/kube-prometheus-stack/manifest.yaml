@@ -1,9 +1,3 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring-system
----
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
@@ -30,11 +24,16 @@ spec:
         kind: HelmRepository
         name: monitoring
   install:
+    crds: CreateReplace
     strategy:
       name: RetryOnFailure
       retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
   upgrade:
     force: true
+    crds: CreateReplace
     strategy:
       name: RetryOnFailure
       retryInterval: 3m
@@ -45,3 +44,6 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: prom-stack-values-default
+    - kind: ConfigMap
+      name: prom-stack-values
+      optional: true

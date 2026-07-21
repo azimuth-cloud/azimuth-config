@@ -19,16 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        base:
-          - base
-        overlay:
+        image:
           - alerts
-        customer:
-          - customer
-        include:
-          - base: base
-            overlay: ""
-            customer: ""
+          - azimuth-flux
+          - kube-prometheus-stack
+          - secrets
       fail-fast: false
     permissions:
       contents: read
@@ -36,14 +31,14 @@ jobs:
       packages: write # required for pushing container images
       security-events: write # required for pushing SARIF files
     steps:
-      - name: Generate environment name
-        id: environment
-        run: |
-          echo name="${BASE}""${OVERLAY:+-$OVERLAY}${CUSTOMER:+-$CUSTOMER}" >> "$GITHUB_OUTPUT"
-        env:
-          BASE: ${{ matrix.base }}
-          OVERLAY: ${{ matrix.overlay }}
-          CUSTOMER: ${{ matrix.customer }}
+      # - name: Generate environment name
+      #   id: environment
+      #   run: |
+      #     echo name="${BASE}""${OVERLAY:+-$OVERLAY}${CUSTOMER:+-$CUSTOMER}" >> "$GITHUB_OUTPUT"
+      #   env:
+      #     BASE: ${{ matrix.base }}
+      #     OVERLAY: ${{ matrix.overlay }}
+      #     CUSTOMER: ${{ matrix.customer }}
 
       - name: Check out the repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -51,35 +46,6 @@ jobs:
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
           persist-credentials: true
-
-      - name: Generate Flux artifact manifests
-        shell: bash
-        run: |
-          python -m pip install -r requirements.txt
-          python flux-components/tools/main.py "${OVERLAY}" "${CUSTOMER}"
-        env:
-          OVERLAY: ${{ matrix.overlay }}
-          CUSTOMER: ${{ matrix.customer }}
-
-      - name: Load super-linter configuration
-        # Use grep inverse matching to exclude eventual comments in the .env file
-        # because the GitHub Actions command to set environment variables doesn't
-        # support comments.
-        # yamllint disable-line rule:line-length
-        # Ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
-        run: grep -v '^#' super-linter.env >> "$GITHUB_ENV"
-        if: always()
-
-      - name: Run super-linter for flux components
-        uses: super-linter/super-linter/slim@9e863354e3ff62e0727d37183162c4a88873df41 # v8.6.0
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBERNETES_KUBECONFORM_OPTIONS: "--ignore-missing-schemas"
-          FILTER_REGEX_INCLUDE: flux-components/*
-          FILTER_REGEX_EXCLUDE: (^|/)encrypted/|crds.yaml
-          VALIDATE_SHELL_SHFMT: false
-          VALIDATE_SPELL_CODESPELL: false
 
       - name: Install Flux CLI
         shell: bash
@@ -111,11 +77,10 @@ jobs:
       - name: Build and push artifact
         shell: bash
         run: |
-          echo "${TAG}"
           ./flux-components/tools/push-artifact.sh \
-            ./flux-components/working/artifact \
-            ghcr.io/azimuth-cloud/azimuth-config/flux/"${ENV}" \
+            ./flux-components/"${IMAGE}" \
+            ghcr.io/azimuth-cloud/azimuth-config/flux/"${IMAGE}" \
             "${TAG}"
         env:
-          TAG: ${{ steps.image-meta.outputs.tag-names }}
-          ENV: ${{ steps.environment.outputs.name }}
+          IMAGE: ${{ matrix.image }}
+          TAG: latest

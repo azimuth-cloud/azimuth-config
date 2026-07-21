@@ -1,0 +1,29 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: secrets
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/azimuth-cloud/azimuth-config/flux/secrets
+  ref:
+    tag: latest
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: secret-decryption
+  namespace: flux-system
+spec:
+  interval: 2m
+  sourceRef:
+    kind: OCIRepository
+    name: secrets
+  decryption:
+    provider: sops
+    secretRef:
+      name: ${SOPS_PRIVATE_KEY_SECRET}
+  path: "."
+  prune: true
+  timeout: 1m
