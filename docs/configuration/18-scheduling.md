@@ -3,11 +3,13 @@
 Azimuth allows scheduling of the ddeletion of CaaS and Kubernetes clusters. The creating user picks the lifetime of their platform at creation time, and Azimuth will delete the platform when it expires.
 
 By default, no scheduling features are enabled. Azimuth configuration allows:
-* Allowing scheduling, but giving users' free choice as to the lifetime of their platforms.
-* Allowing scheduling, and enforcing a maximum lifetime across all platforms.
-* Allowing scheduling, and enforcing a maximum lifetime on a per-platform basis using annotations.
+
+- Allowing scheduling, but giving users' free choice as to the lifetime of their platforms.
+- Allowing scheduling, and enforcing a maximum lifetime across all platforms.
+- Allowing scheduling, and enforcing a maximum lifetime on a per-platform basis using annotations.
 
 ## Enabling scheduling globally
+
 To enable scheduling globally, add azimuth_scheduling_enabled to the appropriate configuration file.
 This will enable users creating new platforms to pick a deletion time when the platforms are created.
 Existing platforms will be unnafected.
@@ -28,7 +30,7 @@ only the cluster itself.
 The annotations is the same for all platform types:
 
 - `scheduling.azimuth.stackhpc.com/max-lifetime-hours`
-   A an integer number of hours which will be the maximum lifetime for the platform.
+  A an integer number of hours which will be the maximum lifetime for the platform.
 
 <!-- prettier-ignore-start -->
 !!! warning "No annotations means infinite lifetime"
