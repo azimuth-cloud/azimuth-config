@@ -37,6 +37,6 @@ exec robot \
   --loglevel debug \
   --consolecolors on \
   --variablefile "$test_vars_file" \
-  "$extraargs" \
+  $extraargs \
   "$@" \
   "$test_directory"
