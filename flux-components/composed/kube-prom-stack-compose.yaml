@@ -1,0 +1,63 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmChart
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring-system
+spec:
+  interval: 5m0s
+  chart: kube-prometheus-stack
+  reconcileStrategy: ChartVersion
+  sourceRef:
+    kind: HelmRepository
+    name: monitoring
+  version: ">=87.0.0"
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: compose-overrides
+  namespace: monitoring-system
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/azimuth-cloud/azimuth-config/flux/compose-overrides
+  ref:
+    tag: latest
+---
+apiVersion: source.extensions.fluxcd.io/v1beta1
+kind: ArtifactGenerator
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring-system
+spec:
+  sources:
+    - alias: chart
+      kind: HelmChart
+      name: kube-prometheus-stack
+      namespace: monitoring-system
+    - alias: overrides
+      kind: OCIRepository
+      name: compose-overrides
+      namespace: monitoring-system
+  artifacts:
+    - name: shpc-kube-prometheus-stack
+      originRevision: "@chart"
+      copy:
+        - from: "@chart/"
+          to: "@artifact/"
+        - from: "@overrides/values.yaml"
+          to: "@artifact/kube-prometheus-stack/values.yaml"
+          strategy: Merge
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: compose-prom
+  namespace: default
+spec:
+  interval: 1m
+  timeout: 1m
+  releaseName: podinfo
+  chartRef:
+    kind: ExternalArtifact
+    name: shpc-kube-prometheus-stack
+    namespace: monitoring-system

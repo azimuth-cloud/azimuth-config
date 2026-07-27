@@ -21,6 +21,8 @@ jobs:
       matrix:
         image:
           - alerts
+          - composed
+          - compose-overrides
           - azimuth-flux
           - kube-prometheus-stack
           - secrets
