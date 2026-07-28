@@ -33,6 +33,17 @@ if [ "$install_mode" = "ha" ]; then
 kubectl get pods --all-namespaces -o wide > debug-bundle/seed-list-pods.txt 2>&1 || true
 kubectl get pvc --all-namespaces -o wide > debug-bundle/seed-list-pvcs.txt 2>&1 || true
 kubectl get cluster-api -o wide > debug-bundle/seed-list-cluster-api.txt 2>&1 || true
+
+# Capture Cluster API object snapshots from the seed cluster.
+kubectl get clusters.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-clusters.json 2>&1 || true
+kubectl get kubeadmcontrolplanes.controlplane.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-kubeadmcontrolplanes.json 2>&1 || true
+kubectl get machines.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-machines.json 2>&1 || true
+kubectl get machinesets.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-machinesets.json 2>&1 || true
+kubectl get machinedeployments.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-machinedeployments.json 2>&1 || true
+kubectl get openstackclusters.infrastructure.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capo-openstackclusters.json 2>&1 || true
+kubectl get openstackmachines.infrastructure.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capo-openstackmachines.json 2>&1 || true
+kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp -o json > debug-bundle/seed-events.json 2>&1 || true
+
 kubectl -n capi-addon-system logs --since=1h deploy/cluster-api-addon-provider > debug-bundle/seed-logs-cluster-api-addon-provider.txt 2>&1 || true
 kubectl -n capi-janitor-system logs --since=1h deploy/cluster-api-janitor-openstack > debug-bundle/seed-logs-cluster-api-janitor-openstack.txt 2>&1 || true
 kubectl -n capi-kubeadm-bootstrap-system logs --since=1h deploy/capi-kubeadm-bootstrap-controller-manager > debug-bundle/seed-logs-capi-kubeadm-bootstrap-controller-manager.txt 2>&1 || true
@@ -80,6 +91,17 @@ kubectl get clusters --all-namespaces -o wide > debug-bundle/list-kube-clusters.
 kubectl get apptemplates --all-namespaces -o wide > debug-bundle/list-kube-apptemplates.txt 2>&1 || true
 kubectl get cluster-api --all-namespaces -o wide > debug-bundle/list-cluster-api.txt 2>&1 || true
 
+# Capture Cluster API object snapshots.
+# These are useful when investigating control plane rollout, machine remediation and bootstrap failures.
+kubectl get clusters.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capi-clusters.json 2>&1 || true
+kubectl get kubeadmcontrolplanes.controlplane.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capi-kubeadmcontrolplanes.json 2>&1 || true
+kubectl get machines.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capi-machines.json 2>&1 || true
+kubectl get machinesets.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capi-machinesets.json 2>&1 || true
+kubectl get machinedeployments.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capi-machinedeployments.json 2>&1 || true
+kubectl get openstackclusters.infrastructure.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capo-openstackclusters.json 2>&1 || true
+kubectl get openstackmachines.infrastructure.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/capo-openstackmachines.json 2>&1 || true
+kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp -o json > debug-bundle/events.json 2>&1 || true
+
 kubectl -n azimuth logs --since=1h deploy/azimuth-api > debug-bundle/logs-azimuth-api.txt 2>&1 || true
 kubectl -n azimuth logs --since=1h deploy/azimuth-caas-operator > debug-bundle/logs-azimuth-caas-operator.txt 2>&1 || true
 kubectl -n azimuth logs --since=1h deploy/azimuth-capi-operator > debug-bundle/logs-azimuth-capi-operator.txt 2>&1 || true
@@ -94,6 +116,7 @@ kubectl -n capi-kubeadm-bootstrap-system logs --since=1h deploy/capi-kubeadm-boo
 kubectl -n capi-kubeadm-control-plane-system logs --since=1h deploy/capi-kubeadm-control-plane-controller-manager > debug-bundle/logs-capi-kubeadm-control-plane-controller-manager.txt 2>&1 || true
 kubectl -n capi-system logs --since=1h deploy/capi-controller-manager > debug-bundle/logs-capi-controller-manager.txt 2>&1 || true
 kubectl -n capo-system logs --since=1h deploy/capo-controller-manager > debug-bundle/logs-capo-controller-manager.txt 2>&1 || true
+kubectl -n ingress-nginx logs --since=1h deploy/ingress-nginx-controller > debug-bundle/logs-ingress-nginx-controller.txt 2>&1 || true
 
 tar -czf debug-bundle.tar.gz -C debug-bundle \$(ls -A debug-bundle)
 EOF

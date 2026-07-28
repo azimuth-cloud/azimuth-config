@@ -17,9 +17,9 @@ meaning that their platform cannot be created right now. This is a common issue 
 
 When creating a platform, users must specify how long they need that platform for. Azimuth
 translates this information, along with the parameters for the platform, into a request for
-a Blazar reservation (starting now) that can accomodate the requested platform. If this is
+a Blazar reservation (starting now) that can accommodate the requested platform. If this is
 successful then Azimuth creates the platform using the reserved resources. If it is not
-successful, Azimuth reports that the cloud is not able to accomodate the platform as currently
+successful, Azimuth reports that the cloud is not able to accommodate the platform as currently
 configured and the user may try again with different parameters.
 
 <!-- prettier-ignore-start -->

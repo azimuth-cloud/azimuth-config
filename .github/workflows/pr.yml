@@ -1,16 +1,10 @@
 ---
 name: Pull Request Testing
 
-permissions:
-  contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
-
-on:
+on: # yamllint disable-line rule:truthy
   # Allow manual execution on any branch
   workflow_dispatch:
+    # yamllint disable-line rule:line-length
     # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
@@ -45,6 +39,7 @@ jobs:
   # This job exists so that PRs from outside the main repo are rejected
   fail_on_remote:
     name: Fail on Remote
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: Code under test must be from a branch in the azimuth-config repo
@@ -55,23 +50,34 @@ jobs:
 
   lint:
     name: Lint
-    needs: [fail_on_remote]
+    needs:
+      - fail_on_remote
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
     uses: ./.github/workflows/lint.yml
 
   files_changed:
     name: Detect Files Changed
-    needs: [fail_on_remote, lint]
+    permissions:
+      contents: read
+    needs:
+      - fail_on_remote
+      - lint
     runs-on: ubuntu-latest
     # Map a step output to a job output, this allows other jobs to be gated on the filter results
     outputs:
-        paths: ${{ steps.filter.outputs.paths }}
+      paths: ${{ steps.filter.outputs.paths }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Paths Filter
         # For safety using commit of dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.1.0
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.1.0
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
           filters: |
@@ -105,6 +111,9 @@ jobs:
     # Example: https://github.com/getsentry/sentry/blob/2ebe01feab863d89aa7564e6d243b6d80c230ddc/.github/workflows/backend.yml#L36
     name: Run Azimuth Tests
     needs: files_changed
+    permissions:
+      contents: read
     if: needs.files_changed.outputs.paths == 'true'
     uses: ./.github/workflows/test-singlenode.yml
-    secrets: inherit
+    secrets:
+      OS_CLOUDS: ${{ secrets.OS_CLOUDS }}

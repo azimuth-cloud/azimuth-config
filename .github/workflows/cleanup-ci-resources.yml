@@ -8,11 +8,12 @@ permissions:
   statuses: write
   id-token: write
 
-on:
+on: # yamllint disable-line rule:truthy
   schedule:
     # Every 2 hours at 8 minutes past
     - cron: "8 0/2 * * *"
   workflow_dispatch:
+    # yamllint disable-line rule:line-length
     # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       delete-resources:
@@ -84,7 +85,7 @@ jobs:
           exit $result
         env:
           OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
-        
+
       - name: Clean up all SSH keypairs
         if: ${{ inputs.delete-all-keypairs }}
         run: |
