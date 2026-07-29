@@ -25,6 +25,7 @@ jobs:
           - compose-overrides
           - azimuth-flux
           - kube-prometheus-stack
+          - traefik
           - secrets
       fail-fast: false
     permissions:
