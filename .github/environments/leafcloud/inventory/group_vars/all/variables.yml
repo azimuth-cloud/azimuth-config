@@ -56,3 +56,9 @@ azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
 # CI only: reduce the control-plane MachineHealthCheck startup timeout so
 # failed bootstrap attempts can be remediated before the overall CI timeout.
 azimuth_capi_operator_capi_helm_control_plane_node_startup_timeout: 600s
+
+azimuth_capi_operator_capi_helm_chart_repo: https://azimuth-cloud.github.io/capi-helm-charts
+azimuth_capi_operator_capi_helm_chart_name: openstack-cluster
+azimuth_capi_operator_capi_helm_chart_version: 0.27.1-dev.0.main.12
+azimuth_capi_operator_chart_version: 0.23.1-dev.0.main.6
+azimuth_chart_version: 0.21.2-dev.0.feat-restore-dashboard.8
