@@ -1,0 +1,109 @@
+---
+name: Publish artifacts
+
+on: # yamllint disable-line rule:truthy
+  # Publish artifacts on every push
+  push:
+  # Also allow publication to be done via a workflow call
+  # In this case, the chart version is returned as an output
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        description: The ref to build.
+        required: true
+
+jobs:
+  lint_flux_artifacts:
+    name: Lint Flux Components
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Load super-linter configuration
+        # Use grep inverse matching to exclude eventual comments in the .env file
+        # because the GitHub Actions command to set environment variables doesn't
+        # support comments.
+        # yamllint disable-line rule:line-length
+        # Ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
+        run: grep -v '^#' super-linter.env >> "$GITHUB_ENV"
+        if: always()
+
+      - name: Run super-linter for flux components
+        uses: super-linter/super-linter/slim@9e863354e3ff62e0727d37183162c4a88873df41 # v8.6.0
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KUBERNETES_KUBECONFORM_OPTIONS: "--ignore-missing-schemas"
+          FILTER_REGEX_INCLUDE: flux-components/*
+          FILTER_REGEX_EXCLUDE: (^|/)secrets/|crds.yaml
+          VALIDATE_SHELL_SHFMT: false
+          VALIDATE_SPELL_CODESPELL: false
+
+  push_flux_artifacts:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - azimuth-flux
+          - kube-prometheus-stack
+          - secrets
+      fail-fast: false
+    permissions:
+      contents: read
+      id-token: write # needed for signing the images with GitHub OIDC Token
+      packages: write # required for pushing container images
+      security-events: write # required for pushing SARIF files
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install Flux CLI
+        shell: bash
+        run: |
+          wget -q https://github.com/fluxcd/flux2/releases/download/v2.9.1/flux_2.9.1_linux_amd64.tar.gz \
+            -O tarball.tar.gz
+          tar -xzvf tarball.tar.gz
+          rm tarball.tar.gz
+          mkdir -p /home/runner/.local/bin
+          mv flux /home/runner/.local/bin/flux
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculate metadata for image
+        id: image-meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: ghcr.io/azimuth-cloud/azimuth-config/stack-hpc/${{ matrix.image }}
+          # Produce the branch name or tag and the SHA as tags
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+
+      - name: Build and push artifact
+        shell: bash
+        run: |
+          ./flux-components/tools/push-artifact.sh \
+            ./flux-components/"${IMAGE}" \
+            ghcr.io/azimuth-cloud/azimuth-config/stack-hpc/"${IMAGE}" \
+            "${TAG}"
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAG: ${{ steps.image-meta.outputs.tag-names }}
