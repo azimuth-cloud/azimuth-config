@@ -1,4 +1,7 @@
-# ruff: noqa: F821, E721
+# This file is starlark, NOT python and should not be formatted as python.
+# ruff: noqa
+# fmt: off
+# vim: ft=starlark
 
 SETTINGS_FILE = "./tilt-settings.yaml"
 
