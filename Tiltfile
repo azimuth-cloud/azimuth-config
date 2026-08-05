@@ -109,7 +109,7 @@ def image_name(name):
     return "/".join([prefix, name])
 
 
-def build_image(name, context, build_args=None):
+def build_image(name, context, build_args=None, dockerfile="Dockerfile"):
     """
     Defines an image build and returns the image name.
     """
@@ -128,7 +128,7 @@ def build_image(name, context, build_args=None):
         ]
     )
     build_command = (
-        "%s build -t $EXPECTED_REF --platform linux/amd64 %s %s && " % (build_engine, build_args, context)
+        "%s build -t $EXPECTED_REF --platform linux/amd64 --file %s %s %s && " % (build_engine, dockerfile, build_args, context)
         + "%s push $EXPECTED_REF" % build_engine
     )
     custom_build(image, build_command, [context], skips_local_docker=True)
@@ -211,7 +211,10 @@ def load_component(name, spec):
         for image_name, image_spec in component_spec["images"].items():
             if image_spec.get("action", "build") == "build":
                 image = build_image(
-                    image_name, os.path.join(location, image_spec["context"]), image_spec.get("build_args", {})
+                    image_name,
+                    os.path.join(location, image_spec["context"]),
+                    image_spec.get("build_args", {}),
+                    image_spec.get("dockerfile", "Dockerfile")
                 )
             else:
                 image = mirror_image(image_name, image_spec["source_image"])
