@@ -128,7 +128,8 @@ def build_image(name, context, build_args=None, dockerfile="Dockerfile"):
         ]
     )
     build_command = (
-        "%s build -t $EXPECTED_REF --platform linux/amd64 --file %s %s %s && " % (build_engine, dockerfile, build_args, context)
+        "%s build -t $EXPECTED_REF --platform linux/amd64 --file %s %s %s && "
+        % (build_engine, dockerfile, build_args, context)
         + "%s push $EXPECTED_REF" % build_engine
     )
     custom_build(image, build_command, [context], skips_local_docker=True)
@@ -214,7 +215,7 @@ def load_component(name, spec):
                     image_name,
                     os.path.join(location, image_spec["context"]),
                     image_spec.get("build_args", {}),
-                    image_spec.get("dockerfile", "Dockerfile")
+                    image_spec.get("dockerfile", "Dockerfile"),
                 )
             else:
                 image = mirror_image(image_name, image_spec["source_image"])
@@ -261,7 +262,9 @@ def load_component(name, spec):
 
     # Set up any port forwards for the component
     for pfwd_spec in component_spec.get("port_forwards", []):
-        port_forward(pfwd_spec["name"], spec["release_namespace"], pfwd_spec["kind"], pfwd_spec["port"])
+        port_forward(
+            pfwd_spec["name"], spec["release_namespace"], pfwd_spec["kind"], pfwd_spec["port"]
+        )
 
     # Create any local resources for the component
     for name, lr_spec in component_spec.get("local_resources", {}).items():
