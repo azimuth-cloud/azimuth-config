@@ -46,15 +46,15 @@ The following variables allow default lifetimes to be set **for all built-in
 platform types**:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
-azimuth_max_platform_duration_hours: 20
+azimuth_max_platform_lifetime_hours: 20
 ```
 
 These can be overridden for specific platform types if required:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 # The following apply to all Kubernetes cluster templates
-azimuth_capi_operator_max_duration_hours: 24
+azimuth_capi_operator_max_lifetime_hours: 24
 
 # Each CaaS cluster type has specific variables, e.g.:
-azimuth_caas_stackhpc_workstation_max_duration_hours: 200
+azimuth_caas_stackhpc_workstation_max_lifetime_hours: 200
 ```
