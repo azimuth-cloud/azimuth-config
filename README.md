@@ -10,6 +10,10 @@ This repository is designed to be forked for a specific site and is structured i
 "environments", allowing common configuration to be shared but overridden where required
 using a layered approach.
 
+We recommend using a Git pre-commit hook to stop unencrypted secrets being accidentally committed.
+It is located at `./bin/pre-commit-hook.sh`.
+To use the recommeded git hooks run `./bin/init-githooks.sh`.
+
 ## Documentation
 
 Documentation on deploying Azimuth can be found at <https://azimuth-config.readthedocs.io>.
