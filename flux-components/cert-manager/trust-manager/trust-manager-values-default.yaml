@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trust-manager-values-default
+  namespace: cert-manager
+data:
+  values.yaml: |
+    app:
+      trust:
+        namespace: cert-manager

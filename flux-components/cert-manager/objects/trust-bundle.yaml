@@ -1,0 +1,17 @@
+# A bundle of default CAs that certmanager will mount
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: certmanager-trust-bundle # Name of the configmap
+spec:
+  sources:
+    - useDefaultCAs: true
+    # If a secret with the matching label is in the namespace add "ca.crt" from it to the bundle
+    - secret:
+        selector:
+          matchLabels:
+            bundle-ca: "true"
+        key: "ca.crt"
+  target:
+    configMap:
+      key: "ca-certificates.pem" # Name of the key in the map
