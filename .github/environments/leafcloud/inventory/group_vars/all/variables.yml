@@ -56,3 +56,6 @@ azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
 # CI only: reduce the control-plane MachineHealthCheck startup timeout so
 # failed bootstrap attempts can be remediated before the overall CI timeout.
 azimuth_capi_operator_capi_helm_control_plane_node_startup_timeout: 600s
+
+# Enable scheduling
+azimuth_scheduling_enabled: true
