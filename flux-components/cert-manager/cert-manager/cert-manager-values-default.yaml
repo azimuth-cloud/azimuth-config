@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-manager-values-default
+  namespace: cert-manager
+data:
+  values.yaml: |
+    # Disable the use of Exact PathType in Ingress resources, to work around a bug in ingress-nginx
+    # https://github.com/kubernetes/ingress-nginx/issues/11176
+    config:
+      featureGates:
+        ACMEHTTP01IngressPathTypeExact: false
+    installCRDs: true
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
+    prometheus:
+      enabled: true
+      servicemonitor:
+        enabled: true
+    volumes:
+      - name: ca-trust-bundle
+        configMap:
+          name: certmanager-trust-bundle
+          optional: true
+    volumeMounts:
+      - name: ca-trust-bundle
+        mountPath: "/etc/ssl/certs"
+        readOnly: true
