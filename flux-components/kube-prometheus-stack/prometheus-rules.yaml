@@ -1,0 +1,58 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: capi-certificate-expiry-alerting-rules
+  namespace: monitoring-system
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: capi_control_plane_certificate_expiry.rules
+      rules:
+        # warning: cert expiry between 21 and 30 days
+        - alert: CAPIMachineCertificateExpiringSoon
+          expr: |
+            (
+              kube_customresource_capi_machine_certificate_expiry_timestamp
+              - time()
+            ) < (30 * 24 * 60 * 60)
+            and
+            (
+              kube_customresource_capi_machine_certificate_expiry_timestamp
+              - time()
+            ) >= (20 * 24 * 60 * 60)
+          for: 15m
+          annotations:
+            summary: >-
+              Control-plane certificates for
+              {{ $labels.cluster_name }} expire within 30 days
+            description: >-
+              Machine {{ $labels.machine }} in namespace
+              {{ $labels.namespace }} has control-plane certificates expiring
+              within 30 days. Azimuth will automatically replace the affected
+              control-plane Machine when fewer than 21 days remain. No manual
+              action is required unless the replacement fails.
+          labels:
+            severity: warning
+
+        # critical: if auto replacement failed
+        - alert: CAPIMachineCertificateReplacementOverdue
+          expr: |
+            (
+              kube_customresource_capi_machine_certificate_expiry_timestamp
+              - time()
+            ) <= (20 * 24 * 60 * 60)
+          # controlplane replacement would be longer than 15min
+          for: 1h
+          annotations:
+            summary: >-
+              Automatic controlplane certificate replacement for
+              {{ $labels.cluster_name }} may have failed
+            description: >-
+              Machine {{ $labels.machine }} in namespace
+              {{ $labels.namespace }} still has certificates expiring within
+              20 days. Automatic replacement should have started at the
+              21-day threshold but has not completed. Operator investigation
+              is required.
+          labels:
+            severity: critical
