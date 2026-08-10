@@ -51,7 +51,8 @@ spec:
   path: "./monitoring"
   prune: true
   wait: true
-  timeout: 1m
+  timeout: 3m
+  retryInterval: 1m
   postBuild:
     substituteFrom:
       - kind: ConfigMap
