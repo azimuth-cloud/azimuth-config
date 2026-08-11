@@ -58,6 +58,7 @@ jobs:
           - azimuth-flux
           - cert-manager
           - monitoring-system
+          - postgres-operator
           - secrets
       fail-fast: false
     permissions:
