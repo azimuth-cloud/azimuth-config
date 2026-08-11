@@ -38,14 +38,14 @@ jobs:
 
       - name: Run super-linter for flux components
         # Grafana dashboards are raw JSON embedded into YAML configmaps so don't do any line splitting,
-        # exclude dashboards.yaml from YAML linting.
+        # exclude dashboard.yaml and dashboards.yaml from YAML linting.
         uses: super-linter/super-linter/slim@9e863354e3ff62e0727d37183162c4a88873df41 # v8.6.0
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KUBERNETES_KUBECONFORM_OPTIONS: "--ignore-missing-schemas"
           FILTER_REGEX_INCLUDE: flux-components/*
-          FILTER_REGEX_EXCLUDE: (^|/)secrets/|crds.yaml|dashboard.yaml
+          FILTER_REGEX_EXCLUDE: (^|/)secrets/|crds.yaml|dashboard.?.yaml
           VALIDATE_SHELL_SHFMT: false
           VALIDATE_SPELL_CODESPELL: false
 
