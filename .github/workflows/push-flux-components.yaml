@@ -54,7 +54,7 @@ jobs:
       matrix:
         image:
           - azimuth-flux
-          - kube-prometheus-stack
+          - monitoring-system
           - secrets
       fail-fast: false
     permissions:
