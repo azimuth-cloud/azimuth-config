@@ -8,7 +8,7 @@ spec:
   interval: 5m0s
   url: oci://ghcr.io/azimuth-cloud/azimuth-config/stack-hpc/secrets
   ref:
-    tag: ${FLUX_SECRET_TAG}
+    tag: {{ .Values.artifactTag }}
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -23,7 +23,7 @@ spec:
   decryption:
     provider: sops
     secretRef:
-      name: ${SOPS_PRIVATE_KEY_SECRET}
+      name: {{ .Values.sopsSecretName }}
   path: "."
   prune: true
   timeout: 1m

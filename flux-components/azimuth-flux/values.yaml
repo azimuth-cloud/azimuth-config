@@ -1,0 +1,7 @@
+artifactTag: feature-flux
+sopsSecretName: sops-age
+
+enableCertManager: true
+enableMonitoring: true
+enablePostgres: true
+enableReloader: true
