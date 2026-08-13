@@ -111,3 +111,60 @@ jobs:
         env:
           IMAGE: ${{ matrix.image }}
           TAG: ${{ steps.image-meta.outputs.tag-names }}
+
+  push_azimuth_chart:
+    name: Push azimuth-flux helm chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    env:
+      CHART_DIR: ./flux-components/azimuth-flux
+      CHART_VERSION: 0.1.0-dev.1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install Helm CLI
+        shell: bash
+        run: |
+          wget -q "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" \
+            -O "helm-${HELM_VERSION}-linux-amd64.tar.gz"
+          wget -q "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz.sha256sum" \
+            -O checksum
+          sha256sum -c checksum
+          tar -zxvf "helm-${HELM_VERSION}-linux-amd64.tar.gz"
+          mv linux-amd64/helm /usr/local/bin/helm
+        env:
+          HELM_VERSION: v4.2.3
+
+      - name: Read chart metadata
+        id: chart
+        run: |
+          echo "name=$(helm show chart "${CHART_DIR}" | awk '$1 == "name:" {print $2}')" >> "$GITHUB_OUTPUT"
+          echo "version=$(helm show chart "${CHART_DIR}" | awk '$1 == "version:" {print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Package Helm chart
+        shell: bash
+        run: |
+          helm package ${CHART_DIR} \
+            --version "${CHART_VERSION}" \
+            --app-version "${{ github.sha }}"
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" |
+            helm registry login ghcr.io \
+              --username "${{ github.actor }}" \
+              --password-stdin
+
+      - name: Push chart
+        run: |
+          helm push \
+            "${{ steps.chart.outputs.name }}-${CHART_VERSION}.tgz" \
+            "oci://ghcr.io/azimuth-cloud/azimuth-config"
