@@ -131,8 +131,8 @@ def build_image(name, context, build_args=None, dockerfile="Dockerfile"):
         ]
     )
     build_command = (
-        "%s build -t $EXPECTED_REF --platform linux/amd64 --file %s %s %s && "
-        % (build_engine, dockerfile, build_args, context)
+        "%s build -t $EXPECTED_REF --platform linux/amd64 --file %s/%s %s %s && "
+        % (build_engine,context, dockerfile, build_args, context)
         + "%s push $EXPECTED_REF" % build_engine
     )
     custom_build(image, build_command, [context], skips_local_docker=True)
