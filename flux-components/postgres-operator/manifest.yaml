@@ -1,0 +1,44 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: crunchydata
+  namespace: postgres-operator
+spec:
+  ref:
+    tag: "5.5.2"
+  interval: 15m
+  url: oci://registry.developers.crunchydata.com/crunchydata/pgo
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgres-operator
+  namespace: postgres-operator
+spec:
+  interval: 10m
+  releaseName: postgres-operator
+  chartRef:
+    kind: OCIRepository
+    name: postgres-operator
+  install:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+  upgrade:
+    force: true
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+      strategy: rollback
+  valuesFrom:
+    - kind: ConfigMap
+      name: postgres-operator-values
+      optional: true
