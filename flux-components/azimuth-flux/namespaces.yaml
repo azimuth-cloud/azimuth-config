@@ -2,14 +2,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: cert-manager
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: monitoring-system
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: reloader
+  name: postgres-operator
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: cert-manager
+  name: reloader
