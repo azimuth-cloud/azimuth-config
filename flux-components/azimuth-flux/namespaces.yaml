@@ -7,6 +7,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: harbor
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: monitoring-system
 ---
 apiVersion: v1
