@@ -1,13 +1,6 @@
 ---
 name: Backup and restore test
 
-permissions:
-  contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
-
 on: # yamllint disable-line rule:truthy
   # Allow manual execution on any branch
   workflow_dispatch:
@@ -41,6 +34,8 @@ jobs:
   # conclusions of specific steps
   test_backup_restore:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       # We need to check out the code under test first in order to use local
       # actions
