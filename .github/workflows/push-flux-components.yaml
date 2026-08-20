@@ -59,6 +59,7 @@ jobs:
           - cert-manager
           - monitoring-system
           - postgres-operator
+          - sealed-secrets
           - secrets
       fail-fast: false
     permissions:
