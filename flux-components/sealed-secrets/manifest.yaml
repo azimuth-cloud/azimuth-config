@@ -1,0 +1,47 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: sealed-secrets
+  namespace: sealed-secrets
+spec:
+  type: default
+  interval: 15m
+  url: https://bitnami.github.io/sealed-secrets
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgres-operator
+  namespace: postgres-operator
+spec:
+  interval: 10m
+  releaseName: postgres-operator
+  chart:
+    spec:
+      chart: sealed-secrets
+      version: 2.19.1
+      sourceRef:
+        kind: HelmRepository
+        name: sealed-secrets
+  install:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+  upgrade:
+    force: true
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+      strategy: rollback
+  valuesFrom:
+    - kind: ConfigMap
+      name: sealed-secrets-values
+      optional: true
