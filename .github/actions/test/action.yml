@@ -45,33 +45,34 @@ runs:
       id: cache-logcli
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.local/bin/logcli
+        path: ~/.cache/logcli/logcli
         key: logcli-${{ runner.os }}-${{ steps.logcli-version.outputs.version }}
 
-    - name: Install logcli
+    - name: Download logcli
       shell: bash
       # Authenticate to avoid rate limits.
       run: |
         set -e
-        mkdir -p ~/.local/bin
-        gh release download "${{ steps.logcli-version.outputs.version }}" \
+        mkdir -p ~/.cache/logcli
+        gh release download "$LOGCLI_VERSION" \
           --repo grafana/loki \
           --pattern 'logcli-linux-amd64.zip' \
           --output /tmp/logcli.zip \
           --clobber
         unzip -o /tmp/logcli.zip -d /tmp
         chmod +x /tmp/logcli-linux-amd64
-        mv /tmp/logcli-linux-amd64 ~/.local/bin/logcli
+        mv /tmp/logcli-linux-amd64 ~/.cache/logcli/logcli
       env:
         GH_TOKEN: ${{ github.token }}
+        LOGCLI_VERSION: ${{ steps.logcli-version.outputs.version }}
       if: steps.cache-logcli.outputs.cache-hit != 'true'
 
-    - name: Add logcli to PATH and verify
+    - name: Install logcli
       shell: bash
       run: |
         set -e
-        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-        "$HOME/.local/bin/logcli" --version
+        sudo cp ~/.cache/logcli/logcli /usr/local/bin/logcli
+        logcli --version
 
     - name: Run test suite
       shell: bash
