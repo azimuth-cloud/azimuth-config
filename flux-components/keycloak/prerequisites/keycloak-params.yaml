@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-params
+  namespace: flux-system
+data:
+  KEYCLOAK_CREDS_SECRET_NAME: keycloak-db-pguser-keycloak-db #checkov:skip=CKV_SECRET_6:A reference to a secret not a secret
+  KEYCLOAK_DB_SIZE: 8Gi
