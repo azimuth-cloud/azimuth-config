@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: crunchydata
+  name: crunchydata-pgo
   namespace: postgres-operator
 spec:
   ref:
@@ -19,7 +19,7 @@ spec:
   releaseName: postgres-operator
   chartRef:
     kind: OCIRepository
-    name: postgres-operator
+    name: crunchydata-pgo
   install:
     crds: CreateReplace
     strategy:
