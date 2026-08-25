@@ -156,6 +156,21 @@ jobs:
           ./bin/run-tests --include verify --outputdir reports/verify-post-restore
         if: ${{ !cancelled() && steps.backup-restore.conclusion == 'success' }}
 
+      - name: Create pre-cleanup debug bundle
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/create-debug-bundle
+        if: ${{ !cancelled() }}
+
+      - name: Upload pre-cleanup debug bundle
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: azimuth-pre-cleanup-debug-bundle
+          path: debug-bundle.tar.gz
+        if: ${{ !cancelled() }}
+
       - name: Delete test platforms
         run: |
           set -e
