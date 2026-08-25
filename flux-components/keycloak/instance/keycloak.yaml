@@ -1,0 +1,36 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  instances: 1
+  # This is OK because we are behind an ingress that is handling TLS
+  http:
+    httpEnabled: true
+  hostname:
+    hostname: https://identity.${DOMAIN}
+    strict: false
+    strictBackchannel: false
+  db:
+    usernameSecret:
+      name: ${KEYCLOAK_CREDS_SECRET_NAME}
+      key: user
+    passwordSecret:
+      name: ${KEYCLOAK_CREDS_SECRET_NAME}
+      key: password
+    vendor: postgres
+    host: keycloak-db-primary.keycloak.svc.cluster.local
+    port: 5432
+    database: keycloak-db
+  # Configure Keycloak to respect the xforwarded headers from the ingress controller
+  proxy:
+    headers: xforwarded
+  # We will do our own ingress with TLS annotations
+  ingress:
+    enabled: false
+  serviceMonitor:
+    enabled: true
+  additionalOptions:
+    - name: metrics-enabled
+      value: "true"

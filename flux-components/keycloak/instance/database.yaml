@@ -1,0 +1,73 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: keycloak-db
+  namespace: keycloak
+spec:
+  postgresVersion: 14
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.11-0
+  monitoring:
+    pgmonitor:
+      exporter: {}
+  instances:
+    - name: instance1
+      dataVolumeClaimSpec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: ${KEYCLOAK_DB_SIZE}
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.49-0
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - "ReadWriteOnce"
+              resources:
+                requests:
+                  storage: ${KEYCLOAK_DB_SIZE}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: keycloak-db
+  namespace: keycloak
+spec:
+  podMetricsEndpoints:
+    - port: exporter
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_postgres_operator_crunchydata_com_cluster
+          targetLabel: cluster
+          replacement: "$1"
+        - sourceLabels:
+            - namespace
+            - cluster
+          targetLabel: pg_cluster
+          separator: ":"
+          replacement: "$1$2"
+        - sourceLabels:
+            - __meta_kubernetes_pod_ip
+          targetLabel: ip
+          replacement: "$1"
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_postgres_operator_crunchydata_com_instance
+          targetLabel: deployment
+          replacement: "$1"
+          separator: ""
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_postgres_operator_crunchydata_com_role
+          targetLabel: role
+          replacement: "$1"
+          separator: ""
+  namespaceSelector:
+    matchNames:
+      - keycloak
+  selector:
+    matchLabels:
+      postgres-operator.crunchydata.com/data: postgres
+      postgres-operator.crunchydata.com/crunchy-postgres-exporter: "true"
+      postgres-operator.crunchydata.com/cluster: "keycloak-db"

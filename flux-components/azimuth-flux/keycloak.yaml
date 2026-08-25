@@ -1,0 +1,85 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/azimuth-cloud/azimuth-config/stack-hpc/keycloak
+  ref:
+    tag: ${FLUX_ARTIFACT_TAG}
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: keycloak-prerequisites
+  namespace: flux-system
+spec:
+  interval: 10m
+  targetNamespace: flux-system
+  sourceRef:
+    kind: OCIRepository
+    name: keycloak
+    namespace: keycloak
+  path: "./prerequisites"
+  prune: true
+  timeout: 3m
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: dynamic-azimuth-info
+      - kind: ConfigMap
+        name: static-azimuth-info
+        optional: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: keycloak-operator
+  namespace: flux-system
+spec:
+  interval: 10m
+  targetNamespace: keycloak
+  sourceRef:
+    kind: OCIRepository
+    name: keycloak
+    namespace: keycloak
+  path: "./operator"
+  prune: true
+  timeout: 3m
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: dynamic-azimuth-info
+      - kind: ConfigMap
+        name: static-azimuth-info
+        optional: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: keycloak
+  namespace: flux-system
+spec:
+  interval: 10m
+  targetNamespace: keycloak
+  sourceRef:
+    kind: OCIRepository
+    name: keycloak
+    namespace: keycloak
+  path: "./instance"
+  prune: true
+  timeout: 3m
+  dependsOn:
+    - name: keycloak-prerequisites
+    - name: keycloak-operator
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: dynamic-azimuth-info
+      - kind: ConfigMap
+        name: static-azimuth-info
+        optional: true
+      - kind: ConfigMap
+        name: keycloak-params
