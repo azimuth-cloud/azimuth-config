@@ -5,6 +5,9 @@ metadata:
   namespace: keycloak
 spec:
   instances: 1
+  bootstrapAdmin:
+    user:
+      secret: keycloak-admin
   # This is OK because we are behind an ingress that is handling TLS
   http:
     httpEnabled: true
