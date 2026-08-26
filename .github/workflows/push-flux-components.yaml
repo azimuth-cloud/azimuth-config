@@ -58,6 +58,7 @@ jobs:
           - azimuth-flux
           - cert-manager
           - harbor
+          - keycloak
           - monitoring-system
           - postgres-operator
           - sealed-secrets
