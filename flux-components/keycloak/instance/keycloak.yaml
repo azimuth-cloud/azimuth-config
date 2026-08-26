@@ -12,7 +12,7 @@ spec:
   http:
     httpEnabled: true
   hostname:
-    hostname: https://identity.${DOMAIN}
+    hostname: ${ADMIN_DASHBOARD_SCHEME}://identity.${DOMAIN}
     strict: false
     strictBackchannel: false
   db:
