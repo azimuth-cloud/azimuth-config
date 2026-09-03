@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: critical-secret
+    namespace: monitoring-system
+data:
+    webhook: ENC[AES256_GCM,data:7okhqcNl2f1PckMdcjUgJWcoUr8rjBFCXwntPkCi5DzjEIwdouXjfQ==,iv:EDPN6abEmrBPfRmwrhiJ1e7tTwhFmwM5KswkdSRVEhM=,tag:ty/Prwue5WIfhfwVe0ER0Q==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBhSHhlcVA3akxCKzh0L3hP
+            Qkdnb29Vajg3VXplWXNGc0JTaUo3WTk0NkZJCmdWTFRQa1FabDRVRFFQTkxGNjk1
+            UnViRHZtTjJ3MmFuZnZmOGFIMFZhQXMKLS0tIHdGckhHL1JJNDJXOXlmUzhrY2hU
+            dWR3c0xwbTRIQmFwZW5oZXBlWHlkQ28Kzfyqy2NKoU3s9dAjWbogNR4YlfB/cttM
+            VoJqw48femKNxZBzAM4hbqJAeVqYiQlawjGtSEOGk89LZ5EwkhRoCQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age17te6p3udsxg7fa973u9v23lj5xg3w7x233p6azpx763xx8km4qqsk5phuz
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-15T10:35:16Z"
+    mac: ENC[AES256_GCM,data:LbnxA6jx9P6rukZf8zTYKxWYtunZ5mtuA7Ta92f9y5W1MuTWHAn3UQOruJNwf0BUrlPk5Gj2vYsqBzGjBAD/yH7CX8AClooSb/aCkzzcQQmwo/PM7mu1Bx5AxbbRiYnhs23eTIrip3Kuo6zxOnPajBdUVgPKOWBcyphh9GHjJnY=,iv:LFugTYduJFwq8LCu5Qw9K957YUl5Pd2wxfF/8xqh++k=,tag:zuryvHKF2ivCLy9+YT7PWw==,type:str]
+    version: 3.13.2
