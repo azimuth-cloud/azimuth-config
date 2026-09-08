@@ -57,10 +57,12 @@ jobs:
         image:
           - azimuth-flux
           - cert-manager
+          - harbor
           - monitoring-system
           - postgres-operator
           - sealed-secrets
           - secrets
+          - traefik
       fail-fast: false
     permissions:
       contents: read
