@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-values-default
+  namespace: traefik
+data:
+  values.yaml: |
+    ports:
+      web:
+        transport:
+          respondingTimeouts:
+            readTimeout: 600
+            writeTimeout: 600
+            idleTimeout: 600
+      websecure:
+        transport:
+          respondingTimeouts:
+            readTimeout: 600
+            writeTimeout: 600
+            idleTimeout: 600
+    log:
+      level: INFO
+    accessLog:
+      enabled: true
+    metrics:
+      prometheus:
+        enabled: true
+        serviceMonitor:
+          enabled: true
