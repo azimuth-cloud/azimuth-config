@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-values-default
+  namespace: harbor
+data:
+  values.yaml: |
+    externalURL: ${ADMIN_DASHBOARD_SCHEME}://registry.${DOMAIN}
+    existingSecretAdminPassword: harbor-admin-password
+    existingSecretSecretKey: harbor-secret-key
+    updateStrategy:
+      type: Recreate
+    expose:
+      type: ingress
+      className: traefik
+      ingress:
+        hosts:
+          core: registry.${DOMAIN}
+          notary: notary.${DOMAIN}
+        annotations:
+          cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+      tls:
+        enabled: ${TLS_ENABLED}
+        certSource: secret # Let cert manager do it, none to let traefik do it
+        secret:
+          secretName: harbor-tls
+    persistence:
+      enabled: true
+      imageChartStorage:
+        type: filesystem
+      persistentVolumeClaim:
+        chartmuseum:
+          size: 5Gi
+        database:
+          size: 1Gi
+        jobservice:
+          jobLog:
+            size: 1Gi
+          scanDataExports:
+            size: 1Gi
+        redis:
+          size: 1Gi
+        registry:
+          size: 5Gi
+        trivy:
+          size: 5Gi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
