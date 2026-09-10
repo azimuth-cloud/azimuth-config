@@ -1,5 +1,11 @@
 # Standalone CAPI Management Cluster
 
+<!-- prettier-ignore-start -->
+!!! warning
+    Before upgrading a standalone CAPI Management cluster to azimuth-config 2026.6.x, read and follow
+    the [upgrade prerequisites](./operations/2026-6-upgrade.md).
+<!-- prettier-ignore-end -->
+
 ## Background
 
 In recent years, the Kubernetes
