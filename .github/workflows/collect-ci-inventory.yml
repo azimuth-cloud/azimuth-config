@@ -1,0 +1,59 @@
+---
+name: Collect OpenStack CI inventory
+
+permissions:
+  contents: read
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    # Run 40 minutes after the cleanup workflow every 2 hours
+    - cron: "48 0/2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: collect-ci-inventory-${{ vars.TARGET_CLOUD || 'default' }}
+  cancel-in-progress: false
+
+jobs:
+  collect-inventory:
+    name: Collect read-only OpenStack inventory
+    if: github.repository == 'azimuth-cloud/azimuth-config'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+
+      - name: Generate clouds.yaml
+        run: printf '%s\n' "$OS_CLOUDS" > clouds.yaml
+        env:
+          OS_CLOUDS: ${{ secrets.OS_CLOUDS }}
+
+      - name: Install OpenStack SDK
+        run: python -m pip install 'openstacksdk>=4,<5'
+
+      - name: Collect read-only inventory
+        run: |
+          python bin/collect-ci-inventory \
+            --expected-project-id "$CI_CLEANUP_PROJECT_ID" \
+            --project-name "$CI_CLEANUP_PROJECT_NAME" \
+            --output-dir reports/ci-inventory
+        env:
+          OS_CLOUD: ${{ vars.TARGET_CLOUD }}
+          CI_CLEANUP_PROJECT_ID: ${{ vars.CI_CLEANUP_PROJECT_ID }}
+          CI_CLEANUP_PROJECT_NAME: stackhpc-azimuth-ci
+
+      - name: Upload inventory artifact
+        # it works even if the collecting logic failed
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: openstack-ci-inventory-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/ci-inventory
+          if-no-files-found: warn
+          retention-days: 30
