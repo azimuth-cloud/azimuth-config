@@ -41,6 +41,7 @@ nav:
       - deployment/testing.md
   - Operations:
       - operations/maintenance.md
+      - operations/2026-6-upgrade.md
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
