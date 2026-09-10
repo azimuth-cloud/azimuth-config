@@ -1,3 +1,5 @@
+<!-- markdownlint-disable no-duplicate-heading -->
+
 # Upgrading Azimuth or Standalone CAPI Management Clusters to 2026.6.x
 
 ## Background
@@ -9,9 +11,12 @@ azimuth-config 2026.6.x introduced an updated version of cluster-api-provider-op
 
 In cases where Cluster API management clusters have existed for a long time, it is possible that old versions of these objects exist in the cluster, which can prevent the upgrade from succeeding, requiring nasty interventions to allow it to do so, and possibly incurring data loss.
 
-Alongside this, CAPO changed Neutron security groups applied to ports attached to tenant cluster worker nodes to restrict more incoming traffic, which particularly affected users with Ingress controllers (or other Kubernetes `LoadBalancer` type services) running behind Octavia **OVN** loadbalancers, (**not Amphora**). Most cases of this are handled directly by azimuth-config and ansible-collection-azimuth-ops, but Standalone CAPI Management Cluster deployments where **both the OVN and Amphora** Octavia loadbalancer providers are available on the cloud **and** `openstack_loadbalancer_provider` is set to `amphora` in azimuth-config, should take extra steps during the upgrade to azimuth-config 2026.6.x to ensure that external traffic to any tenant Magnum clusters with Kubernetes `LoadBalancer` type services is not disrupted.
+Alongside this, CAPO changed Neutron security groups applied to ports attached to tenant cluster worker nodes to restrict more incoming traffic, which particularly affected users with Ingress controllers (or other Kubernetes `LoadBalancer` type services) running behind Octavia **OVN** loadbalancers, (**not Amphora**).
+Most cases of this are handled directly by azimuth-config and ansible-collection-azimuth-ops, but Standalone CAPI Management Cluster deployments where **both the OVN and Amphora** Octavia loadbalancer providers are available on the cloud **and** `openstack_loadbalancer_provider` is set to `amphora` in azimuth-config, should take extra steps during the upgrade to azimuth-config 2026.6.x.
+This is to ensure that external traffic to any tenant Magnum clusters with Kubernetes `LoadBalancer` type services is not disrupted.
 
-Finally, when a Standalone CAPI Management Cluster used for magnum-capi-helm is upgraded past 2026.6.x, it is important that the default capi-helm-charts version is raised >=0.26.1. This ensures that upgraded and new Magnum tenant cluster worker nodes are assigned security group rules permissive enough to allow external traffic to reach ports behind Kubernetes `LoadBalancer` type services when Octavia OVN Loadbalancers are used.
+Finally, when a Standalone CAPI Management Cluster used for magnum-capi-helm is upgraded past 2026.6.x, it is important that the default capi-helm-charts version is raised >=0.26.1.
+This ensures that upgraded and new Magnum tenant cluster worker nodes are assigned security group rules permissive enough to allow external traffic to reach ports behind Kubernetes `LoadBalancer` type services when Octavia OVN Loadbalancers are used.
 
 ## Actions
 
@@ -60,6 +65,8 @@ To ensure that the target cluster is in a state for the upgrade to apply success
 
 2. Confirm that any installed Helm releases of `openstack-cluster` are using a CHART > 0.11.0:
 
+   <!-- markdownlint-disable no-hard-tabs -->
+
    ```bash
    helm list -aA | grep -e openstack-cluster -e NAME
    NAME                                	NAMESPACE              	REVISION	UPDATED                                	STATUS  	CHART                                              	APP VERSION
@@ -79,6 +86,7 @@ To ensure that the target cluster is in a state for the upgrade to apply success
    mlops-test                          	az-tarot             	2       	2025-10-02 07:43:49.950208119 +0000 UTC	deployed	openstack-cluster-0.15.0                           	8ba80f0
    ```
 
+   <!-- markdownlint-enable no-hard-tabs -->
    - This example shows all `openstack-cluster` releases are using a chart > 0.11.0.
    - **If there are releases using charts at 0.11.0 and older, then they must be updated to use more recent chart versions. The upgrade to 2026.6.x must be paused until users have updated their clusters, either using the Azimuth portal UI, or the Magnum CLI.**
 
@@ -91,7 +99,8 @@ To ensure that the target cluster is in a state for the upgrade to apply success
    ```
 
    - If anything other than `["v1beta1"]["v1beta1"]["v1beta1"]["v1beta1"]` appears in the output, progress to step 4.
-   - If `["v1beta1"]["v1beta1"]["v1beta1"]["v1beta1"]` appears in the output and you are upgrading a Standalone CAPI Management Cluster for magnum-capi-helm, proceed to [Fix tenant worker node security groups (Standalone CAPI Management Clusters for magnum-capi-helm only)](#fix-tenant-worker-node-security-groups-standalone-capi-management-clusters-for-magnum-capi-helm-only). If you are upgrading an Azimuth that does not also act as a CAPI Management Cluster for magnum-capi-helm, it is safe to proceed with the upgrade to 2026.6.x without any further action.
+   - If `["v1beta1"]["v1beta1"]["v1beta1"]["v1beta1"]` appears in the output and you are upgrading a Standalone CAPI Management Cluster for magnum-capi-helm, proceed to [Fix tenant worker node security groups (Standalone CAPI Management Clusters for magnum-capi-helm only)](#fix-tenant-worker-node-security-groups-standalone-capi-management-clusters-for-magnum-capi-helm-only).
+     If you are upgrading an Azimuth that does not also act as a CAPI Management Cluster for magnum-capi-helm, it is safe to proceed with the upgrade to 2026.6.x without any further action.
 
 4. Replace all `openstackmachinetemplates` (this ensures that they are stored at version `v1beta1` in etcd). It is safe to just replace `openstackmachinetemplates` as all other objects should be automatically stored at apiVersion `v1beta1` when they are (re)created by a Helm release using `openstack-cluster>0.11.0`.
 
@@ -129,6 +138,7 @@ done
    ```
 
    If there are two loadbalancer providers available on the cloud, then this will always be set to either `ovn` or `amphora` for your environment.
+   <!-- markdownlint-disable-next-line link-fragments -->
    - If `openstack_loadbalancer_provider` is set to `amphora` proceed to [Targeting the HA management cluster](#targeting-the-ha-management-cluster_1).
    - If `openstack_loadbalancer_provider` is set to `ovn`, it is safe to proceed with the upgrade to 2026.6.x without any further action.
 
@@ -164,7 +174,8 @@ done
    ```bash
    kubectl get openstackclusters.infrastructure.cluster.x-k8s.io -A --no-headers -o custom-columns="NS:.metadata.namespace,NAME:.metadata.name" | while read -r namespace name; do
         echo "Patching OpenStackCluster: $name in namespace: $namespace..."
-        kubectl patch openstackclusters.infrastructure.cluster.x-k8s.io -n $namespace $name --type merge --patch='{"spec":{"managedSecurityGroups":{"workerNodesSecurityGroupRules":[{"direction":"ingress","etherType":"IPv4","name":"Worker nodePort TCP","portRangeMax":32767,"portRangeMin":30000,"protocol":"tcp","remoteIPPrefix":"0.0.0.0/0"},{"direction":"ingress","etherType":"IPv4","name":"Worker nodePort UDP","portRangeMax":32767,"portRangeMin":30000,"protocol":"udp","remoteIPPrefix":"0.0.0.0/0"}]}}}'
+        kubectl patch openstackclusters.infrastructure.cluster.x-k8s.io -n $namespace $name --type merge \
+        --patch='{"spec":{"managedSecurityGroups":{"workerNodesSecurityGroupRules":[{"direction":"ingress","etherType":"IPv4","name":"Worker nodePort TCP","portRangeMax":32767,"portRangeMin":30000,"protocol":"tcp","remoteIPPrefix":"0.0.0.0/0"},{"direction":"ingress","etherType":"IPv4","name":"Worker nodePort UDP","portRangeMax":32767,"portRangeMin":30000,"protocol":"udp","remoteIPPrefix":"0.0.0.0/0"}]}}}'
    done
    ```
 
