@@ -114,6 +114,24 @@ alerts to Slack:
 alertmanager_config_slack_webhook_url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX #gitleaks:allow
 ```
 
+To send critical and warning severity alerts to different Slack channels (different webhooks) extra configuration can be provided:
+
+```yaml
+alertmanager_config_slack_critical_webhook_url: https://...
+alertmanager_config_slack_warning_webhook_url: https://...
+```
+
+The routing rules depend on the presence of the webhooks, details below:
+
+| Default webhook | Critical webhook | Warning webhook | Critical messages      | Warning messages      |
+| --------------- | ---------------- | --------------- | ---------------------- | --------------------- |
+| -               | x                | x               | Go to critical channel | Go to warning channel |
+| x               | -                | x               | Go to default channel  | Go to warning channel |
+| x               | x                | -               | Go to critical channel | Go to default channel |
+| x               | -                | -               | Go to default channel  | Go to default channel |
+| -               | x                | -               | Config not deployed    | Config not deployed   |
+| -               | -                | x               | Config not deployed    | Config not deployed   |
+
 <!-- prettier-ignore-start -->
 !!! danger
     The webhook URL should be kept secret. If you want to keep it in Git - which is recommended - then it must be encrypted.

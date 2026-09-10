@@ -1,11 +1,6 @@
 ---
 name: Upgrade test
 
-permissions:
-  contents: read
-  packages: write
-  id-token: write
-
 on: # yamllint disable-line rule:truthy
   # Allow to be called by other workflows
   workflow_call:
@@ -61,6 +56,8 @@ jobs:
   # conclusions of specific steps
   test_upgrade:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
 
       - name: Checkout the initial git ref
