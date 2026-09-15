@@ -12,7 +12,7 @@ data:
       type: Recreate
     expose:
       type: ingress
-      className: traefik
+      className: ${INGRESS_CLASS}
       ingress:
         hosts:
           core: registry.${DOMAIN}
