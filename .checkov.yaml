@@ -4,3 +4,6 @@ skip-check:
   # GITHUB_TOKEN is not write-all. azimuth-cloud org has GITHUB_TOKEN default
   # set to read-only, so not required.
   - CKV2_GHA_1
+skip-path:
+  # This is not a normal Kubernetes manifest it is a kustomization file
+  - flux-components/keycloak/operator/kustomization.yaml
