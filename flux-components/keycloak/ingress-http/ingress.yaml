@@ -4,7 +4,7 @@ metadata:
   name: keycloak
   namespace: keycloak
 spec:
-  ingressClassName: traefik
+  ingressClassName: ${INGRESS_CLASS}
   rules:
     - host: identity.${DOMAIN}
       http:

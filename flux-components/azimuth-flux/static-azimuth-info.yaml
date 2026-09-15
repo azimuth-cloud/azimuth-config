@@ -5,3 +5,4 @@ metadata:
   namespace: flux-system
 data:
   CLUSTER_ISSUER: letsencrypt
+  INGRESS_CLASS: traefik

@@ -6,7 +6,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER:-none}
 spec:
-  ingressClassName: traefik
+  ingressClassName: ${INGRESS_CLASS}
   rules:
     - host: identity.${DOMAIN}
       http:
