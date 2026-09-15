@@ -27,6 +27,7 @@ spec:
   timeout: 3m
   dependsOn:
     - name: kube-prometheus-stack
+    - name: cluster-issuer
   postBuild:
     substituteFrom:
       - kind: ConfigMap
