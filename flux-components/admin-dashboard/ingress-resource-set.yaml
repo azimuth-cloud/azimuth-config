@@ -1,0 +1,71 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: admin-dashboard-ingresses
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcile: "enabled"
+    fluxcd.controlplane.io/reconcileEvery: "30m"
+    fluxcd.controlplane.io/reconcileTimeout: "5m"
+spec:
+  commonMetadata:
+    annotations:
+      cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER:-none}
+  inputs:
+    - name: ara
+      namespace: azimuth
+      hostname: ara.${DOMAIN}
+      tls: ${TLS_ENABLED}
+      serviceName: azimuth-caas-operator-ara
+      portName: http
+    - name: grafana
+      namespace: monitoring-system
+      hostname: grafana.${DOMAIN}
+      tls: ${TLS_ENABLED}
+      serviceName: kube-prometheus-stack-grafana
+      portName: http-web
+    - name: prometheus
+      namespace: monitoring-system
+      hostname: prometheus.${DOMAIN}
+      tls: ${TLS_ENABLED}
+      serviceName: kube-prometheus-stack-prometheus
+      portName: http-web
+    - name: alertmanager
+      namespace: monitoring-system
+      hostname: alertmanager.${DOMAIN}
+      tls: ${TLS_ENABLED}
+      serviceName: kube-prometheus-stack-alertmanager
+      portName: http-web
+    - name: helm-dashboard
+      namespace: monitoring-system
+      hostname: helm.${DOMAIN}
+      tls: ${TLS_ENABLED}
+      serviceName: helm-dashboard
+      portName: http
+  resourcesTemplate: |
+    ---
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: << inputs.name >>
+      namespace: << inputs.namespace >>
+    spec:
+      ingressClassName: ${INGRESS_CLASS}
+      rules:
+        - host: << inputs.hostname >>
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: << inputs.serviceName >>
+                    port:
+                      name: << inputs.portName >>
+                path: /
+                pathType: Prefix
+
+      <<- if inputs.tls >>
+      tls:
+        - hosts:
+            - << inputs.hostname >>
+          secretName: << inputs.name >>-tls
+      <<- end >>
