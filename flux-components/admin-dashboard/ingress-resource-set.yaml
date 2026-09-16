@@ -11,6 +11,7 @@ spec:
   commonMetadata:
     annotations:
       cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER:-none}
+      traefik.ingress.kubernetes.io/router.middlewares: flux-system-admin-dashboard-creds@kubernetescrd
   inputs:
     - name: ara
       namespace: azimuth
