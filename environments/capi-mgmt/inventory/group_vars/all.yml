@@ -31,7 +31,7 @@ community_images_default: |-
     {% set kube_image_series = kube_version.split(".")[:-1] | join("_") %}
     {% set kube_manifest_series = kube_version.split(".")[:-1] | join("-") %}
     {% set image_key = "kube_" ~ kube_image_series %}
-    {% set manifest_key = "kubernetes-" ~ kube_manifest_series ~ "-jammy" %}
+    {% set manifest_key = "kubernetes-" ~ kube_manifest_series ~ "-noble" %}
     "{{ image_key }}": {
       "name": "{{ community_images_azimuth_images_manifest[manifest_key].name }}",
       "source_url": "{{ community_images_azimuth_images_manifest[manifest_key].url }}",
