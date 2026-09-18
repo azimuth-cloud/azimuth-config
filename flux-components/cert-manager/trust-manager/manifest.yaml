@@ -27,7 +27,7 @@ spec:
     crds: CreateReplace
     strategy:
       name: RetryOnFailure
-      retryInterval: 3m
+      retryInterval: 1m
     remediation:
       retries: 3 # Number of retries before giving up
       remediateLastFailure: true # Automatically remediate the last failure
