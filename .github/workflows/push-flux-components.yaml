@@ -55,6 +55,7 @@ jobs:
     strategy:
       matrix:
         image:
+          - admin-dashboard
           - azimuth-caas-operator
           - azimuth-flux
           - cert-manager
