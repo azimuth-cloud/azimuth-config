@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azimuth-caas-operator-values-default
+  namespace: azimuth
+data:
+  values.yaml: |
+    metrics:
+      enabled: true
+    config:
+      ansibleRunnerImage:
+      globalExtraVars:
+      ansibleRunnerImage: {}
+      globalExtraVars:
+        terraform_backend_config:
+          in_cluster_config: true
+        labels:
+          caas.azimuth.stackhpc.com/cluster-id: "{{ cluster_id }}"
+          caas.azimuth.stackhpc.com/cluster-name: "{{ cluster_name }}"
+        namespace: "{{ lookup(''file'', ''/var/run/secrets/kubernetes.io/serviceaccount/namespace'') }}"
+        secret_suffix: "{{ cluster_name }}"
+      terraform_backend_type: kubernetes
