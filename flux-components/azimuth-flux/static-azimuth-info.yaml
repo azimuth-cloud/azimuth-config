@@ -6,3 +6,5 @@ metadata:
 data:
   CLUSTER_ISSUER: letsencrypt
   INGRESS_CLASS: traefik
+  METRICS_ENABLED: "true"
+  OPENSTACK_AUTH_URL: https://create.leaf.cloud:5000/v3
