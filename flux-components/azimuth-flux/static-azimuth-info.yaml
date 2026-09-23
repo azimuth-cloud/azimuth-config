@@ -6,3 +6,5 @@ metadata:
 data:
   CLUSTER_ISSUER: letsencrypt
   INGRESS_CLASS: traefik
+  METRICS_ENABLED: "true"
+  ZENITH_SSHD_PORT: "2222"
