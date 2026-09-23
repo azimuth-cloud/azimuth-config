@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: azimuth-caas-operator-values-default
+  name: azimuth-values-default
   namespace: azimuth
 data:
   values.yaml: |
