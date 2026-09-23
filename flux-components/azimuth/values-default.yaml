@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azimuth-caas-operator-values-default
+  namespace: azimuth
+data:
+  values.yaml: |
+    tags:
+      apps: true
+      clusters: true
+      kubernetes: true
+    ingress:
+      host: portal.${DOMAIN}
+      annotations:
+        cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER:-none}
+      tls:
+        enabled: ${TLS_ENABLED}
+    settings:
+      secretKey: "{{ azimuth_secret_key }}"
+      availableClouds: []
+      currentCloud:
+        name: ${CURRENT_CLOUD_NAME}
+        label: ${CURRENT_CLOUD_LABEL}
+      metrics: {}
+      coralCredits: {}
+      documentationUrl: "https://azimuth-cloud.github.io/azimuth-user-docs/"
+      supportUrl: ""
+      curatedSizes: []
+    authentication:
+      openstack:
+        appcred:
+          hidden: true
+        authUrl: ${OPENSTACK_AUTH_URL}
+        federated:
+          enabled: false
+        interface: public
+        password:
+          domains:
+            - label: Username + Password
+              name: default
+          enabled: true
+      type: openstack
+    provider:
+      openstack:
+        createInternalNet: true
+        internalNetCidr: 192.168.3.0/24
+        manilaProjectShareGB: 0
+    apps:
+      baseDomain: ${DOMAIN}
+      verifySsl: true
+      verifySslClients: true
+      sshdHost: "azimuth_apps_sshd_host"
+      sshdPort: "2222"
+      registrarExternalUrl: ${ADMIN_DASHBOARD_SCHEME}://registrar.${DOMAIN}
+      registrarAdminUrl: http://zenith-server-registrar.azimuth:80
+      queryParams: azimuth_apps_query_params
+    scheduling:
+      enabled: false
+    theme: {}
+    api:
+      monitoring:
+        enabled: ${METRICS_ENABLED}
