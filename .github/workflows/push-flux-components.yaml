@@ -66,6 +66,7 @@ jobs:
           - sealed-secrets
           - secrets
           - traefik
+          - zenith-server
       fail-fast: false
     permissions:
       contents: read
