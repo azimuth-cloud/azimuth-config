@@ -1,0 +1,53 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: zenith
+  namespace: azimuth
+spec:
+  type: "default"
+  interval: 15m
+  url: https://azimuth-cloud.github.io/zenith
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zenith-server
+  namespace: azimuth
+spec:
+  interval: 30s
+  releaseName: zenith-server
+  chart:
+    spec:
+      chart: zenith-server
+      version: "0.19.0"
+      sourceRef:
+        kind: HelmRepository
+        name: zenith
+  install:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+  upgrade:
+    force: true
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+      strategy: rollback
+  valuesFrom:
+    - kind: ConfigMap
+      name: zenith-values-default
+    - kind: ConfigMap
+      name: zenith-values
+      optional: true
+    - kind: Secret
+      name: zenith-signing-key
+      valuesKey: subdomainTokenSigningKey
+      targetPath: registrar.config.subdomainTokenSigningKey

@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zenith-values-default
+  namespace: azimuth
+data:
+  values.yaml: |
+    common:
+      ingress:
+        className: ${INGRESS_CLASS}
+        baseDomain: ${DOMAIN}
+        tls:
+          annotations:
+            cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER:-none}
+          enabled: true
+          secretName: ""
+      kubernetes:
+        targetNamespace: zenith-services
+    metrics:
+      enabled: ${METRICS_ENABLED}
+    registrar:
+      config:
+        reservedSubdomains:
+        - portal
+        - registrar
+        - registry
+        - notary
+        - identity
+        - grafana
+        - prometheus
+        - alertmanager
+        - ara
+      ingress:
+        subdomain: registrar
+    sshd:
+      service:
+        port: ${ZENITH_SSHD_PORT}
+        type: LoadBalancer
+    sync:
+      config:
+        kubernetes:
+          ingress:
+            oidc:
+              discoveryEnabled: true
+              forwardedQueryParams:
+              - allow:
+                - pattern: .*
+                name: kc_idp_hint
