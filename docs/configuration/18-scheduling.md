@@ -1,18 +1,18 @@
 # Scheduling
 
-Azimuth allows scheduling of the ddeletion of CaaS and Kubernetes clusters. The creating user picks the lifetime of their platform at creation time, and Azimuth will delete the platform when it expires.
+Azimuth allows scheduling of the deletion of CaaS and Kubernetes clusters. The creating user picks the lifetime of their platform at creation time, and Azimuth will delete the platform when it expires.
 
 By default, no scheduling features are enabled. Azimuth configuration allows:
 
-- Allowing scheduling, but giving users' free choice as to the lifetime of their platforms.
+- Allowing scheduling, but giving users free choice as to the lifetime of their platforms.
 - Allowing scheduling, and enforcing a maximum lifetime across all platforms.
 - Allowing scheduling, and enforcing a maximum lifetime on a per-platform basis using annotations.
 
 ## Enabling scheduling globally
 
-To enable scheduling globally, add azimuth_scheduling_enabled to the appropriate configuration file.
-This will enable users creating new platforms to pick a deletion time when the platforms are created.
-Existing platforms will be unnafected.
+To enable scheduling globally, add `azimuth_scheduling_enabled: true` to the appropriate configuration file (see below).
+This will enable users creating new platforms to pick a lifetime when the platforms are created.
+Existing platforms will be unaffected.
 
 ```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
 azimuth_scheduling_enabled: true
@@ -24,22 +24,22 @@ Scheduling is implemented using annotations that are applied to instances of the
 `clustertemplates.azimuth.stackhpc.com` and
 `clustertypes.caas.azimuth.stackhpc.com` resources for Kubernetes cluster templates,
 and CaaS cluster types respectively.
-It is not possible to set maximum lifetimes for individual apps inside a kubernetes cluster,
+It is not possible to set maximum lifetimes for individual apps inside a Kubernetes cluster,
 only the cluster itself.
 
 The annotations is the same for all platform types:
 
 - `scheduling.azimuth.stackhpc.com/max-lifetime-hours`
-  A an integer number of hours which will be the maximum lifetime for the platform.
+  An integer number of hours which will be the maximum lifetime for the platform.
 
 <!-- prettier-ignore-start -->
 !!! warning "No annotations means infinite lifetime"
-    If no scheduling are present, then that platform has no maximum lifetime.
+    If no scheduling annotations are present, then that platform has no maximum lifetime.
 <!-- prettier-ignore-end -->
 
 ## Built-in platform types
 
-`azimuth-ops` supports a number of variables that can be used to apply scheduling
+`azimuth-ops` supports a number of variables that can be used to applies scheduling
 to the built-in platform types.
 
 The following variables allow default lifetimes to be set **for all built-in
