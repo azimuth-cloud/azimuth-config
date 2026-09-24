@@ -18,6 +18,19 @@ function export_latest_release_tag() {
 	echo "[INFO] Found latest release tag - $RELEASE_TAG"
 }
 
+function verify_release_tag() {
+	local upstream_repo=$1
+	local release_tag=$2
+
+	if curl -fsSL "https://api.github.com/repos/${upstream_repo}/releases" | jq -r '.[].tag_name' | fgrep $release_tag; then
+		echo "[INFO] The provided tag $release_tag exists in the upstream repository"
+		return
+	fi
+
+	echo "[ERROR] The provided tag $release_tag does not exist in the upstream repository"
+	exit 1
+}
+
 # Add the repository as an upstream
 function add_upstream_remote() {
 	local upstream_repo=$1
@@ -81,7 +94,13 @@ fi
 UPSTREAM_REPO="${UPSTREAM_REPO:-"azimuth-cloud/azimuth-config"}"
 echo "[INFO] Using upstream repo - $UPSTREAM_REPO"
 
-export_latest_release_tag $UPSTREAM_REPO
+RELEASE_TAG="${RELEASE_TAG:-}"
+
+if [ -z "$RELEASE_TAG" ]; then
+	export_latest_release_tag $UPSTREAM_REPO
+else
+	verify_release_tag $UPSTREAM_REPO $RELEASE_TAG
+fi
 add_upstream_remote $UPSTREAM_REPO
 
 # Use a branch that is named for the release
