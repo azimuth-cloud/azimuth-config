@@ -39,7 +39,7 @@ The annotations is the same for all platform types:
 
 ## Built-in platform types
 
-`azimuth-ops` supports a number of variables that can be used to applies scheduling
+`azimuth-ops` supports a number of variables that can be used to apply scheduling
 to the built-in platform types.
 
 The following variables allow default lifetimes to be set **for all built-in
@@ -52,7 +52,7 @@ azimuth_max_platform_lifetime_hours: 20
 These can be overridden for specific platform types if required:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
-# The following apply to all Kubernetes cluster templates
+# The following applies to all Kubernetes cluster templates
 azimuth_capi_operator_max_lifetime_hours: 24
 
 # Each CaaS cluster type has specific variables, e.g.:
