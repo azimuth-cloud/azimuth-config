@@ -6,6 +6,81 @@
 
 set -e
 
+#####
+# Functions
+#####
+
+function get_latest_release_tag() {
+  local upstream_repo=$1
+  local release_tag
+
+  # Fetch the tag for the latest release from the upstream repository
+  release_tag="$(curl -fsSL "https://api.github.com/repos/${upstream_repo}/releases/latest" | jq -r '.tag_name')"
+  echo "[INFO] Found latest release tag - $release_tag"
+
+  echo -n "$release_tag"
+}
+
+function verify_release_tag() {
+  local upstream_repo=$1
+  local release_tag=$2
+
+  if curl -fsSL "https://api.github.com/repos/${upstream_repo}/releases" | jq -r '.[].tag_name' | grep -F "$release_tag"; then
+    echo "[INFO] The provided tag $release_tag exists in the upstream repository"
+    return
+  fi
+
+  echo "[ERROR] The provided tag $release_tag does not exist in the upstream repository"
+  exit 1
+}
+
+# Add the repository as an upstream
+function add_upstream_remote() {
+  local upstream_repo=$1
+
+  echo "[INFO] Adding upstream remote..."
+  git remote add upstream "https://github.com/${upstream_repo}.git"
+  git remote show upstream
+
+  echo "[INFO] Fetching remote tags..."
+  git remote update
+}
+
+function merge_release_tag() {
+  local release_tag=$1
+
+  echo "[INFO] Merging release tag - $release_tag"
+  echo "[INFO] Release tag commit - $(git rev-parse "$release_tag")"
+
+  git merge --strategy recursive -X theirs --no-commit "$release_tag"
+}
+
+function checkout_commmit_push() {
+  local branch_name=$1
+  local default_branch=$2
+  local release_tag=$3
+
+  echo "[INFO] Checking out temporary branch '$branch_name'..."
+  git checkout -b "$branch_name"
+
+  echo "[INFO] Committing changes"
+  git commit -m "Upgrade Azimuth to $release_tag"
+
+  echo "[INFO] Pushing changes to origin"
+  git push --set-upstream origin "$branch_name"
+
+  # Go back to the default branch at the end
+  echo "[INFO] Reverting back to $default_branch"
+  git checkout "$default_branch"
+
+  echo "[INFO] Removing temporary branch"
+  git branch -d "$branch_name"
+}
+
+#####
+# Business logic
+#####
+
 # Only allow running on main
 CURRENT_BRANCH="$(git branch --show-current)"
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-"main"}"
@@ -22,17 +97,14 @@ fi
 UPSTREAM_REPO="${UPSTREAM_REPO:-"azimuth-cloud/azimuth-config"}"
 echo "[INFO] Using upstream repo - $UPSTREAM_REPO"
 
-# Fetch the tag for the latest release from the upstream repository
-RELEASE_TAG="$(curl -fsSL "https://api.github.com/repos/${UPSTREAM_REPO}/releases/latest" | jq -r '.tag_name')"
-echo "[INFO] Found latest release tag - $RELEASE_TAG"
+RELEASE_TAG="${RELEASE_TAG:-}"
 
-# Add the repository as an upstream
-echo "[INFO] Adding upstream remote..."
-git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
-git remote show upstream
-
-echo "[INFO] Fetching remote tags..."
-git remote update
+if [ -z "$RELEASE_TAG" ]; then
+  RELEASE_TAG=$(get_latest_release_tag "$UPSTREAM_REPO")
+else
+  verify_release_tag "$UPSTREAM_REPO" "$RELEASE_TAG"
+fi
+add_upstream_remote "$UPSTREAM_REPO"
 
 # Use a branch that is named for the release
 BRANCH_NAME="upgrade/$RELEASE_TAG"
@@ -44,9 +116,7 @@ if git show-branch "remotes/origin/$BRANCH_NAME" >/dev/null 2>&1; then
   exit
 fi
 
-echo "[INFO] Merging release tag - $RELEASE_TAG"
-echo "[INFO] Release tag commit - $(git rev-parse "$RELEASE_TAG")"
-git merge --strategy recursive -X theirs --no-commit "$RELEASE_TAG"
+merge_release_tag "$RELEASE_TAG"
 
 # Check if the merge resulted in any changes being staged
 if [ -n "$(git status --short)" ]; then
@@ -57,21 +127,7 @@ if [ -n "$(git status --short)" ]; then
   # the committing for us, so we only need to make branches
   # and commits if running outside of GitHub actions.
   if [ ! "$GITHUB_ACTIONS" ]; then
-    echo "[INFO] Checking out temporary branch '$BRANCH_NAME'..."
-    git checkout -b "$BRANCH_NAME"
-
-    echo "[INFO] Committing changes"
-    git commit -m "Upgrade Azimuth to $RELEASE_TAG"
-
-    echo "[INFO] Pushing changes to origin"
-    git push --set-upstream origin "$BRANCH_NAME"
-
-    # Go back to the default branch at the end
-    echo "[INFO] Reverting back to $DEFAULT_BRANCH"
-    git checkout "$DEFAULT_BRANCH"
-
-    echo "[INFO] Removing temporary branch"
-    git branch -d "$BRANCH_NAME"
+    checkout_commmit_push "$BRANCH_NAME" "$DEFAULT_BRANCH" "$RELEASE_TAG"
   fi
 
   # Write a file containing the branch name and tag
