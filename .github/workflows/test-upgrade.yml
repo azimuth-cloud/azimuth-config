@@ -59,7 +59,6 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout the initial git ref
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -98,6 +97,9 @@ jobs:
                 control_plane_size: "{{ generate_tests_kubernetes_test_case_control_plane_size }}"
                 worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"
                 worker_count: "{{ generate_tests_kubernetes_test_case_worker_count }}"
+                # The pervious version does not have the dashboard enabled, so need
+                # to disable it for testing
+                dashboard_enabled: false
                 monitoring_enabled: "{{ generate_tests_kubernetes_test_case_monitoring_enabled }}"
                 loki_query: "{{ generate_tests_kubernetes_test_case_loki_query | default('{}') | to_json }}"
                 loki_limit: "{{ generate_tests_kubernetes_test_case_loki_limit | default(omit) }}"
