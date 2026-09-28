@@ -255,3 +255,108 @@ capi_cluster_worker_failure_domain: az1
 azimuth_capi_operator_capi_helm_control_plane_failure_domains: [az1, az2]
 azimuth_capi_operator_capi_helm_worker_failure_domain: az1
 ```
+
+## Flavour-specific node group overrides
+
+There may be situations where node groups with certain flavours require different config
+options to the `nodeGroupDefaults` configured for the cluster e.g performance tuning options
+which should only be applied to flavours with GPUs. This can be done by overriding 
+`azimuth_capi_operator_release_overrides.config.capiHelm.flavorSpecificNodeGroupOverrides`, which
+is a dictionary with [fnmatch](https://docs.python.org/3/library/fnmatch.html) patterns for flavours
+as keys and CAPI node group config objects as values. For example, to apply CPU pinning to any
+flavour that has a name ending in `.gpu`, you would set:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_capi_operator_release_overrides:
+  config:
+    capiHelm:
+      flavorSpecificNodeGroupOverrides:
+        '*.gpu':
+          kubeadmConfigSpec:
+            files:
+            - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
+              owner: "root:root"
+              permissions: "0644"
+              content: |
+                {
+                  "apiVersion": "kubelet.config.k8s.io/v1beta1",
+                  "kind": "KubeletConfiguration",
+                  "cpuManagerPolicy": "static"
+                }
+            joinConfiguration:
+              patches:
+                directory: /etc/kubernetes/patches
+```
+
+### Example flavour-specific config for Intel PVC flavours
+
+Below is an example config for flavours with Intel PVC nodes (here identified by the `.pvc.` string),
+including Kubernetes performance tuning options, a KubeADM pre script for installing PVC drivers and
+taints compatible with the ExtendedResourceToleration admission controller to ensure that only workloads
+making resource requests for GPUs are scheduled onto the nodes:
+
+```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+azimuth_capi_operator_release_overrides:
+  config:
+    capiHelm:
+      flavorSpecificNodeGroupOverrides:
+        '*.pvc.*':
+          kubeadmConfigSpec:
+            preKubeadmCommands:
+              - |
+                # Adapted from https://dgpu-docs.intel.com/driver/installation.html#ubuntu
+                sudo apt update
+                sudo apt install -y gpg-agent wget
+                . /etc/os-release
+                if [[ ! " jammy " =~ " ${VERSION_CODENAME} " ]]; then
+                    echo "Ubuntu version ${VERSION_CODENAME} not supported"
+                else
+                    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+                    sudo gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+                    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu ${VERSION_CODENAME}/lts/2350 unified" | \
+                    sudo tee /etc/apt/sources.list.d/intel-gpu-${VERSION_CODENAME}.list
+                    sudo apt update
+                fi
+                sudo apt install -y \
+                    linux-headers-$(uname -r) \
+                    linux-modules-extra-$(uname -r) \
+                    flex bison \
+                    intel-fw-gpu intel-i915-dkms xpu-smi
+                # Avoids reboot
+                modprobe i915
+            files:
+            - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
+              owner: "root:root"
+              permissions: "0644"
+              content: |
+                {
+                  "apiVersion": "kubelet.config.k8s.io/v1beta1",
+                  "kind": "KubeletConfiguration",
+                  "reservedSystemCPUs": "0-3",
+                  "cpuManagerPolicy": "static",
+                  "cpuManagerPolicyOptions":
+                  {
+                      "full-pcpus-only": "true",
+                  },
+                  "topologyManagerPolicy": "restricted",
+                  "memoryManagerPolicy": "Static",
+                  "reservedMemory": [
+                      {
+                        "numaNode": 0,
+                        "limits": {
+                          "memory": "1Gi",
+                        }
+                      }
+                    ],
+                  "evictionHard": {
+                    "memory.available": "1Gi",
+                  },
+                }
+            joinConfiguration:
+              patches:
+                directory: /etc/kubernetes/patches
+              nodeRegistration:
+                taints:
+                - effect: NoSchedule
+                  key: gpu.intel.com/i915
+```
