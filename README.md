@@ -10,6 +10,8 @@ This repository is designed to be forked for a specific site and is structured i
 "environments", allowing common configuration to be shared but overridden where required
 using a layered approach.
 
+To use the recommeded git hooks run `./bin/init-githooks.sh`.
+
 ## Documentation
 
 Documentation on deploying Azimuth can be found at <https://azimuth-config.readthedocs.io>.

@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanagerconfig-ha
+  namespace: monitoring-system
+  labels:
+    alertmanager: "monitoring-alertmanager"
+spec:
+  receivers:
+    - name: critical-slack-notifications
+      slackConfigs:
+        - apiURL:
+            key: webhook
+            name: critical-secret
+          sendResolved: true
+    - name: warning-slack-notifications
+      slackConfigs:
+        - apiURL:
+            key: webhook
+            name: warning-secret
+  route:
+    receiver: critical-slack-notifications
+    groupBy:
+      - namespace
+      - severity
+      - alertname
+    matchers:
+      - name: alertname
+        matchType: "!~"
+        value: InfoInhibitor|Watchdog
+      - name: severity
+        matchType: "=~"
+        value: warning|critical
+    routes:
+      - receiver: critical-slack-notifications
+        matchers:
+          - name: severity
+            matchType: "="
+            value: critical
+      - receiver: warning-slack-notifications
+        matchers:
+          - name: severity
+            matchType: "="
+            value: warning
