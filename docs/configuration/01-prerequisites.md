@@ -65,6 +65,9 @@ cluster, they **must** be from an SSD-backed pool.
 !!! tip
     If you do not have much SSD capacity, it is possible to configure Kubernetes nodes so that etcd is on a separate block device, using a different volume type.
     See [etcd configuration](./03-kubernetes-config.md#etcd-configuration) for details.
+
+!!! tip
+    By default persistent volumes using the default Cinder CSI storage class cannot be expanded, if you are certain the driver being used allows for dynamic resizing this can be enabled by setting `capi_cluster_addons_csi_cinder_allow_volume_expansion: true`.
 <!-- prettier-ignore-end -->
 
 ### OpenStack project quotas
