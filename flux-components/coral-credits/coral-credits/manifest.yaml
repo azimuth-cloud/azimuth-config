@@ -1,0 +1,61 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: coral-credits
+  namespace: coral-credits
+spec:
+  type: "default"
+  interval: 15m
+  url: https://stackhpc.github.io/coral-credits
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: coral-credits
+  namespace: coral-credits
+spec:
+  interval: 30s
+  releaseName: coral-credits
+  chart:
+    spec:
+      chart: coral-credits
+      version: "0.4.0"
+      sourceRef:
+        kind: HelmRepository
+        name: coral-credits
+  install:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+  upgrade:
+    force: true
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 3m
+    remediation:
+      retries: 3 # Number of retries before giving up
+      remediateLastFailure: true # Automatically remediate the last failure
+      strategy: rollback
+  valuesFrom:
+    - kind: ConfigMap
+      name: coral-credits-values-default
+    - kind: ConfigMap
+      name: coral-credits-values
+      optional: true
+    - kind: Secret
+      name: coral-credits-admin
+      valuesKey: password
+      targetPath: settings.superuserPassword
+    - kind: Secret
+      name: coral-credits-db-pguser-coral-credits-db
+      valuesKey: password
+      targetPath: settings.database.password
+    - kind: Secret
+      name: coral-credits-db-pguser-coral-credits-db
+      valuesKey: user
+      targetPath: settings.database.user
