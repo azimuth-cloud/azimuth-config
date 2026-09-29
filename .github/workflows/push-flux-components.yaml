@@ -59,6 +59,7 @@ jobs:
           - azimuth-caas-operator
           - azimuth-flux
           - cert-manager
+          - coral-credits
           - harbor
           - keycloak
           - monitoring-system
