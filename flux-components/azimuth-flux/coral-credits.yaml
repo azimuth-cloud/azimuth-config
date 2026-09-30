@@ -24,6 +24,7 @@ spec:
     namespace: coral-credits
   path: "./database"
   prune: true
+  suspend: ${SKIP_CORAL_CREDITS:-true}
   timeout: 3m
   dependsOn:
     - name: postgres-operator
@@ -49,6 +50,7 @@ spec:
     namespace: coral-credits
   path: "./coral-credits"
   prune: true
+  suspend: ${SKIP_CORAL_CREDITS:-true}
   timeout: 3m
   dependsOn:
     - name: coral-credits-db
