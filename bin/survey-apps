@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+  echo "Please activate an environment" >&2
+  exit 1
+fi
+
+echo "Starting port-forward for Prometheus API"
+./bin/port-forward prometheus 9090 >/dev/null 2>&1 &
+PID="$!"
+# Make sure port-forward is killed on exit
+trap 'kill $PID' EXIT
+
+# Wait for port-forward
+sleep 5
+
+TIME_RANGE=180d
+
+echo "======"
+echo "IN USE"
+echo "======"
+echo ""
+echo "--------"
+echo "K8s Apps"
+echo "--------"
+curl -sG 'http://localhost:9090/api/v1/query' \
+  --data-urlencode 'query=count by(app_template) (azimuth_kube_app_info)' |
+  jq -r '(.data.result[] | [.metric.app_template, .value[1]]) | @tsv' |
+  column -t -s $'\t'
+
+echo ""
+echo "-------------"
+echo "Caas Clusters"
+echo "-------------"
+curl -sG 'http://localhost:9090/api/v1/query' \
+  --data-urlencode 'query=count by(cluster_type_name) (azimuth_caas_clusters_phase{phase="Ready"})' |
+  jq -r '(.data.result[] | [.metric.cluster_type_name, .value[1]]) | @tsv' |
+  column -t -s $'\t'
+
+echo ""
+echo "==============="
+echo "OVER LAST ${TIME_RANGE}"
+echo "==============="
+echo ""
+echo "--------"
+echo "K8s Apps"
+echo "--------"
+curl -sG 'http://localhost:9090/api/v1/query' \
+  --data-urlencode "query=count(count_over_time(azimuth_kube_app_info[${TIME_RANGE}])) by (app_template)" |
+  jq -r '(.data.result[] | [.metric.app_template, .value[1]]) | @tsv' |
+  column -t -s $'\t'
+
+echo ""
+echo "-------------"
+echo "Caas Clusters"
+echo "-------------"
+curl -sG 'http://localhost:9090/api/v1/query' \
+  --data-urlencode "query=count by(cluster_type_name) (count_over_time(azimuth_caas_clusters_phase{phase=\"Ready\"}[${TIME_RANGE}]))" |
+  jq -r '(.data.result[] | [.metric.cluster_type_name, .value[1]]) | @tsv' |
+  column -t -s $'\t'
+echo ""
