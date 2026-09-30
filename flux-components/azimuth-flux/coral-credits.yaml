@@ -1,0 +1,63 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: coral-credits
+  namespace: coral-credits
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/azimuth-cloud/azimuth-config/stack-hpc/coral-credits
+  ref:
+    tag: ${FLUX_ARTIFACT_TAG}
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: coral-credits-db
+  namespace: flux-system
+spec:
+  interval: 10m
+  targetNamespace: coral-credits
+  sourceRef:
+    kind: OCIRepository
+    name: coral-credits
+    namespace: coral-credits
+  path: "./database"
+  prune: true
+  suspend: ${SKIP_CORAL_CREDITS:-true}
+  timeout: 3m
+  dependsOn:
+    - name: postgres-operator
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: dynamic-azimuth-info
+      - kind: ConfigMap
+        name: static-azimuth-info
+        optional: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: coral-credits
+  namespace: flux-system
+spec:
+  interval: 10m
+  targetNamespace: coral-credits
+  sourceRef:
+    kind: OCIRepository
+    name: coral-credits
+    namespace: coral-credits
+  path: "./coral-credits"
+  prune: true
+  suspend: ${SKIP_CORAL_CREDITS:-true}
+  timeout: 3m
+  dependsOn:
+    - name: coral-credits-db
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: dynamic-azimuth-info
+      - kind: ConfigMap
+        name: static-azimuth-info
+        optional: true

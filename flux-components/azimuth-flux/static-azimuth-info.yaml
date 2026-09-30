@@ -6,3 +6,4 @@ metadata:
 data:
   CLUSTER_ISSUER: letsencrypt
   INGRESS_CLASS: traefik
+  SKIP_CORAL_CREDITS: "true"
