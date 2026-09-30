@@ -5,4 +5,4 @@ metadata:
   namespace: azimuth
 spec:
   basicAuth:
-    secret: admin-dashboard-creds
+    secret: admin-dashboard-creds #checkov:skip=CKV_SECRET_6:A reference to a secret not a secret
