@@ -12,6 +12,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: coral-credits
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: harbor
 ---
 apiVersion: v1
