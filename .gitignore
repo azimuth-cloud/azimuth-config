@@ -12,6 +12,9 @@ site
 environments/demo/inventory/group_vars/all/secrets.yml
 environments/standalone/inventory/group_vars/all/secrets.yml
 .github/environments/**/secrets.yml
+environments/demo/inventory/group_vars/all/kustomization.yaml
+environments/standalone/inventory/group_vars/all/kustomization.yaml
+.github/environments/**/kustomization.yaml
 # Ignore other types of secrets in CI environments
 .github/environments/**/env.secret
 .github/environments/**/clouds.yaml
