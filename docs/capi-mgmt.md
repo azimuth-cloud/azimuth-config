@@ -39,7 +39,7 @@ with the following differences:
 
 ### Networking
 
-([Main documentation](./configuration/01-prerequisites.md#networking))
+([Main documentation](configuration/01-prerequisites.md#networking))
 
 The only networking requirement is that there is a network path between the CAPI
 management cluster and the API server load balancer IP for each workload
@@ -57,7 +57,7 @@ management cluster VMs).
 
 ### OpenStack project quotas
 
-([Main documentation](./configuration/01-prerequisites/#openstack-project-quotas))
+([Main documentation](configuration/01-prerequisites.md#openstack-project-quotas))
 
 Floating IPs are not required for the ingress controller or the Zenith SSHD
 server (since these are not deployed by default in the CAPI-only scenario). A
@@ -71,7 +71,7 @@ additional floating IP quota will be required.
 
 ### Wildcard DNS
 
-([Main documentation](./configuration/01-prerequisites/#wildcard-dns))
+([Main documentation](configuration/01-prerequisites.md#wildcard-dns))
 
 Since a standalone CAPI management cluster deployment does not include Azimuth
 or Zenith, a DNS entry is not required.
@@ -125,11 +125,11 @@ script.
 
 Any production-ready CAPI management cluster should have a robust disaster
 recovery solution. The Azimuth documentation on
-[disaster recovery](./configuration/15-disaster-recovery) is directly applicable
+[disaster recovery](configuration/15-disaster-recovery.md) is directly applicable
 to CAPI-only deployments and allows relevant CAPI Kubernetes resources to be
 periodically backed up to an external S3 bucket. An Ansible playbook is also
 provided in the event of an operator needing to
-[restore from a backup](./configuration/15-disaster-recovery/#restoring-from-a-backup).
+[restore from a backup](configuration/15-disaster-recovery.md#restoring-from-a-backup).
 The sole difference between Azimuth and CAPI-only backups is that Azimuth
 includes some Cinder volume snapshots as part of each backup, whereas all CAPI
 states are stored in Kubernetes API resources, so Velero will only take an S3
