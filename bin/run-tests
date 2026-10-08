@@ -20,7 +20,7 @@ ansible_variable() {
 }
 
 work_bin_dir="$(ansible_variable work_directory)/bin"
-export PATH=$PATH:$work_bin_dir
+export PATH=${work_bin_dir}:$PATH
 
 # Get the test directory
 test_directory="$(ansible_variable generate_tests_suite_directory)"
