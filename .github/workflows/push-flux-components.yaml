@@ -57,6 +57,7 @@ jobs:
         image:
           - admin-dashboard
           - azimuth-caas-operator
+          - azimuth-schedule-operator
           - azimuth-flux
           - cert-manager
           - coral-credits
