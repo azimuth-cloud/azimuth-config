@@ -4,19 +4,30 @@
 
 ## Background
 
-It is imperative that these steps are followed **before** upgrading to azimuth-config 2026.6.x.
-They apply if you are upgrading Azimuth, or a Standalone CAPI Management Cluster for Magnum.
+<!-- prettier-ignore-start -->
+!!! warning
+    It is imperative that these steps are followed **before** upgrading to azimuth-config 2026.6.x.
+    They apply if you are upgrading Azimuth, or a Standalone CAPI Management Cluster for Magnum.
+<!-- prettier-ignore-end -->
 
-azimuth-config 2026.6.x introduced an updated version of cluster-api-provider-openstack, alongside updated CustomResoureDefinitions for CAPO objects: `openstackclusters`, `openstackclustertemplates`, `openstackmachines` and `openstackmachinetemplates`.
+azimuth-config 2026.6.x introduced an updated version of cluster-api-provider-openstack (CAPO), alongside updated CustomResoureDefinitions for CAPO objects: `openstackclusters`, `openstackclustertemplates`, `openstackmachines` and `openstackmachinetemplates`.
 
 In cases where Cluster API management clusters have existed for a long time, it is possible that old versions of these objects exist in the cluster, which can prevent the upgrade from succeeding, requiring nasty interventions to allow it to do so, and possibly incurring data loss.
 
 Alongside this, CAPO changed Neutron security groups applied to ports attached to tenant cluster worker nodes to restrict more incoming traffic, which particularly affected users with Ingress controllers (or other Kubernetes `LoadBalancer` type services) running behind Octavia **OVN** loadbalancers, (**not Amphora**).
+
 Most cases of this are handled directly by azimuth-config and ansible-collection-azimuth-ops, but Standalone CAPI Management Cluster deployments where **both the OVN and Amphora** Octavia loadbalancer providers are available on the cloud **and** `openstack_loadbalancer_provider` is set to `amphora` in azimuth-config, should take extra steps during the upgrade to azimuth-config 2026.6.x.
 This is to ensure that external traffic to any tenant Magnum clusters with Kubernetes `LoadBalancer` type services is not disrupted.
 
-Finally, when a Standalone CAPI Management Cluster used for magnum-capi-helm is upgraded past 2026.6.x, it is important that the default capi-helm-charts version is raised >=0.26.1.
+When a Standalone CAPI Management Cluster used for magnum-capi-helm is upgraded past 2026.6.x, it is important that the default capi-helm-charts version is raised >=0.26.1.
 This ensures that upgraded and new Magnum tenant cluster worker nodes are assigned security group rules permissive enough to allow external traffic to reach ports behind Kubernetes `LoadBalancer` type services when Octavia OVN Loadbalancers are used.
+
+The 2026.6.x release series also introduced version 12 of the `ansible.community.general` Ansible collection, which deprecated the `stdout_callback` output plugin in favour of the `callback_result_format` output plugin.
+
+Finally, starting in this release, the ingress controller optionally installed in user Kubernetes clusters - if selected in the Kubernetes cluster-creation UI - will be Traefik, rather than the now deprecated NGINX Ingress controller.
+Existing user Kubernetes clusters will remain using Ingress NGINX until they upgrade to a new cluster templates published in this release, at which point Ingress NGINX will be uninstalled and replaced with Traefik.
+This migration process will cause downtime for services deployed behind the ingress controller while Traefik is installed and cloud loadbalancers are reprovisioned.
+Traefik is configured with the `kubernetesIngressNGINX` provider enabled, which is designed to allow users migrating from Ingress NGINX to continue to use a subset of common Ingress NGINX-specific annotations, but ensuring compatibility with arbitrary Ingress resources deployed in user clusters is out of scope for Azimuth and ideally should be tested by users before migrating.
 
 ## Actions
 
@@ -184,3 +195,18 @@ done
    ```bash
    kubectl annotate --all --all-namespaces clusters.cluster.x-k8s.io cluster.x-k8s.io/paused-
    ```
+
+## Ensure ansible.cfg is updated to use callback_result_format
+
+`stdout_callback` was previously used by default in all Azimuth config environments, and while it has been replaced in all azimuth-config environments present in the `azimuth-cloud/azimuth-config` repository, all uses of this plugin in `ansible.cfg` in custom environments should
+also be replaced:
+
+```diff
+inventory = ../base/inventory,../singlenode/inventory,./inventory
+roles_path = ../../.ansible/roles
+collections_path = ../../.ansible/collections
+- stdout_callback = yaml
++ callback_result_format = yaml
+bin_ansible_callbacks = True
+callbacks_enabled = ansible.posix.profile_tasks
+```
