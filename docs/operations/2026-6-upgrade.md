@@ -24,11 +24,6 @@ This ensures that upgraded and new Magnum tenant cluster worker nodes are assign
 
 The 2026.6.x release series also introduced version 12 of the `ansible.community.general` Ansible collection, which deprecated the `stdout_callback` output plugin in favour of the `callback_result_format` output plugin.
 
-Finally, starting in this release, the ingress controller optionally installed in user Kubernetes clusters - if selected in the Kubernetes cluster-creation UI - will be Traefik, rather than the now deprecated NGINX Ingress controller.
-Existing user Kubernetes clusters will remain using Ingress NGINX until they upgrade to a new cluster templates published in this release, at which point Ingress NGINX will be uninstalled and replaced with Traefik.
-This migration process will cause downtime for services deployed behind the ingress controller while Traefik is installed and cloud loadbalancers are reprovisioned.
-Traefik is configured with the `kubernetesIngressNGINX` provider enabled, which is designed to allow users migrating from Ingress NGINX to continue to use a subset of common Ingress NGINX-specific annotations, but ensuring compatibility with arbitrary Ingress resources deployed in user clusters is out of scope for Azimuth and ideally should be tested by users before migrating.
-
 ## Actions
 
 Because of the repository branching model chosen for azimuth-config, it is not possible to go back and fix these issues in the deployment configuration, therefore there are manual actions to take before upgrading a an Azimuth or a Standalone CAPI Management Cluster to azimuth-config 2026.6.x.
@@ -198,10 +193,10 @@ done
 
 ## Ensure ansible.cfg is updated to use callback_result_format
 
-`stdout_callback` was previously used by default in all Azimuth config environments, and while it has been replaced in all azimuth-config environments present in the `azimuth-cloud/azimuth-config` repository, all uses of this plugin in `ansible.cfg` in custom environments should
-also be replaced:
+In this release, the `ansible.community.general` collection is updated to version 12.x. This version deprecates the `stdout_callback` output plugin, which was previously used by default in all Azimuth config environments.
+While it has been replaced in all azimuth-config environments present in the `azimuth-cloud/azimuth-config` repository, all uses of this plugin in `ansible.cfg` in custom environments should also be replaced:
 
-```diff
+```diff title="environments/my-site/ansible.cfg"
 inventory = ../base/inventory,../singlenode/inventory,./inventory
 roles_path = ../../.ansible/roles
 collections_path = ../../.ansible/collections
@@ -210,3 +205,14 @@ collections_path = ../../.ansible/collections
 bin_ansible_callbacks = True
 callbacks_enabled = ansible.posix.profile_tasks
 ```
+
+## User-impacting changes in Azimuth 2026.6.x
+
+Users may be impacted by the following changes.
+
+### Ingress NGINX to Traefik in user Kubernetes
+
+In this release, the ingress controller optionally installed in user Kubernetes clusters - if selected in the Kubernetes cluster-creation UI - will be Traefik, rather than the now deprecated NGINX Ingress controller.
+Existing user Kubernetes clusters will remain using Ingress NGINX until they upgrade to a new cluster templates published in this release, at which point Ingress NGINX will be uninstalled and replaced with Traefik.
+This migration process will cause downtime for services deployed behind the ingress controller while Traefik is installed and cloud loadbalancers are reprovisioned.
+Traefik is configured with the `kubernetesIngressNGINX` provider enabled, which is designed to allow users migrating from Ingress NGINX to continue to use a subset of common Ingress NGINX-specific annotations, but ensuring compatibility with arbitrary Ingress resources deployed in user clusters is out of scope for Azimuth and ideally should be tested by users before migrating.
