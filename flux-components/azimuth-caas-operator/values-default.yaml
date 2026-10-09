@@ -9,7 +9,7 @@ data:
       enabled: true
     config:
       globalExtraVars:
-        namespace: {{ lookup("file", "/var/run/secrets/kubernetes.io/serviceaccount/namespace") }}
+        namespace: "{{ lookup(\"file\", \"/var/run/secrets/kubernetes.io/serviceaccount/namespace\") }}"
         terraform_backend_type: kubernetes
         terraform_backend_config:
           in_cluster_config: "true"
