@@ -3,10 +3,6 @@ name: Clean up stale CI resources
 
 permissions:
   contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
 
 on: # yamllint disable-line rule:truthy
   schedule:
@@ -34,66 +30,44 @@ on: # yamllint disable-line rule:truthy
           - arcus
           - leafcloud
 
+concurrency:
+  group: cleanup-ci-resources-${{ inputs.target-cloud || vars.TARGET_CLOUD || 'default' }}
+  cancel-in-progress: false
+
 jobs:
   ci-cleanup:
     name: Clean up stale CI resources
     if: github.repository == 'azimuth-cloud/azimuth-config'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
 
       - name: Generate clouds.yaml
-        run: |
-          cat << EOF > clouds.yaml
-          ${{ secrets.OS_CLOUDS }}
-          EOF
+        run: printf '%s\n' "$OS_CLOUDS" > clouds.yaml
+        env:
+          OS_CLOUDS: ${{ secrets.OS_CLOUDS }}
 
-      - name: Install OpenStack client
-        run: |
-          pip install python-openstackclient
+      - name: Install OpenStack SDK
+        run: python -m pip install 'openstacksdk>=4,<5'
 
-      - name: Clean up instances and attached volumes over 6 hours old
-        if: ${{ github.event_name == 'schedule' || inputs.delete-resources }}
+      - name: Clean up stale CI resources
         run: |
-          result=0
-          changes_before=$(date -Imin -d -6hours)
-          for status in ACTIVE BUILD ERROR SHUTOFF; do
-              for instance in $(openstack server list --unlocked --format value --column ID --changes-before "$changes_before" --status $status); do
-                  echo "Cleaning up $status instance $instance"
-                  openstack server show "$instance"
-                  echo "Getting volumes for instance $instance"
-                  volumes=$(openstack server volume list -f value -c "Volume ID" "$instance")
-                  keypair=$(openstack server show "$instance" -f value -c key_name)
-                  if ! openstack server delete "$instance"; then
-                      echo "Failed to delete $status instance $instance"
-                      result=1
-                  fi
-                  echo "Deleting keypair for instance $instance"
-                  # This shouldn't fail, but might if the keypair is in-use elsewhere
-                  openstack keypair delete "$keypair" || true
-                  for volume in $volumes; do
-                    echo "Cleaning up volume $volume from instance $instance"
-                    openstack volume show "$volume"
-                    if ! openstack volume delete "$volume"; then
-                      echo "Failed to delete volume $volume"
-                      result=1
-                    fi
-                  done
-              done
-          done
-          exit $result
+          args=(--older-than-hours 6)
+          if [[ "$DELETE_RESOURCES" == "true" ]]; then
+            args+=(--delete-resources)
+          fi
+          if [[ "$DELETE_ALL_KEYPAIRS" == "true" ]]; then
+            args+=(--delete-all-keypairs)
+          fi
+          python bin/cleanup-ci-resources "${args[@]}"
         env:
           OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
-
-      - name: Clean up all SSH keypairs
-        if: ${{ inputs.delete-all-keypairs }}
-        run: |
-          for keypair in $(openstack keypair list --format value -c Name); do
-            if [[ "$keypair" =~ ^azimuth- || "$keypair" =~ ^packer_ ]]; then
-              openstack keypair delete "$keypair"
-              echo "Deleted keypair $keypair"
-            fi
-          done
-        env:
-          OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          CI_CLEANUP_PROJECT_ID: ${{ vars.CI_CLEANUP_PROJECT_ID }}
+          DELETE_RESOURCES: ${{ github.event_name == 'schedule' || inputs.delete-resources }}
+          DELETE_ALL_KEYPAIRS: ${{ inputs.delete-all-keypairs || false }}

@@ -1,13 +1,6 @@
 ---
 name: Backup and restore test
 
-permissions:
-  contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
-
 on: # yamllint disable-line rule:truthy
   # Allow manual execution on any branch
   workflow_dispatch:
@@ -41,6 +34,8 @@ jobs:
   # conclusions of specific steps
   test_backup_restore:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       # We need to check out the code under test first in order to use local
       # actions
@@ -160,6 +155,21 @@ jobs:
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/run-tests --include verify --outputdir reports/verify-post-restore
         if: ${{ !cancelled() && steps.backup-restore.conclusion == 'success' }}
+
+      - name: Create pre-cleanup debug bundle
+        run: |
+          set -e
+          source ./ci.env
+          source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+          ./bin/create-debug-bundle
+        if: ${{ !cancelled() }}
+
+      - name: Upload pre-cleanup debug bundle
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: azimuth-pre-cleanup-debug-bundle
+          path: debug-bundle.tar.gz
+        if: ${{ !cancelled() }}
 
       - name: Delete test platforms
         run: |

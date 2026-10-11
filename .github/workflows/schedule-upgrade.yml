@@ -57,6 +57,5 @@ jobs:
           # yamllint disable-line rule:line-length
           payload: >-
             text:
-            ":rotating_light: \nScheduled Azimuth upgrade test
-            **${{ needs.test_upgrade.result }}**\n
+            ":rotating_light: \nScheduled Azimuth upgrade test *${{ needs.test_upgrade.result }}*\n
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

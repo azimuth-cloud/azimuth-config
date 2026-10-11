@@ -1,6 +1,12 @@
 ---
 name: Azimuth CI provision
 description: Provisions an Azimuth environment using the CI config.
+inputs:
+  debug-bundle-artifact-name:
+    description: >
+      The name to use for the debug bundle artifact collected if provisioning fails.
+    required: true
+    default: debug-bundle-provision-failure
 runs:
   using: composite
   steps:
@@ -12,3 +18,19 @@ runs:
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook azimuth_cloud.azimuth_ops.provision -e @extra-vars.yml
+
+    - name: Create debug bundle on provisioning failure
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ./bin/create-debug-bundle
+      if: ${{ failure() }}
+
+    - name: Upload debug bundle on provisioning failure
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      with:
+        name: ${{ inputs.debug-bundle-artifact-name }}
+        path: debug-bundle.tar.gz
+      if: ${{ failure() }}
