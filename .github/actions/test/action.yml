@@ -31,15 +31,47 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e @extra-vars.yml
 
+    - name: Get latest logcli release
+      id: logcli-version
+      shell: bash
+      # Authenticate to avoid rate limits.
+      run: |
+        set -e
+        echo "version=$(gh release view --repo grafana/loki --json tagName --jq .tagName)" >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Cache logcli
+      id: cache-logcli
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/logcli/logcli
+        key: logcli-${{ runner.os }}-${{ steps.logcli-version.outputs.version }}
+
+    - name: Download logcli
+      shell: bash
+      # Authenticate to avoid rate limits.
+      run: |
+        set -e
+        mkdir -p ~/.cache/logcli
+        gh release download "$LOGCLI_VERSION" \
+          --repo grafana/loki \
+          --pattern 'logcli-linux-amd64.zip' \
+          --output /tmp/logcli.zip \
+          --clobber
+        unzip -o /tmp/logcli.zip -d /tmp
+        chmod +x /tmp/logcli-linux-amd64
+        mv /tmp/logcli-linux-amd64 ~/.cache/logcli/logcli
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LOGCLI_VERSION: ${{ steps.logcli-version.outputs.version }}
+      if: steps.cache-logcli.outputs.cache-hit != 'true'
+
     - name: Install logcli
       shell: bash
       run: |
         set -e
-        LOKI_VERSION="$(curl -s https://api.github.com/repos/grafana/loki/releases/latest | jq -r .tag_name)"
-        curl -fSL "https://github.com/grafana/loki/releases/download/${LOKI_VERSION}/logcli-linux-amd64.zip" -o /tmp/logcli.zip
-        unzip -o /tmp/logcli.zip -d /tmp
-        chmod +x /tmp/logcli-linux-amd64
-        sudo mv /tmp/logcli-linux-amd64 /usr/local/bin/logcli
+        sudo cp ~/.cache/logcli/logcli /usr/local/bin/logcli
         logcli --version
 
     - name: Run test suite
