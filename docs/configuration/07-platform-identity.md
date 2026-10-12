@@ -53,10 +53,11 @@ the corresponding realm using the Azimuth identity provider. Platform Admins who
 in to a realm via Azimuth are automatically placed in the `admins` and `platform-users`
 groups described above.
 
+<!-- prettier-ignore-start -->
 !!! note
-
     All users that can access the Azimuth tenancy by signing in with an OpenStack account
     (i.e. Platform Admins) automatically have access to all of the platforms in the tenancy.
+<!-- prettier-ignore-end -->
 
 When a platform is deployed in an Azimuth tenancy, a group is created in the corresponding
 identity realm, and access to the platform is controlled by membership of this group. Each
