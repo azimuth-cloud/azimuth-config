@@ -53,6 +53,15 @@ azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-
 azimuth_capi_operator_capi_helm_root_volume_type: unencrypted
 azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
 
+# Don't have direct control of cert for Leafcloud auth endpoint so disabled
+# to avoid CI being blocked on alerts
+capi_cluster_release_overrides:
+  addons:
+    monitoring:
+      blackboxExporter:
+        openstackAuthUrlTarget:
+          enabled: false
+
 # CI only: reduce the control-plane MachineHealthCheck startup timeout so
 # failed bootstrap attempts can be remediated before the overall CI timeout.
 azimuth_capi_operator_capi_helm_control_plane_node_startup_timeout: 600s
