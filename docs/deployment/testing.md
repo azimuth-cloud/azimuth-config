@@ -198,7 +198,7 @@ different types of platform.
     It has a large number of variables that can be used to tune the test generation. This document only discusses the most frequently used variables.
 <!-- prettier-ignore-end -->
 
-More information on [generating_tests](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/) and the [large number of runing variables](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/defaults/main.yml).
+More information on [generating_tests](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/) and the [large number of running variables](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/defaults/main.yml).
 
 ### CaaS cluster types
 
@@ -339,7 +339,7 @@ Once this cluster becomes `Ready`, the following steps are performed for each ap
 !!! info  "Verification of Zenith services"
     As for other platform types, only title-based verification is performed for Zenith services.
 
-!!! warning  "Overridding inferred configuration"
+!!! warning  "Overriding inferred configuration"
     Currently, it is not possible to override the inferred configuration for Kubernetes apps. This may mean it is not currently possible to test some Kubernetes apps that  have required parameters.
 
 !!! warning  "Specifying Zenith services"

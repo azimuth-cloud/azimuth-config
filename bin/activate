@@ -33,6 +33,9 @@ ANSIBLE_CONFIG="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/ansible.cfg"
 if [ ! -f "$ANSIBLE_CONFIG" ]; then
     echo "Specified environment does not contain an ansible.cfg" >&2
     return 1
+else
+    # Migrate cfg files with deprecated stdout_callback plugin
+    sed 's/stdout_callback/callback_result_format/' $ANSIBLE_CONFIG -i
 fi
 
 # Configure OpenStack connectivity if not already configured

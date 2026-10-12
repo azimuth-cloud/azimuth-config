@@ -12,7 +12,7 @@ infra_fixed_floatingip: "{{ lookup('env', 'INGRESS_IP') }}"
 # The flavors only have 20GB root disks, which is not enough to unpack images
 # for uploading
 # So we need to use a Cinder root volume
-# We also don't need the encypted volume type
+# We also don't need the encrypted volume type
 infra_root_volume_enabled: true
 infra_root_volume_size: 40
 infra_root_volume_type: unencrypted
@@ -52,3 +52,16 @@ azimuth_capi_operator_capi_helm_csi_cinder_default_availability_zone: europe-nl-
 # Use the unencrypted volume type for Kubernetes volumes
 azimuth_capi_operator_capi_helm_root_volume_type: unencrypted
 azimuth_capi_operator_capi_helm_csi_cinder_default_volume_type: unencrypted
+
+# Don't have direct control of cert for Leafcloud auth endpoint so disabled
+# to avoid CI being blocked on alerts
+capi_cluster_release_overrides:
+  addons:
+    monitoring:
+      blackboxExporter:
+        openstackAuthUrlTarget:
+          enabled: false
+
+# CI only: reduce the control-plane MachineHealthCheck startup timeout so
+# failed bootstrap attempts can be remediated before the overall CI timeout.
+azimuth_capi_operator_capi_helm_control_plane_node_startup_timeout: 600s

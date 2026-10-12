@@ -140,7 +140,7 @@ azimuth_openstack_internal_net_cidr: 10.0.3.0/24
 ## Monitoring Cloud Capacity
 
 Azimuth is able to federate cloud metrics from a Prometheus running within
-your OpenStack cloud enviroment, such as the one deployed by
+your OpenStack cloud environment, such as the one deployed by
 [stackhpc-kayobe-config](https://github.com/stackhpc/stackhpc-kayobe-config).
 
 We also assume the [os-capacity exporter](https://github.com/stackhpc/os-capacity)

@@ -99,7 +99,19 @@ When a new Azimuth release becomes available, you will need to synchronise the c
 from `azimuth-config` into your site configuration repository in order to pick up new
 component versions, upgraded dependencies and new images.
 
+Azimuth is released using a hybrid CalVer/SemVer notation, where the first two segments of the
+version represent Year and Month. The third segment represents a sequentially-numbered "patch"
+release, which is incremented if a bugfix release is required in that month.
+
 <!-- prettier-ignore-start -->
+!!! warning "Upgrade path between releases"
+    The only supported upgrade paths between Azimuth versions are:
+      1. To the next available patch release within a Month e.g. 2026.4.**0** to 2026.4.**1**
+      2. To the most recent patch release in the next available Month release e.g.
+         2026.**5**.2 to 2026.**6**.0
+    Occasionally, monthly releases may not be produced. It is supported to upgrade to the
+    latest patch release in the **next available** monthly release.
+
 !!! info "Choosing a release"
     The available releases, with associated release notes, can be reviewed on the Azimuth releases page.
     See [Azimuth releases page](https://github.com/azimuth-cloud/azimuth-config/releases).

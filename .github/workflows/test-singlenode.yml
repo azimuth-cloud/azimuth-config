@@ -1,18 +1,16 @@
 ---
 name: Single node test
 
-permissions:
-  contents: read
-  packages: write
-  # To report GitHub Actions status checks
-  statuses: write
-  id-token: write
-
-on:
+on: # yamllint disable-line rule:truthy
   workflow_call:
+    secrets:
+      OS_CLOUDS:
+        description: clouds.yaml file
+        required: true
 
   # Allow manual execution on any branch
   workflow_dispatch:
+    # yamllint disable-line rule:line-length
     # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
@@ -29,11 +27,15 @@ jobs:
   # Tests a single node deployment
   test_singlenode:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       # We need to check out the code under test first in order to use local
       # actions
       - name: Checkout code under test
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup

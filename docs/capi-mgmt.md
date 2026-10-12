@@ -17,7 +17,7 @@ any Azimuth deployment is also a fully functioning
 [CAPI management cluster](https://cluster-api.sigs.k8s.io/user/concepts#management-cluster)
 (albeit with some additional components installed on top, such as
 [Zenith](https://github.com/azimuth-cloud/zenith) and the Azimuth interface
-itself). It is therefore possible (and encouraged) to re-use this management
+itself). It is therefore possible (and encouraged) to reuse this management
 cluster for other Cluster API services, such as interfacing with the
 [Magnum CAPI Helm driver](https://opendev.org/openstack/magnum-capi-helm).
 
@@ -29,25 +29,24 @@ azimuth-config to deploy an Azimuth-free, standalone CAPI management cluster
 (e.g. for use with the Magnum CAPI Helm driver). For OpenStack operators using
 OpenStack Kayobe, a companion guide for deploying the Magnum CAPI Helm driver
 and configuring it to use the deployed CAPI management cluster can be found
-[here](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html).
+in the stackhpc-kayobe-config [documentation](https://stackhpc-kayobe-config.readthedocs.io/en/stackhpc-2025.1/configuration/magnum-capi.html).
 
 ## OpenStack Prerequisites
 
 The OpenStack prerequisites are largely the same as those for a full Azimuth
-deployment, as described [here](./configuration/01-prerequisites.md), with the
-following differences:
+deployment, as described [in the prerequisites](./configuration/01-prerequisites.md),
+with the following differences:
 
 ### Networking
 
-([Main documentation](./configuration/01-prerequisites.md#networking))
+([Main documentation](configuration/01-prerequisites.md#networking))
 
 The only networking requirement is that there is a network path between the CAPI
 management cluster and the API server load balancer IP for each workload
 clusters. This is achievable by either deploying all clusters on a
 single tenant network shared between all OpenStack projects, or by ensuring all
 tenant clusters use a load balancer with a public IP for their API server
-(relevant CAPO docs
-[here](https://cluster-api-openstack.sigs.k8s.io/clusteropenstack/configuration#api-server-floating-ip)).
+(relevant [CAPO docs](https://cluster-api-openstack.sigs.k8s.io/clusteropenstack/configuration#api-server-floating-ip)).
 
 A further constraint when driving Cluster API from Magnum is that the Magnum
 conductor must be able to reach the management cluster's Kubernetes API server.
@@ -58,7 +57,7 @@ management cluster VMs).
 
 ### OpenStack project quotas
 
-([Main documentation](./configuration/01-prerequisites/#openstack-project-quotas))
+([Main documentation](configuration/01-prerequisites.md#openstack-project-quotas))
 
 Floating IPs are not required for the ingress controller or the Zenith SSHD
 server (since these are not deployed by default in the CAPI-only scenario). A
@@ -72,7 +71,7 @@ additional floating IP quota will be required.
 
 ### Wildcard DNS
 
-([Main documentation](./configuration/01-prerequisites/#wildcard-dns))
+([Main documentation](configuration/01-prerequisites.md#wildcard-dns))
 
 Since a standalone CAPI management cluster deployment does not include Azimuth
 or Zenith, a DNS entry is not required.
@@ -118,20 +117,19 @@ environment, the script can be used from the repository root with
 ```
 
 So, for example, `./bin/port-forward grafana 3000` would make the CAPI
-management cluster's Grafana instance accessible on your laptop at
-`http://localhost:3000`. The list of service which can be port-forwarded can be
-found
-[here](https://github.com/azimuth-cloud/azimuth-config/blob/0592b6ea2bd01e5e4fec390e3e668f351d185f53/bin/port-forward#L32-L80)
+management cluster's Grafana instance accessible locally at `http://localhost:3000`.
+The list of services which can be port-forwarded can be found in the `bin/port-forward`
+script.
 
 ## Disaster Recovery
 
 Any production-ready CAPI management cluster should have a robust disaster
 recovery solution. The Azimuth documentation on
-[disaster recovery](./configuration/15-disaster-recovery) is directly applicable
+[disaster recovery](configuration/15-disaster-recovery.md) is directly applicable
 to CAPI-only deployments and allows relevant CAPI Kubernetes resources to be
 periodically backed up to an external S3 bucket. An Ansible playbook is also
 provided in the event of an operator needing to
-[restore from a backup](./configuration/15-disaster-recovery/#restoring-from-a-backup).
+[restore from a backup](configuration/15-disaster-recovery.md#restoring-from-a-backup).
 The sole difference between Azimuth and CAPI-only backups is that Azimuth
 includes some Cinder volume snapshots as part of each backup, whereas all CAPI
 states are stored in Kubernetes API resources, so Velero will only take an S3

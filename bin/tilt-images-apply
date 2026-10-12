@@ -8,13 +8,12 @@ import sys
 
 import yaml
 
-
 TILT_IMAGE_REGEX = r"^TILT_IMAGE_(\d+)$"
 
 
 def exec_cmd(cmd, **kwargs):
     # Log the command we are about to execute
-    print("Executing cmd: {}".format(" ".join(cmd)), file = sys.stderr)
+    print("Executing cmd: {}".format(" ".join(cmd)), file=sys.stderr)
     # By default, redirect stdout to stderr and raise on error
     kwargs.setdefault("stdout", sys.stderr)
     kwargs.setdefault("check", True)
@@ -25,8 +24,7 @@ def exec_cmd(cmd, **kwargs):
 # Before doing anything, check if we need to record the revision
 # This will be used to rollback on tilt down to the last "normal" version
 revision_file = pathlib.Path(os.environ["AZIMUTH_TILT_WORK_DIR"]) / "{}.{}.rev".format(
-    os.environ["TILT_RELEASE_NAME"],
-    os.environ["TILT_RELEASE_NAMESPACE"]
+    os.environ["TILT_RELEASE_NAME"], os.environ["TILT_RELEASE_NAMESPACE"]
 )
 if not revision_file.exists():
     revision_file.touch()
@@ -42,11 +40,11 @@ if not revision_file.exists():
                 "--output",
                 "json",
             ],
-            stdout = subprocess.PIPE
+            stdout=subprocess.PIPE,
         )
         revision = json.loads(status_result.stdout)["version"]
         fh.write(str(revision))
-    except Exception as exc:
+    except Exception:
         # If there was an error writing, unlink the file after closing
         fh.close()
         revision_file.unlink()
@@ -71,7 +69,7 @@ helm_get_values_proc = exec_cmd(
         "--output",
         "json",
     ],
-    stdout = subprocess.PIPE
+    stdout=subprocess.PIPE,
 )
 current_values = json.loads(helm_get_values_proc.stdout) or {}
 current_values.pop("USER-SUPPLIED VALUES", None)
@@ -98,30 +96,25 @@ while True:
     except KeyError:
         break
     else:
-        repository, tag = image.rsplit(":", maxsplit = 1)
+        repository, tag = image.rsplit(":", maxsplit=1)
         path = os.environ[f"TILT_IMAGE_PATH_{idx}"]
-        helm_upgrade_command.extend([
-            "--set",
-            f"{path}.repository={repository}",
-            "--set",
-            f"{path}.tag={tag}",
-        ])
+        helm_upgrade_command.extend(
+            [
+                "--set",
+                f"{path}.repository={repository}",
+                "--set",
+                f"{path}.tag={tag}",
+            ]
+        )
     idx = idx + 1
 
-exec_cmd(helm_upgrade_command, input = json.dumps(current_values).encode())
+exec_cmd(helm_upgrade_command, input=json.dumps(current_values).encode())
 
 
 # Finally, print the currently installed manifest so Tilt knows about the resources
 manifest = exec_cmd(
-    [
-        "helm",
-        "get",
-        "manifest",
-        os.environ["TILT_RELEASE_NAME"],
-        "--namespace",
-        os.environ["TILT_RELEASE_NAMESPACE"]
-    ],
-    stdout = subprocess.PIPE
+    ["helm", "get", "manifest", os.environ["TILT_RELEASE_NAME"], "--namespace", os.environ["TILT_RELEASE_NAMESPACE"]],
+    stdout=subprocess.PIPE,
 )
 
 # Tilt wants UIDs, so we have to process the manifest to add the namespace where
@@ -138,6 +131,6 @@ exec_cmd(
         "--output",
         "yaml",
     ],
-    input = yaml.safe_dump_all(manifest_objs).encode(),
-    stdout = None
+    input=yaml.safe_dump_all(manifest_objs).encode(),
+    stdout=None,
 )

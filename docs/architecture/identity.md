@@ -66,7 +66,7 @@ to be able to translate an authenticated Azimuth session into two things:
 1. A list of Azimuth tenancies that a user is permitted to access
 2. A credential that is able to manage resources in the corresponding OpenStack project
 
-This section documents how this is acheived for each authentication method.
+This section documents how this is achieved for each authentication method.
 
 ### Using OpenStack credentials
 

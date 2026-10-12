@@ -25,7 +25,7 @@ docker run --rm \
     -e RUN_LOCAL=true \
     --env-file "super-linter.env" \
     -v "$(pwd)":/tmp/lint \
-    ghcr.io/super-linter/super-linter:v7.3.0
+    ghcr.io/super-linter/super-linter:v8.6.0
 ```
 
 Note: For M-series Apple devices and other ARM processors, add `--platform linux/amd64`

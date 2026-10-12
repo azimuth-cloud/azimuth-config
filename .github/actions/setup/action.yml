@@ -45,11 +45,12 @@ runs:
   using: composite
   steps:
     - name: Checkout azimuth-config repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
         clean: false
+        persist-credentials: false
 
     - name: Write clouds.yaml
       shell: bash
@@ -92,7 +93,7 @@ runs:
           ${{ inputs.extra-vars }}
 
     - name: Ensure Python 3.10
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: "3.10"
         check-latest: true
@@ -162,7 +163,7 @@ runs:
 
         ansible_var() {
             ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
-            ANSIBLE_STDOUT_CALLBACK=json \
+            ANSIBLE_STDOUT_CALLBACK=ansible.posix.json \
             ANSIBLE_JSON_INDENT=0 \
             ansible -m debug -a "var=$1" -e @extra-vars.yml all | \
                jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"

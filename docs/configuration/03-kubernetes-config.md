@@ -134,7 +134,7 @@ size, the etcd block device can also use local disk even if the root volume is f
 
 <!-- prettier-ignore-start -->
 !!! tip "Use local disk for etcd whenever possible"
-    Using local disk when possible minises the write latency for etcd and also eliminates network instability as a cause of latency problems.
+    Using local disk when possible minimises the write latency for etcd and also eliminates network instability as a cause of latency problems.
 <!-- prettier-ignore-end -->
 
 The following variables are used to configure the etcd block device for the HA cluster:

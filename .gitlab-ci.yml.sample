@@ -170,6 +170,8 @@ stop_aio:
     GIT_STRATEGY: none
     ANSIBLE_FORCE_COLOR: "true"
   before_script:
+    - apt update
+    - apt install -y git
     - git clone ${CI_REPOSITORY_URL} ${CI_PROJECT_NAME}
     - cd ${CI_PROJECT_NAME}
     # Use the commit SHA if it still exists because git garbage collection hasn't run yet

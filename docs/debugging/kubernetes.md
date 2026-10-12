@@ -27,7 +27,7 @@ locate the issue.
 First, check if the cluster resource exists in the tenant namespace:
 
 ```command title="On the K3s node, targeting the HA cluster if deployed"
-$ kubectl -n az-demo get cluster
+$ kubectl -n az-demo get cluster.cluster.x-k8s.io
 NAME   LABEL  TEMPLATE      KUBERNETES VERSION   PHASE   NODE COUNT   AGE
 demo   demo   kube-1-24-2   1.24.2               Ready   4            11d
 ```
@@ -220,7 +220,7 @@ to find the name and namespace of the cluster you want to debug. This can be
 seen from the list of clusters:
 
 ```command title="On the K3s node, targeting the HA cluster if deployed"
-kubectl get cluster -A
+kubectl get cluster.cluster.x-k8s.io -A
 ```
 
 Then, you can retrieve and decode the kubeconfig with the following:

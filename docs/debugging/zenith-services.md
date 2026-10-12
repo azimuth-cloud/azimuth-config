@@ -216,4 +216,4 @@ tls-sh20tp1071hl3xtjw5cj4mwdy5t0v7qodj31   True    tls-sh20tp1071hl3xtjw5cj4mwdy
 ```
 
 If the certificate for the service is not ready, check the details for the
-certificate using `kubectl describe` and check for any errors that have occured.
+certificate using `kubectl describe` and check for any errors that have occurred.

@@ -1,14 +1,14 @@
 ---
 name: Upgrade test
 
-permissions:
-  contents: read
-  packages: write
-  id-token: write
-
-on:
+on: # yamllint disable-line rule:truthy
   # Allow to be called by other workflows
   workflow_call:
+    secrets:
+      OS_CLOUDS:
+        description: clouds.yaml file
+        required: true
+
     inputs:
       from-ref:
         description: >-
@@ -22,6 +22,7 @@ on:
 
   # Allow manual execution on any branch
   workflow_dispatch:
+    # yamllint disable-line rule:line-length
     # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
     inputs:
       target-cloud:
@@ -55,12 +56,15 @@ jobs:
   # conclusions of specific steps
   test_upgrade:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
 
       - name: Checkout the initial git ref
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.from-ref }}
+          persist-credentials: false
 
       - name: Set up Azimuth environment
         uses: ./.github/actions/setup
@@ -95,6 +99,11 @@ jobs:
                 worker_size: "{{ generate_tests_kubernetes_test_case_worker_size }}"
                 worker_count: "{{ generate_tests_kubernetes_test_case_worker_count }}"
                 monitoring_enabled: "{{ generate_tests_kubernetes_test_case_monitoring_enabled }}"
+                loki_query: "{{ generate_tests_kubernetes_test_case_loki_query | default('{}') | to_json }}"
+                loki_limit: "{{ generate_tests_kubernetes_test_case_loki_limit | default(omit) }}"
+                loki_namespace: "{{ generate_tests_kubernetes_test_case_loki_namespace | default(omit) }}"
+                loki_service: "{{ generate_tests_kubernetes_test_case_loki_service | default(omit) }}"
+                loki_port: "{{ generate_tests_kubernetes_test_case_loki_port | default(omit) }}"
         # GitHub terminates jobs after 6 hours
         # We don't want jobs to acquire the lock then get timed out before they
         # can finish
@@ -150,6 +159,7 @@ jobs:
           # Make sure not to remove working directories
           clean: false
           ref: ${{ inputs.to-ref }}
+          persist-credentials: false
         if: ${{ !cancelled() && steps.generate-tests.conclusion == 'success' }}
 
       - name: Install updated Python dependencies
