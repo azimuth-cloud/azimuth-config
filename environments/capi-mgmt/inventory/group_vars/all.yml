@@ -1,0 +1,75 @@
+---
+# Give the seed node a name corresponding to the environment
+infra_name: "capi-mgmt-{{ azimuth_environment }}{{ '-seed' if install_mode == 'ha' else '' }}"
+# Give the HA cluster a name corresponding to the environment
+capi_cluster_release_name: "capi-mgmt-{{ azimuth_environment }}"
+
+# The size in GB for the data volume
+# This will hold all cluster data, including Kubernetes resources
+infra_data_volume_size: 50
+
+# Pick a flavor with at least 20GB disk, 2 CPUs and 8GB RAM from the available
+# flavors
+infra_flavor_id: >-
+  {{-
+    lookup('pipe', 'openstack flavor list -f json') |
+      from_json |
+      selectattr('Disk', '>=', 20) |
+      selectattr('VCPUs', '>=', 2) |
+      selectattr('RAM', '>=', 8192) |
+      sort(attribute = 'RAM') |
+      first |
+      default(undef(hint = 'Unable to determine a suitable flavor')) |
+      json_query('ID')
+  }}
+
+# Upload the Kubernetes image we need for the HA cluster as a private image
+# By default, we get the image from the azimuth-images version
+community_images_default: |-
+  {
+    {% set kube_version = capi_cluster_kubernetes_version | regex_replace('^v', '') %}
+    {% set kube_image_series = kube_version.split(".")[:-1] | join("_") %}
+    {% set kube_manifest_series = kube_version.split(".")[:-1] | join("-") %}
+    {% set image_key = "kube_" ~ kube_image_series %}
+    {% set manifest_key = community_images_azimuth_images_manifest.keys() | select('search', 'kubernetes-'+kube_manifest_series) | first %}
+    "{{ image_key }}": {
+      "name": "{{ community_images_azimuth_images_manifest[manifest_key].name }}",
+      "source_url": "{{ community_images_azimuth_images_manifest[manifest_key].url }}",
+      "checksum": "{{ community_images_azimuth_images_manifest[manifest_key].checksum }}",
+      "source_disk_format": "qcow2",
+      "container_format": "bare",
+      "kubernetes_version": "{{ community_images_azimuth_images_manifest[manifest_key].kubernetes_version }}"
+    }
+  }
+community_images_default_visibility: private
+community_images_update_existing_visibility: false
+
+# Flavors for the HA cluster
+capi_cluster_control_plane_flavor: >-
+  {{-
+    lookup('pipe', 'openstack flavor show -f json ' ~ infra_flavor_id) |
+      from_json |
+      json_query('name')
+  }}
+capi_cluster_worker_flavor: "{{ capi_cluster_control_plane_flavor }}"
+
+# By default, provision the cluster with a FIP on the API server load-balancer
+# so that the Kubernetes API can be reached from outside
+capi_cluster_apiserver_floating_ip: true
+
+# By default, don't worry about failure domains
+capi_cluster_control_plane_omit_failure_domain: true
+capi_cluster_worker_failure_domain: ~
+
+# We don't need the ingress controller for a CAPI mgmt cluster
+ingress_controller_enabled: false
+
+# cert-manager is always required
+certmanager_enabled: true
+
+# Harbor is never required
+harbor_enabled: false
+
+# To enable creating token-based kubeconfig
+capi_cluster_service_account_enabled: true
+capi_cluster_service_account_rotate_secret: false

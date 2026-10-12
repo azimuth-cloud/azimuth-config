@@ -21,16 +21,17 @@ for the project into which Azimuth will be deployed.
 The following fragment demonstrates how to layer inventories in the `ansible.cfg` file for
 a highly-available (HA) deployment:
 
-```ini  title="ansible.cfg"
+```ini title="ansible.cfg"
 [defaults]
 inventory = ../base/inventory,../ha/inventory,./inventory
 ```
 
 For a single node deployment, replace the `ha` environment with `singlenode`.
 
+<!-- prettier-ignore-start -->
 !!! tip
-
     If the same variable is defined in multiple inventories, the right-most inventory takes precedence.
+<!-- prettier-ignore-end -->
 
 ## Available mixin environments
 
@@ -50,7 +51,7 @@ By keeping the `azimuth-config` repository as an upstream of your site configura
 you can rebase onto or merge the latest configuration to pick up changes to these mixins.
 
 The `azimuth-config` repository contains an example of a concrete environment in
-[environments/example](https://github.com/stackhpc/azimuth-config/tree/main/environments/example)
+[environments/example](https://github.com/azimuth-cloud/azimuth-config/tree/stable/environments/example)
 that should be used as a basis for your own concrete environment(s).
 
 Depending how many concrete environments you have, you may wish to define mixin environments
@@ -59,7 +60,7 @@ and flavor IDs or the location of an ACME server.
 
 A typical layering of inventories might be:
 
-```
+```text
 base -> singlenode -> site -> development
 base -> ha -> site -> staging
 base -> ha -> site -> production
@@ -71,12 +72,12 @@ base -> ha -> site -> production
 into the current shell when the environment is activated. This is accomplished by using
 statements of the form:
 
-```bash  title="env"
+```bash title="env"
 MY_VAR="some value"
 ```
 
 The
-[azimuth-config activate script](https://github.com/stackhpc/azimuth-config/tree/main/bin/activate)
+[azimuth-config activate script](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/activate)
 exports environment variables defined in the following files:
 
 `env` and `env.secret`

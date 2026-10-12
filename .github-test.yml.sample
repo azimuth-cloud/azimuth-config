@@ -1,0 +1,79 @@
+# The workflow requires a GitHub environment (https://docs.github.com/en/actions/using-jobs/using-environments-for-jobs) to
+# be created in the site-specific config repo with a name which exactly matches the azimuth-config environment to be used
+# for production deployments. For security, this GitHub environment should also have a deployment protection rule which
+# restricts the environment workflows to only run on the main/default branch. This ensures that production deployments
+# cannot be executed from arbitrary branches which could contain incorrect or unreviewed configuration.
+#
+# A manually-triggered workflow is used here since GitHub does not allow deployment approval rules for environments in
+# private GitHub repos without a GitHub Enterprise subscription. If the site-specific config repo is public, or if an enterprise
+# subscription is available, then triggering the workflow on push to main with additional approval rules in the environment is
+# the recommended approach.
+#
+# The site-specific config repo must also define a repository secret named GIT_CRYPT_KEY_B64 which contains the base64 encoded
+# git-crypt key which was used to encrypt the repository's secrets. This can be obtained by running `git-crypt export-key - | base64`
+# from within an unlocked checkout of the repository. For information on defining GitHub repo secrets, see:
+# https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+
+name: Azimuth tests
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "The Azimuth config environment to test"
+        type: environment
+        required: true
+jobs:
+  test_azimuth:
+    environment: ${{ inputs.environment }}
+    runs-on:
+      - self-hosted
+      - ${{ inputs.environment }}
+    steps:
+
+      - name: Ensure required host packages are installed
+        run: |
+          set -xe
+          sudo apt update
+          sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt jq
+
+      - name: Checkout the config repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Generate test suite
+        shell: bash
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          ./bin/ensure-venv
+          source ./bin/activate  ${{ inputs.environment }}
+          ansible-galaxy install -fr ./requirements.yml
+          ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
+
+      - name: Run test suite
+        shell: bash
+        run: |
+          set -e
+          source ./bin/activate  ${{ inputs.environment }}
+          export OS_CLOUD=unrestricted
+          ./bin/run-tests
+
+      - name: Upload test report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "test-report"
+          path: |
+            output.xml
+            log.html
+            report.html
+        if: ${{ always() }}
+
+      - name: Clean up test platforms
+        shell: bash
+        run: |
+          set -e
+          source ./bin/activate  ${{ inputs.environment }}
+          export OS_CLOUD=unrestricted
+          ./bin/run-tests --include delete
+        if: ${{ cancelled() }}

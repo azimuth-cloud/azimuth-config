@@ -1,0 +1,73 @@
+---
+name: Clean up stale CI resources
+
+permissions:
+  contents: read
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    # Every 2 hours at 8 minutes past
+    - cron: "8 0/2 * * *"
+  workflow_dispatch:
+    # yamllint disable-line rule:line-length
+    # checkov:skip=CKV_GHA_7: "The build output cannot be affected by user parameters other than the build entry point and the top-level source location. GitHub Actions workflow_dispatch inputs MUST be empty. "
+    inputs:
+      delete-resources:
+        type: boolean
+        description: "Delete resources older than 6h"
+        required: true
+      delete-all-keypairs:
+        type: boolean
+        description: "Delete all CI user keypairs"
+        required: true
+      target-cloud:
+        description: >-
+          The cloud to target for the run.
+          Leave blank to use the default cloud.
+        type: choice
+        options:
+          - ""
+          - arcus
+          - leafcloud
+
+concurrency:
+  group: cleanup-ci-resources-${{ inputs.target-cloud || vars.TARGET_CLOUD || 'default' }}
+  cancel-in-progress: false
+
+jobs:
+  ci-cleanup:
+    name: Clean up stale CI resources
+    if: github.repository == 'azimuth-cloud/azimuth-config'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+
+      - name: Generate clouds.yaml
+        run: printf '%s\n' "$OS_CLOUDS" > clouds.yaml
+        env:
+          OS_CLOUDS: ${{ secrets.OS_CLOUDS }}
+
+      - name: Install OpenStack SDK
+        run: python -m pip install 'openstacksdk>=4,<5'
+
+      - name: Clean up stale CI resources
+        run: |
+          args=(--older-than-hours 6)
+          if [[ "$DELETE_RESOURCES" == "true" ]]; then
+            args+=(--delete-resources)
+          fi
+          if [[ "$DELETE_ALL_KEYPAIRS" == "true" ]]; then
+            args+=(--delete-all-keypairs)
+          fi
+          python bin/cleanup-ci-resources "${args[@]}"
+        env:
+          OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
+          CI_CLEANUP_PROJECT_ID: ${{ vars.CI_CLEANUP_PROJECT_ID }}
+          DELETE_RESOURCES: ${{ github.event_name == 'schedule' || inputs.delete-resources }}
+          DELETE_ALL_KEYPAIRS: ${{ inputs.delete-all-keypairs || false }}

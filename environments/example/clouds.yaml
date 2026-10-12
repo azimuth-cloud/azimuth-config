@@ -1,7 +1,9 @@
-# This clouds.yaml is used to connect to the OpenStack project for the environment
-# It should contain an application credential
+---
+# This clouds.yaml is used to connect to the OpenStack project for the
+# environment
+# It should contain an application credential
 #
-# WARNING: This file should be encrypted
+# WARNING: This file should be encrypted
 
 clouds:
   openstack:

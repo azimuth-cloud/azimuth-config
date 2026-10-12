@@ -17,17 +17,25 @@ AZIMUTH_CONFIG_ENVIRONMENT="$1"
 AZIMUTH_ENVIRONMENT="${2:-"$AZIMUTH_CONFIG_ENVIRONMENT"}"
 
 AZIMUTH_CONFIG_ROOT="$(dirname $(dirname $(realpath ${BASH_SOURCE[0]:-${(%):-%x}})))"
-AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
 
-if [ ! -d "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
-    echo "Unrecognised config environment '$AZIMUTH_CONFIG_ENVIRONMENT'" >&2
-    return 1
+# Most environments should exist in a top-level "environments" directory, but CI
+# environments live under .github to avoid cluttering the main directory
+if [ -d "$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
+  AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
+elif [ -d "$AZIMUTH_CONFIG_ROOT/.github/environments/$AZIMUTH_CONFIG_ENVIRONMENT" ]; then
+  AZIMUTH_CONFIG_ENVIRONMENT_ROOT="$AZIMUTH_CONFIG_ROOT/.github/environments/$AZIMUTH_CONFIG_ENVIRONMENT"
+else
+  echo "Unrecognised config environment '$AZIMUTH_CONFIG_ENVIRONMENT'" >&2
+  return 1
 fi
 
 ANSIBLE_CONFIG="$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/ansible.cfg"
 if [ ! -f "$ANSIBLE_CONFIG" ]; then
     echo "Specified environment does not contain an ansible.cfg" >&2
     return 1
+else
+    # Migrate cfg files with deprecated stdout_callback plugin
+    sed 's/stdout_callback/callback_result_format/' $ANSIBLE_CONFIG -i
 fi
 
 # Configure OpenStack connectivity if not already configured
@@ -37,7 +45,7 @@ if [ -f "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT/clouds.yaml" ]; then
   export OS_CLOUD="${OS_CLOUD:-"openstack"}"
 elif [ -n "$OS_CLOUD" ]; then
   # If a clouds.yaml file is otherwise specified, use it but make sure OS_CLIENT_CONFIG_FILE
-  # is also exported
+  # is also exported
   # To do this, we search for the same files as the OpenStack SDK and set it
   if [ -z "$OS_CLIENT_CONFIG_FILE" ]; then
     # Use the first file that we find

@@ -1,0 +1,46 @@
+---
+# Unset the network ID so that a network + router are provisioned
+infra_network_id:
+
+# Unset the infra IP so we can use the ingress IP for the ingress controller
+infra_fixed_floatingip:
+capi_cluster_addons_ingress_load_balancer_ip: "{{ lookup('env', 'INGRESS_IP') }}"
+
+# Make sure we pick flavors that keep the costs down
+#   The flavor to use for the seed VM
+infra_flavor_id: ec1.medium  # 2 vCPUs, 4GB RAM @ leaf site
+#   The flavor to use for the control plane nodes
+capi_cluster_control_plane_flavor: ec1.large # 4 vCPUs, 8GB RAM @ leaf site
+#   The flavor to use for worker nodes
+capi_cluster_worker_flavor: ec1.large  # 4 vCPUs, 8GB RAM @ leaf site
+
+# Although this is a "HA" test, what we are really testing is the spawning
+# of the CAPI cluster and deployment of Azimuth onto that
+# So one control plane node is sufficient for that
+capi_cluster_control_plane_count: 1
+capi_cluster_worker_count: 2
+# The flavors only have 20GB root disks, which is not enough to run a full Azimuth deployment
+# So we need to use a Cinder root volume
+capi_cluster_worker_root_volume_size: 30
+
+# Don't use explicit AZs for Kubernetes nodes
+capi_cluster_control_plane_omit_failure_domain: true
+capi_cluster_worker_failure_domain: null
+
+# Leafcloud doesn't use the default 'nova' AZ for volumes
+capi_cluster_root_volume_availability_zone: europe-nl-ams1
+capi_cluster_addons_csi_cinder_availability_zone: europe-nl-ams1
+
+# Use the unencrypted volume type for Kubernetes volumes
+capi_cluster_root_volume_type: unencrypted
+capi_cluster_addons_csi_cinder_volume_type: unencrypted
+
+# Pick up the reserved IP for the Zenith SSHD LB
+zenith_sshd_service_load_balancer_ip: "{{ lookup('env', 'ZENITH_SSHD_IP') }}"
+
+# Configure Velero backups
+velero_enabled: "{{ not (not velero_aws_access_key_id) }}"
+velero_s3_url: https://leafcloud.store
+velero_bucket_name: azimuth-ci-backups
+velero_aws_access_key_id: "{{ lookup('env', 'VELERO_S3_ACCESS_KEY') }}"
+velero_aws_secret_access_key: "{{ lookup('env', 'VELERO_S3_SECRET_KEY') }}"

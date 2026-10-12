@@ -21,12 +21,12 @@ parts of the repository without decrypting the private parts if you wish to main
 separation of privilege.
 
 `git-crypt` works on entire files, not at the variable level, so it is recommended
-that encrypted files contain *only* secret values so that information is not hidden
+that encrypted files contain _only_ secret values so that information is not hidden
 unnecessarily. To this end, a typical `azimuth-config` environment for a site will
 have one or more `group_vars` files in the inventory that are unencrypted, but
 secret values will be placed in a `secrets.yaml` that is encrypted.
 
-## Initialising git-crypt
+## Initialising git-crypt
 
 To initialise `git-crypt` for your config repository, first make sure that the CLI
 is installed. This can be installed using the package manager on most major Linux
@@ -39,13 +39,11 @@ Then execute the following command to begin encrypting files:
 git-crypt init
 ```
 
+<!-- prettier-ignore-start -->
 !!! danger
-
-    If you lose access to the key that `git-crypt` generates to encrypt your repository,
-    you will be locked out of the repository for good.
-
-    It is recommended that you export the key (see below) and store it somewhere
-    safe, e.g. in your organisation's secret store.
+    If you lose access to the key that `git-crypt` generates to encrypt your repository, you will be locked out of the repository for good.
+    It is recommended that you export the key (see below) and store it somewhere safe, e.g. in your organisation's secret store.
+<!-- prettier-ignore-end -->
 
 ## Verifying which files are encrypted
 
@@ -89,7 +87,7 @@ cd $REPOSITORY_DIR
 echo $GIT_CRYPT_KEY_B64 | base64 -d | git-crypt unlock -
 ```
 
-### Using GPG keys
+### Using GPG keys
 
 `git-crypt` is also able to grant access to the repository using
 [GPG keys](https://www.gnupg.org/). This avoids the use of shared secrets and makes it

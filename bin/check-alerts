@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+#####
+# This script is designed to be run as part of the deployment CI workflow
+# to check that the expected number of alerts are firing after deployment
+#####
+
+set -eo pipefail
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+  echo "Please activate an environment" >&2
+  exit 1
+fi
+
+echo "Starting port-forward for Prometheus API"
+./bin/port-forward prometheus 9090 >/dev/null 2>&1 &
+PID="$!"
+# Make sure port-forward is killed on exit
+trap 'kill $PID' EXIT
+
+# Wait for the Prometheus API to come up
+API_RETRIES=0
+API_RETRY_LIMIT=24
+API_RETRY_SLEEP=5
+while true; do
+  API_RETRIES=$((API_RETRIES + 1))
+  echo "Waiting for Prometheus API to become available (attempt $API_RETRIES of $API_RETRY_LIMIT)"
+
+  if curl -fsSL http://localhost:9090/api/v1/alerts >/dev/null 2>&1; then
+    break
+  elif [[ ${API_RETRIES} -eq ${API_RETRY_LIMIT} ]]; then
+    echo "Timed out waiting for Prometheus API" >&2
+    exit 1
+  else
+    sleep "$API_RETRY_SLEEP"
+  fi
+done
+
+# Retry in case the alerts are ephemeral
+RETRIES=0
+RETRY_LIMIT=60
+RETRY_SLEEP=10
+while true; do
+  RETRIES=$((RETRIES + 1))
+  echo "Querying alerts (attempt $RETRIES of $RETRY_LIMIT)"
+
+  ALERTS="$(curl -fsSL http://localhost:9090/api/v1/alerts)"
+  ALERT_COUNT="$(echo "$ALERTS" | jq -r '.data.alerts | length')"
+  # Ignore Watchdog and cert expiries we can't control
+  REAL_ALERT_COUNT="$(
+    echo "$ALERTS" |
+      jq '.data.alerts[].labels.alertname' |
+      grep -v -E -c "Watchdog|BlackboxSslCertificateWillExpire(Soon|VerySoon)"
+  )" || true
+  echo "  Found $ALERT_COUNT pending or firing alerts:"
+  echo "$ALERTS" | jq -r '.data.alerts[] | "    " + .labels.alertname + " is " + .state'
+  echo ""
+
+  if [[ ${REAL_ALERT_COUNT} -eq 0 ]]; then
+    exit
+  elif [[ ${RETRIES} -eq ${RETRY_LIMIT} ]]; then
+    exit 1
+  else
+    sleep "$RETRY_SLEEP"
+  fi
+done

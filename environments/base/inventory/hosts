@@ -1,6 +1,6 @@
-# This file exists so that Ansible treats the directory as an inventory
+# This file exists so that Ansible treats the directory as an inventory
 
 [azimuth_deploy]
 # This group should contain the hosts that are used to deploy Azimuth onto the target Kubernetes cluster
-# E.g.:
+# E.g.:
 # localhost  ansible_connection=local  ansible_python_interpreter="{{ ansible_playbook_python }}"

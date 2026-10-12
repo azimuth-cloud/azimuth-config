@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+#####
+## This script generates and then runs tests for the active environment
+#####
+
+set -exo pipefail
+
+if [ -z "$AZIMUTH_CONFIG_ROOT" ] || [ -z "$AZIMUTH_CONFIG_ENVIRONMENT_ROOT" ]; then
+  echo "Please activate an environment" >&2
+  exit 1
+fi
+
+ansible_variable() {
+  ANSIBLE_LOAD_CALLBACK_PLUGINS=true \
+    ANSIBLE_STDOUT_CALLBACK=ansible.posix.json \
+    ANSIBLE_JSON_INDENT=0 \
+    ansible -m debug -a "var=$1" all |
+    jq -r -R "fromjson? | .plays[0].tasks[0].hosts.localhost.$1"
+}
+
+work_bin_dir="$(ansible_variable work_directory)/bin"
+export PATH=${work_bin_dir}:$PATH
+
+# Get the test directory
+test_directory="$(ansible_variable generate_tests_suite_directory)"
+test_vars_file="$(ansible_variable generate_tests_vars_file)"
+# Use a headless browser by default
+export MOZ_HEADLESS="${MOZ_HEADLESS:-"1"}"
+# Disable request pooling by default since it causes failures when
+# ingress-nginx reloads.
+export AZIMUTH_ROBOTFRAMEWORK_POOL_REQUESTS="${AZIMUTH_ROBOTFRAMEWORK_POOL_REQUESTS:-"false"}"
+# Execute the test suite, including any args we were given
+exec robot \
+  --loglevel debug \
+  --consolecolors on \
+  --variablefile "$test_vars_file" \
+  "$@" \
+  "$test_directory"

@@ -1,0 +1,2 @@
+CI_S3_LOCK_HOST="object.arcus.openstack.hpc.cam.ac.uk"
+CI_S3_LOCK_BUCKET="azimuth-ci"

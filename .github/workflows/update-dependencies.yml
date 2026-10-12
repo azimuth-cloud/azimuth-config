@@ -1,0 +1,72 @@
+---
+# This workflow proposes updates to the dependencies that dependabot cannot
+name: Update dependencies
+
+on: # yamllint disable-line rule:truthy
+  # Allow manual executions
+  workflow_dispatch:
+  # Run nightly
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  propose_github_release_updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    if: github.repository == 'azimuth-cloud/azimuth-config'
+    strategy:
+      matrix:
+        include:
+          - key: azimuth-ops
+            path: ./requirements.yml
+            repository: azimuth-cloud/ansible-collection-azimuth-ops
+            prereleases: "yes"
+            version_jsonpath: collections[0].version
+
+    name: ${{ matrix.key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Check for most recent GitHub release
+        id: next
+        uses: azimuth-cloud/github-actions/github-latest-release@master
+        with:
+          repository: ${{ matrix.repository }}
+          prereleases: ${{ matrix.prereleases || 'no' }}
+
+      - name: Update dependency key
+        uses: azimuth-cloud/github-actions/config-update@master
+        with:
+          path: ${{ matrix.path }}
+          updates: |
+            ${{ matrix.version_jsonpath }}=${{ steps.next.outputs.version }}
+
+      - name: Generate app token for PR
+        uses: azimuth-cloud/github-actions/generate-app-token@master
+        id: generate-app-token
+        with:
+          repository: ${{ github.repository }}
+          app-id: ${{ secrets.AUTOMATION_APP_ID }}
+          app-private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
+
+      - name: Propose changes via PR if required
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.generate-app-token.outputs.token }}
+          commit-message: >-
+            Update ${{ matrix.key }} to ${{ steps.next.outputs.version }}
+          branch: update-dependency/${{ matrix.key }}
+          delete-branch: true
+          title: >-
+            Update ${{ matrix.key }} to ${{ steps.next.outputs.version }}
+          body: >
+            This PR was created automatically to update
+            ${{ matrix.key }} to ${{ steps.next.outputs.version }}.
+          labels: |
+            automation
+            dependency-update

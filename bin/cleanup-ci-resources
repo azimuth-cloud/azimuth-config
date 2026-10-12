@@ -1,0 +1,629 @@
+#!/usr/bin/env python3
+
+"""Safely clean up stale servers and their resources in the CI project."""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import os
+import re
+import sys
+import time
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any
+
+import openstack
+from keystoneauth1 import exceptions as ks_exceptions
+from openstack import exceptions
+
+SERVER_STATUSES = ("ACTIVE", "BUILD", "ERROR", "SHUTOFF")
+OPENSTACK_EXCEPTIONS = (exceptions.SDKException, ks_exceptions.ClientException)
+DELETEABLE_VOLUME_STATUSES = {
+    "available",
+    "error",
+    "error_extending",
+    "error_managing",
+    "error_restoring",
+}
+SAFE_KEYPAIR_RE = re.compile(r"^(?:azimuth-[A-Za-z0-9_.-]+|packer_[A-Za-z0-9_.-]+)$")
+SAFE_LABEL_RE = re.compile(r"^[A-Za-z0-9_.:-]+$")
+SAFE_FAULT_TYPE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.]*(?:Error|Exception|Timeout)$")
+OPENSTACK_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+LOGGER = logging.getLogger(__name__)
+
+
+class ConfigurationError(RuntimeError):
+    """Raised when cleanup cannot safely run with the supplied configuration."""
+
+
+@dataclass(frozen=True)
+class ErrorRecord:
+    operation: str
+    resource_type: str
+    resource_id: str
+    error_code: str
+
+
+@dataclass
+class CleanupStats:
+    servers_selected: int = 0
+    server_delete_requests: int = 0
+    servers_deleted: int = 0
+    servers_detail_missing: int = 0
+    server_delete_timeouts: int = 0
+    volumes_selected: int = 0
+    volumes_deleted: int = 0
+    volumes_already_absent: int = 0
+    keypairs_deleted: int = 0
+    errors: list[ErrorRecord] = field(default_factory=list)
+
+
+def safe_label(value: object) -> str:
+    text = str(value or "")
+    return text if SAFE_LABEL_RE.fullmatch(text) else "unknown"
+
+
+# format resources consistently so the name and UUID are easy to match in OpenStack
+def resource_label(name: object, resource_id: object) -> str:
+    return f"{safe_label(name)} ({safe_label(resource_id)})"
+
+
+# keep only an exception like fault type instead of logging an arbitrary nova message
+def safe_fault_type(value: object) -> str:
+    text = str(value or "")
+    return text if SAFE_FAULT_TYPE_RE.fullmatch(text) else "unknown"
+
+
+def error_code(exc: BaseException) -> str:
+    if isinstance(exc, exceptions.ResourceNotFound):
+        return "not_found"
+    if isinstance(exc, exceptions.ResourceTimeout):
+        return "timeout"
+    if isinstance(exc, exceptions.HttpException):
+        status_code = getattr(exc, "status_code", None)
+        if status_code:
+            return f"http_{status_code}"
+    return safe_label(type(exc).__name__)
+
+
+def get_field(resource: object, name: str, default: Any = None) -> Any:
+    if isinstance(resource, Mapping):
+        return resource.get(name, default)
+    return getattr(resource, name, default)
+
+
+# parse openstacksdk timestamps before comparing ERROR status server creation time with the cutoff
+def resource_datetime(value: object) -> datetime | None:
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str):
+        try:
+            parsed = datetime.strptime(value, OPENSTACK_TIMESTAMP_FORMAT)
+        except ValueError:
+            return None
+    else:
+        return None
+
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def attached_volumes(server: object) -> dict[str, str]:
+    volumes = {}
+    for attachment in get_field(server, "attached_volumes", []) or []:
+        volume_id = get_field(attachment, "id")
+        if volume_id:
+            volumes[str(volume_id)] = str(get_field(attachment, "name", "") or "")
+    return volumes
+
+
+# this is a temporary class for hotfix of ci cleanup resources
+# only handle server, volume, keypair currently
+class CleanupRunner:
+    # keep cleanup options and result together during one workflow run
+    def __init__(
+        self,
+        connection: object,
+        *,
+        cutoff: datetime,
+        expected_project_id: str = "",
+        server_delete_timeout: int = 300,
+        server_attempts: int = 2,
+        server_retry_delay: float = 5,
+        volume_delete_timeout: int = 120,
+        volume_attempts: int = 6,
+        volume_initial_delay: float = 2,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self.connection = connection
+        self.cutoff = cutoff
+        self.expected_project_id = expected_project_id
+        self.server_delete_timeout = server_delete_timeout
+        self.server_attempts = server_attempts
+        self.server_retry_delay = server_retry_delay
+        self.volume_delete_timeout = volume_delete_timeout
+        self.volume_attempts = volume_attempts
+        self.volume_initial_delay = volume_initial_delay
+        self.sleep = sleep
+        self.stats = CleanupStats()
+        self.project_id = ""
+        self.keypairs_to_delete: set[str] = set()
+        self.volumes_seen: set[str] = set()
+
+    # make sure cleanup is not accidentally running on another project
+    def validate_project(self) -> None:
+        try:
+            project_id = str(self.connection.current_project_id or "")
+        except OPENSTACK_EXCEPTIONS as exc:
+            raise ConfigurationError(f"could not determine scoped project ({error_code(exc)})") from exc
+
+        if not project_id:
+            raise ConfigurationError("the OpenStack credential is not project-scoped")
+        self.project_id = project_id
+
+        if self.expected_project_id and project_id != self.expected_project_id:
+            raise ConfigurationError("the credential is scoped to a different OpenStack project")
+
+        LOGGER.info("Authenticated to OpenStack project %s", safe_label(project_id))
+        if not self.expected_project_id:
+            LOGGER.warning(
+                "CI_CLEANUP_PROJECT_ID is not configured; the project ID was "
+                "recorded but not compared to an expected value"
+            )
+
+    def record_error(
+        self,
+        operation: str,
+        resource_type: str,
+        resource_id: object,
+        exc_or_code: BaseException | str,
+    ) -> None:
+        code = error_code(exc_or_code) if isinstance(exc_or_code, BaseException) else safe_label(exc_or_code)
+        record = ErrorRecord(
+            operation=safe_label(operation),
+            resource_type=safe_label(resource_type),
+            resource_id=safe_label(resource_id),
+            error_code=code,
+        )
+        self.stats.errors.append(record)
+        LOGGER.error(
+            "%s failed for %s %s (%s)",
+            record.operation,
+            record.resource_type,
+            record.resource_id,
+            record.error_code,
+        )
+
+    # select only old and unlocked servers which this hotfix is allowed to remove
+    def list_stale_servers(self, status: str) -> list[object]:
+        query: dict[str, object] = {
+            "details": status == "ERROR",
+            "status": status,
+            "locked": False,
+        }
+        if status != "ERROR":
+            query["changes_before"] = self.cutoff.isoformat(timespec="seconds")
+
+        try:
+            servers = list(self.connection.compute.servers(**query))
+        except OPENSTACK_EXCEPTIONS as exc:
+            self.record_error("list", "server", status, exc)
+            return []
+
+        if status != "ERROR":
+            return servers
+
+        stale_servers = []
+        for server in servers:
+            created_at = resource_datetime(get_field(server, "created_at"))
+            if created_at is None:
+                LOGGER.warning(
+                    "Skipping ERROR server %s because its creation time is unavailable",
+                    resource_label(get_field(server, "name", ""), get_field(server, "id", "")),
+                )
+            elif created_at <= self.cutoff:
+                stale_servers.append(server)
+        return stale_servers
+
+    # delete server resources first and clean their keypairs after it is finished
+    def cleanup_resources(self) -> None:
+        for status in SERVER_STATUSES:
+            for server in self.list_stale_servers(status):
+                self.cleanup_server(server, status)
+        self.cleanup_keypairs(self.keypairs_to_delete)
+
+    # remember volume names before deleting a server in case cinder removes them with it
+    def add_volume_names(self, volumes: dict[str, str]) -> None:
+        for volume_id, volume_name in volumes.items():
+            if volume_name:
+                continue
+            try:
+                volume = self.connection.block_storage.get_volume(volume_id)
+            except OPENSTACK_EXCEPTIONS:
+                continue
+            if volume is not None:
+                volumes[volume_id] = str(get_field(volume, "name", "") or "")
+
+    # check server detail again because the list result can be stale or empty
+    def cleanup_server(self, listed_server: object, status: str) -> None:
+        server_id = str(get_field(listed_server, "id", ""))
+        listed_server_name = get_field(listed_server, "name", "")
+        if not server_id:
+            self.record_error("inspect", "server", status, "missing_id")
+            return
+        self.stats.servers_selected += 1
+
+        try:
+            server = self.connection.compute.get_server(server_id)
+        except exceptions.ResourceNotFound:
+            self.stats.servers_detail_missing += 1
+            LOGGER.warning(
+                "%s server %s was returned by list but is absent from the detail API; skipping it",
+                status,
+                resource_label(listed_server_name, server_id),
+            )
+            return
+        except OPENSTACK_EXCEPTIONS as exc:
+            self.record_error("inspect", "server", server_id, exc)
+            return
+
+        if server is None:
+            self.stats.servers_detail_missing += 1
+            LOGGER.warning(
+                "%s server %s was returned by list but is absent from the detail API, skipping it",
+                status,
+                resource_label(listed_server_name, server_id),
+            )
+            return
+
+        volumes = attached_volumes(server)
+        self.add_volume_names(volumes)
+        key_name = str(get_field(server, "key_name", "") or "")
+        server_name = get_field(server, "name", listed_server_name)
+        label = resource_label(server_name, server_id)
+        LOGGER.info("Selected %s server %s with %d attached volume(s)", status, label, len(volumes))
+
+        if not self.delete_server(server, server_id, label):
+            return
+
+        if SAFE_KEYPAIR_RE.fullmatch(key_name):
+            self.keypairs_to_delete.add(key_name)
+
+        for volume_id, volume_name in sorted(volumes.items()):
+            if volume_id in self.volumes_seen:
+                continue
+            self.volumes_seen.add(volume_id)
+            self.cleanup_volume(volume_id, volume_name)
+
+    # retry server delete once when nova accepts the request but cannot finish it
+    def delete_server(self, server: object, server_id: str, label: str) -> bool:
+        for attempt in range(1, self.server_attempts + 1):
+            # check if nova accept delete request
+            try:
+                self.connection.compute.delete_server(server, ignore_missing=True)
+            except exceptions.ResourceNotFound:
+                self.server_deleted(label)
+                return True
+            except OPENSTACK_EXCEPTIONS as exc:
+                self.record_error("delete", "server", server_id, exc)
+                return False
+
+            self.stats.server_delete_requests += 1
+            LOGGER.info(
+                "Delete request %d/%d accepted for server %s; waiting up to %ds",
+                attempt,
+                self.server_attempts,
+                label,
+                self.server_delete_timeout,
+            )
+
+            # check if the server actually deleted by the first delete request
+            try:
+                self.connection.compute.wait_for_delete(
+                    server,
+                    interval=2,
+                    wait=self.server_delete_timeout,
+                )
+            except exceptions.ResourceNotFound:
+                self.server_deleted(label)
+                return True
+            except exceptions.ResourceTimeout as exc:
+                will_retry = attempt < self.server_attempts
+                server, deleted = self.server_after_timeout(server_id, label, attempt, will_retry)
+                if deleted:
+                    return True
+                if server is None:
+                    self.stats.server_delete_timeouts += 1
+                    return False
+                if attempt == self.server_attempts:
+                    self.stats.server_delete_timeouts += 1
+                    self.record_error("wait", "server", server_id, exc)
+                    return False
+                self.sleep(self.server_retry_delay)
+                continue
+            except OPENSTACK_EXCEPTIONS as exc:
+                self.record_error("wait", "server", server_id, exc)
+                return False
+
+            self.server_deleted(label)
+            return True
+
+        return False
+
+    # refresh only safe state fields after a timed out server delete
+    def server_after_timeout(
+        self,
+        server_id: str,
+        label: str,
+        attempt: int,
+        will_retry: bool,
+    ) -> tuple[object | None, bool]:
+        try:
+            server = self.connection.compute.get_server(server_id)
+        except exceptions.ResourceNotFound:
+            self.server_deleted(label)
+            return None, True
+        except OPENSTACK_EXCEPTIONS as exc:
+            self.record_error("inspect", "server", server_id, exc)
+            return None, False
+
+        if server is None:
+            self.server_deleted(label)
+            return None, True
+
+        fault = get_field(server, "fault", {}) or {}
+        # add more detailed warning message if server delete retry failed
+        LOGGER.warning(
+            "Timed out waiting for server %s after delete request %d/%d; "
+            "status=%s task_state=%s updated_at=%s fault_code=%s fault_message=%s; %s",
+            label,
+            attempt,
+            self.server_attempts,
+            safe_label(get_field(server, "status", "unknown")),
+            safe_label(get_field(server, "task_state", "unknown")),
+            safe_label(get_field(server, "updated_at", "unknown")),
+            safe_label(get_field(fault, "code", "unknown")),
+            safe_fault_type(get_field(fault, "message", "unknown")),
+            "retrying" if will_retry else "no retries remaining",
+        )
+        return server, False
+
+    # record deletion only after the server is confirmed absent from nova
+    def server_deleted(self, label: str) -> None:
+        self.stats.servers_deleted += 1
+        LOGGER.info("Deleted server %s", label)
+
+    # retry volume cleanup because detach from deleted server is asynchronous
+    def cleanup_volume(self, volume_id: str, volume_name: str = "") -> None:
+        self.stats.volumes_selected += 1
+        delay = self.volume_initial_delay
+
+        for attempt in range(1, self.volume_attempts + 1):
+            try:
+                volume = self.connection.block_storage.get_volume(volume_id)
+            except exceptions.ResourceNotFound:
+                self.stats.volumes_already_absent += 1
+                LOGGER.info("Volume %s is already absent", resource_label(volume_name, volume_id))
+                return
+            except OPENSTACK_EXCEPTIONS as exc:
+                self.record_error("inspect", "volume", volume_id, exc)
+                return
+
+            if volume is None:
+                self.stats.volumes_already_absent += 1
+                return
+
+            volume_name = str(get_field(volume, "name", volume_name) or volume_name)
+            status = str(get_field(volume, "status", "unknown") or "unknown").lower()
+            if status == "deleting":
+                self.wait_for_volume_delete(volume, volume_id, volume_name)
+                return
+
+            if status in DELETEABLE_VOLUME_STATUSES:
+                try:
+                    self.connection.block_storage.delete_volume(volume, ignore_missing=True)
+                except exceptions.ResourceNotFound:
+                    self.stats.volumes_already_absent += 1
+                    return
+                except exceptions.HttpException as exc:
+                    if getattr(exc, "status_code", None) == 400 and attempt < self.volume_attempts:
+                        self.retry_volume(volume_id, volume_name, status, attempt, delay)
+                        delay = min(delay * 2, 30)
+                        continue
+                    self.record_error("delete", "volume", volume_id, exc)
+                    return
+                except OPENSTACK_EXCEPTIONS as exc:
+                    self.record_error("delete", "volume", volume_id, exc)
+                    return
+
+                self.wait_for_volume_delete(volume, volume_id, volume_name)
+                return
+
+            if attempt < self.volume_attempts:
+                self.retry_volume(volume_id, volume_name, status, attempt, delay)
+                delay = min(delay * 2, 30)
+                continue
+
+            self.record_error("delete", "volume", volume_id, f"state_{status.replace('_', '-')}")
+            return
+
+    # wait a little so cinder can finish detaching volume from deleted server
+    def retry_volume(self, volume_id: str, volume_name: str, status: str, attempt: int, delay: float) -> None:
+        LOGGER.info(
+            "Volume %s is %s after server deletion; retrying after %gs (attempt %d/%d)",
+            resource_label(volume_name, volume_id),
+            safe_label(status),
+            delay,
+            attempt,
+            self.volume_attempts,
+        )
+        self.sleep(delay)
+
+    # confirm asynchronous volume deletion before making sure it as deleted
+    def wait_for_volume_delete(self, volume: object, volume_id: str, volume_name: str) -> bool:
+        try:
+            self.connection.block_storage.wait_for_delete(volume, interval=2, wait=self.volume_delete_timeout)
+        except exceptions.ResourceNotFound:
+            pass
+        except OPENSTACK_EXCEPTIONS as exc:
+            self.record_error("wait", "volume", volume_id, exc)
+            return False
+        self.stats.volumes_deleted += 1
+        LOGGER.info("Deleted volume %s", resource_label(volume_name, volume_id))
+        return True
+
+    # collect only ci keypairs when full keypair cleanup is manually requested
+    def collect_all_safe_keypairs(self) -> None:
+        try:
+            keypairs = list(self.connection.compute.keypairs())
+        except OPENSTACK_EXCEPTIONS as exc:
+            self.record_error("list", "keypair", "all", exc)
+            return
+        for keypair in keypairs:
+            name = str(get_field(keypair, "name", "") or "")
+            if SAFE_KEYPAIR_RE.fullmatch(name):
+                self.keypairs_to_delete.add(name)
+
+    # deleting only 'azimuth-*' or 'packer_*' keypairs
+    def cleanup_keypairs(self, keypair_names: set[str]) -> None:
+        processed_names = set(keypair_names)
+        for name in sorted(processed_names):
+            try:
+                self.connection.compute.delete_keypair(name, ignore_missing=True)
+            except exceptions.ResourceNotFound:
+                continue
+            except OPENSTACK_EXCEPTIONS as exc:
+                self.record_error("delete", "keypair", name, exc)
+                continue
+            self.stats.keypairs_deleted += 1
+            LOGGER.info("Deleted keypair %s", name)
+        self.keypairs_to_delete.difference_update(processed_names)
+
+    # use a small markdown list for github step summary
+    def summary_markdown(self) -> str:
+        lines = [
+            "### OpenStack CI cleanup summary",
+            "",
+            f"- Project: `{safe_label(self.project_id)}`",
+            f"- Cutoff: `{self.cutoff.isoformat(timespec='seconds')}`",
+            (
+                f"- Servers: {self.stats.servers_selected} selected, "
+                f"{self.stats.server_delete_requests} delete requests, "
+                f"{self.stats.servers_deleted} deleted, "
+                f"{self.stats.servers_detail_missing} missing from detail API, "
+                f"{self.stats.server_delete_timeouts} timed out"
+            ),
+            (
+                f"- Volumes: {self.stats.volumes_selected} selected, "
+                f"{self.stats.volumes_deleted} deleted, "
+                f"{self.stats.volumes_already_absent} already absent"
+            ),
+            f"- Keypairs: {self.stats.keypairs_deleted} deleted",
+            f"- Errors: **{len(self.stats.errors)}**",
+        ]
+
+        for error in self.stats.errors:
+            lines.append(f"  - `{error.operation}` `{error.resource_type}` `{error.resource_id}`: `{error.error_code}`")
+
+        return "\n".join(lines) + "\n"
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be positive")
+    return parsed
+
+
+def non_negative_float(value: str) -> float:
+    parsed = float(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be non-negative")
+    return parsed
+
+
+def make_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Clean up stale servers, attached volumes, and CI keypairs")
+    parser.add_argument("--cloud", default=os.environ.get("OS_CLOUD"))
+    parser.add_argument("--delete-resources", action="store_true")
+    parser.add_argument("--delete-all-keypairs", action="store_true")
+    parser.add_argument("--older-than-hours", type=positive_int, default=6)
+    parser.add_argument(
+        "--expected-project-id",
+        default=os.environ.get("CI_CLEANUP_PROJECT_ID", ""),
+    )
+    parser.add_argument("--server-delete-timeout", type=positive_int, default=300)
+    parser.add_argument("--server-attempts", type=positive_int, default=2)
+    parser.add_argument("--server-retry-delay", type=non_negative_float, default=5)
+    parser.add_argument("--volume-delete-timeout", type=positive_int, default=120)
+    parser.add_argument("--volume-attempts", type=positive_int, default=6)
+    parser.add_argument("--volume-initial-delay", type=non_negative_float, default=2)
+    return parser
+
+
+def append_step_summary(markdown: str) -> None:
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+    try:
+        with Path(summary_path).open("a", encoding="utf-8") as summary_file:
+            summary_file.write(markdown)
+    except OSError:
+        LOGGER.warning("Could not write the GitHub Actions step summary")
+
+
+def main() -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s", stream=sys.stdout)
+    args = make_parser().parse_args()
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=args.older_than_hours)
+
+    try:
+        connection = openstack.connect(
+            cloud=args.cloud,
+            app_name="azimuth-ci-cleanup",
+            app_version="1",
+        )
+        runner = CleanupRunner(
+            connection,
+            cutoff=cutoff,
+            expected_project_id=args.expected_project_id,
+            server_delete_timeout=args.server_delete_timeout,
+            server_attempts=args.server_attempts,
+            server_retry_delay=args.server_retry_delay,
+            volume_delete_timeout=args.volume_delete_timeout,
+            volume_attempts=args.volume_attempts,
+            volume_initial_delay=args.volume_initial_delay,
+        )
+        runner.validate_project()
+    except (
+        ConfigurationError,
+        exceptions.SDKException,
+        ks_exceptions.ClientException,
+    ) as exc:
+        LOGGER.error("Cleanup configuration failed (%s)", error_code(exc))
+        return 2
+
+    try:
+        if args.delete_resources:
+            runner.cleanup_resources()
+        if args.delete_all_keypairs:
+            runner.collect_all_safe_keypairs()
+            runner.cleanup_keypairs(runner.keypairs_to_delete)
+    except Exception as exc:  # noqa: BLE001
+        # Preserve a safe summary even if an unexpected SDK response reaches a
+        # path that is not covered by the per-resource handlers above.
+        runner.record_error("run", "cleanup", "all", exc)
+
+    summary = runner.summary_markdown()
+    LOGGER.info("\n%s", summary.rstrip())
+    append_step_summary(summary)
+    return 1 if runner.stats.errors else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

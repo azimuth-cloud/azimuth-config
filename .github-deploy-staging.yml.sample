@@ -1,0 +1,81 @@
+# This example workflow can be adapted to perform automated Azimuth deployments targeting staging or test environments.
+# The `azimuth-config-env-name` variable in the `env` section below should be set to name of the Azimuth config environment
+# to be deployed.
+#
+# The site-specific config repo must also define a repository secret named GIT_CRYPT_KEY_B64 which contains the base64 encoded
+# git-crypt key which was used to encrypt the repository's secrets. This can be obtained by running `git-crypt export-key - | base64`
+# from within an unlocked checkout of the repository. For information on defining GitHub repo secrets, see:
+# https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+
+name: Azimuth deployment
+on:
+  push:
+    branches:
+      - main
+env:
+  azimuth-config-env-name: <staging-env-name>
+jobs:
+  deploy_azimuth:
+    runs-on: self-hosted
+    steps:
+
+      - name: Ensure required host packages are installed
+        run: |
+          set -xe
+          sudo apt update
+          sudo apt install -y python3-venv python3-dev build-essential unzip git-crypt
+
+      - name: Checkout the config repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Deploy Azimuth
+        shell: bash
+        env:
+          ANSIBLE_FORCE_COLOR: True
+        # Here we just decrypt the repo checkout then follow the steps from the Azimuth deployment docs.
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          ./bin/ensure-venv
+          source ./bin/activate  ${{ env.azimuth-config-env-name }}
+          ansible-galaxy install -fr ./requirements.yml
+          ansible-playbook azimuth_cloud.azimuth_ops.provision
+
+      - name: Generate test suite
+        shell: bash
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          source ./bin/activate  ${{ env.azimuth-config-env-name }}
+          ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
+
+      - name: Run test suite
+        shell: bash
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          source ./bin/activate  ${{ env.azimuth-config-env-name }}
+          export OS_CLOUD=unrestricted
+          ./bin/run-tests
+
+      - name: Upload test report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "test-report"
+          path: |
+            output.xml
+            log.html
+            report.html
+        if: ${{ always() }}
+
+      - name: Clean up test platforms
+        shell: bash
+        run: |
+          set -e
+          echo ${{ secrets.GIT_CRYPT_KEY_B64 }} | base64 -d | git-crypt unlock -
+          source ./bin/activate  ${{ env.azimuth-config-env-name }}
+          export OS_CLOUD=unrestricted
+          ./bin/run-tests --include delete
+        if: ${{ cancelled() }}

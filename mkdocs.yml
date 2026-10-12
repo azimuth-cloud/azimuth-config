@@ -1,5 +1,6 @@
+---
 site_name: Azimuth Operator Documentation
-repo_url: https://github.com/stackhpc/azimuth-config
+repo_url: https://github.com/azimuth-cloud/azimuth-config
 copyright: Copyright &copy; StackHPC 2022
 edit_uri: ''
 
@@ -7,35 +8,55 @@ nav:
   - Home: index.md
   - try.md
   - environments.md
+  - production.md
   - Repository:
       - repository/index.md
       - repository/secrets.md
-      - repository/terraform.md
+      - repository/opentofu.md
   - Configuration:
       - configuration/index.md
       - configuration/01-prerequisites.md
       - configuration/02-deployment-method.md
-      - configuration/03-target-cloud.md
-      - configuration/04-secret-key.md
-      - configuration/05-ingress.md
-      - configuration/06-platform-identity.md
-      - configuration/07-zenith.md
-      - configuration/08-community-images.md
-      - configuration/09-kubernetes.md
-      - configuration/10-kubernetes-apps.md
-      - configuration/11-caas.md
-      - configuration/12-monitoring.md
+      - configuration/03-kubernetes-config.md
+      - 'Target OpenStack cloud':
+          - configuration/04-target-cloud/index.md
+          - configuration/04-target-cloud/01-openstack-blazar.md
+          - configuration/04-target-cloud/02-openstack-manila.md
+      - configuration/05-secret-key.md
+      - configuration/06-ingress.md
+      - configuration/07-platform-identity.md
+      - configuration/08-zenith.md
+      - configuration/09-community-images.md
+      - configuration/10-kubernetes-clusters.md
+      - configuration/11-kubernetes-apps.md
+      - configuration/12-caas.md
+      - configuration/13-access-control.md
+      - configuration/14-monitoring.md
+      - configuration/15-disaster-recovery.md
+      - configuration/16-local-customisations.md
+      - configuration/17-standalone-mode.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md
+      - deployment/testing.md
+  - Operations:
+      - operations/maintenance.md
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
+      - debugging/recovery-of-seed.md
       - debugging/access-ha.md
+      - debugging/using-k9s.md
       - debugging/access-monitoring.md
       - debugging/zenith-services.md
       - debugging/kubernetes.md
       - debugging/caas.md
+  - Architecture:
+      - architecture/index.md
+      - architecture/identity.md
+  - Developing:
+      - developing/index.md
+  - capi-mgmt.md
 
 theme:
   name: material
@@ -58,7 +79,13 @@ markdown_extensions:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      toc_depth: 3
 
 plugins:
   - git-revision-date-localized:

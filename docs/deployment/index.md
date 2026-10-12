@@ -2,9 +2,19 @@
 
 ## Python dependencies
 
-The Python requirements for an Azimuth deployment host, including Ansible itself,
-are contained in
-[requirements.txt](https://github.com/stackhpc/azimuth-config/blob/main/requirements.txt)
+The Azimuth deployment tooling requires Python 3.10 or newer. If the Azimuth deployment
+host's system Python is too old, you can explicitly install a newer Python version
+using the OS package manager, for example:
+
+```bash
+dnf install python3.10
+# OR
+apt install python3.10 python3.10-venv
+```
+
+The Python package requirements for an Azimuth deployment host, including Ansible
+itself, are contained in
+[requirements.txt](https://github.com/azimuth-cloud/azimuth-config/blob/stable/requirements.txt)
 and must be installed before you can proceed with a deployment. It is recommended
 to use a [virtual environment](https://docs.python.org/3/library/venv.html) in order
 to keep the dependencies isolated from other Python applications on the host.
@@ -25,7 +35,7 @@ before continuing. For example, if you use [pyenv](https://github.com/pyenv/pyen
 you can set the `PYENV_VERSION` environment variable
 [in your azimuth-config environment](../environments.md#linux-environment-variables):
 
-```sh  title="env"
+```sh title="env"
 PYENV_VERSION=azimuth-config
 ```
 
@@ -37,11 +47,10 @@ Before you can deploy Azimuth, you must first activate an environment:
 source ./bin/activate my-site
 ```
 
+<!-- prettier-ignore-start -->
 !!! warning
-
-    This script must be `source`d rather than just executed as it exports
-    environment variables into the current shell that are used to configure
-    the deployment.
+    This script must be `source`d rather than just executed as it exports environment variables into the current shell that are used to configure the deployment.
+<!-- prettier-ignore-end -->
 
 ## Deploying an environment
 
@@ -55,16 +64,16 @@ ansible-galaxy install -f -r ./requirements.yml
 
 # Run the provision playbook from the azimuth-ops collection
 # The inventory is picked up from the ansible.cfg file in the environment
-ansible-playbook stackhpc.azimuth_ops.provision
+ansible-playbook azimuth_cloud.azimuth_ops.provision
 ```
 
 ## Tearing down an environment
 
 `azimuth-ops` is also able to tear down an Azimuth environment, including the
-K3S and HA Kubernetes clusters as required.
+K3s and HA Kubernetes clusters as required.
 
 After activating the environment that you want to tear down, run the following:
 
 ```sh
-ansible-playbook stackhpc.azimuth_ops.destroy
+ansible-playbook azimuth_cloud.azimuth_ops.destroy
 ```
