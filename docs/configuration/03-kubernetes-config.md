@@ -260,29 +260,29 @@ azimuth_capi_operator_capi_helm_worker_failure_domain: az1
 
 There may be situations where node groups with certain flavours require different config
 options to the `nodeGroupDefaults` configured for the cluster e.g performance tuning options
-which should only be applied to flavours with GPUs. This can be done by overriding 
+which should only be applied to flavours with GPUs. This can be done by overriding
 `azimuth_capi_operator_release_overrides.config.capiHelm.flavorSpecificNodeGroupOverrides`, which
 is a dictionary with [fnmatch](https://docs.python.org/3/library/fnmatch.html) patterns for flavours
 as keys and CAPI node group config objects as values. For example, to apply CPU pinning to any
 flavour that has a name ending in `.gpu`, you would set:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_release_overrides:
   config:
     capiHelm:
       flavorSpecificNodeGroupOverrides:
-        '*.gpu':
+        "*.gpu":
           kubeadmConfigSpec:
             files:
-            - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
-              owner: "root:root"
-              permissions: "0644"
-              content: |
-                {
-                  "apiVersion": "kubelet.config.k8s.io/v1beta1",
-                  "kind": "KubeletConfiguration",
-                  "cpuManagerPolicy": "static"
-                }
+              - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
+                owner: "root:root"
+                permissions: "0644"
+                content: |
+                  {
+                    "apiVersion": "kubelet.config.k8s.io/v1beta1",
+                    "kind": "KubeletConfiguration",
+                    "cpuManagerPolicy": "static"
+                  }
             joinConfiguration:
               patches:
                 directory: /etc/kubernetes/patches
@@ -295,12 +295,12 @@ including Kubernetes performance tuning options, a KubeADM pre script for instal
 taints compatible with the ExtendedResourceToleration admission controller to ensure that only workloads
 making resource requests for GPUs are scheduled onto the nodes:
 
-```yaml  title="environments/my-site/inventory/group_vars/all/variables.yml"
+```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_release_overrides:
   config:
     capiHelm:
       flavorSpecificNodeGroupOverrides:
-        '*.pvc.*':
+        "*.pvc.*":
           kubeadmConfigSpec:
             preKubeadmCommands:
               - |
@@ -325,38 +325,38 @@ azimuth_capi_operator_release_overrides:
                 # Avoids reboot
                 modprobe i915
             files:
-            - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
-              owner: "root:root"
-              permissions: "0644"
-              content: |
-                {
-                  "apiVersion": "kubelet.config.k8s.io/v1beta1",
-                  "kind": "KubeletConfiguration",
-                  "reservedSystemCPUs": "0-3",
-                  "cpuManagerPolicy": "static",
-                  "cpuManagerPolicyOptions":
+              - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
+                owner: "root:root"
+                permissions: "0644"
+                content: |
                   {
-                      "full-pcpus-only": "true",
-                  },
-                  "topologyManagerPolicy": "restricted",
-                  "memoryManagerPolicy": "Static",
-                  "reservedMemory": [
-                      {
-                        "numaNode": 0,
-                        "limits": {
-                          "memory": "1Gi",
+                    "apiVersion": "kubelet.config.k8s.io/v1beta1",
+                    "kind": "KubeletConfiguration",
+                    "reservedSystemCPUs": "0-3",
+                    "cpuManagerPolicy": "static",
+                    "cpuManagerPolicyOptions":
+                    {
+                        "full-pcpus-only": "true",
+                    },
+                    "topologyManagerPolicy": "restricted",
+                    "memoryManagerPolicy": "Static",
+                    "reservedMemory": [
+                        {
+                          "numaNode": 0,
+                          "limits": {
+                            "memory": "1Gi",
+                          }
                         }
-                      }
-                    ],
-                  "evictionHard": {
-                    "memory.available": "1Gi",
-                  },
-                }
+                      ],
+                    "evictionHard": {
+                      "memory.available": "1Gi",
+                    },
+                  }
             joinConfiguration:
               patches:
                 directory: /etc/kubernetes/patches
               nodeRegistration:
                 taints:
-                - effect: NoSchedule
-                  key: gpu.intel.com/i915
+                  - effect: NoSchedule
+                    key: gpu.intel.com/i915
 ```
