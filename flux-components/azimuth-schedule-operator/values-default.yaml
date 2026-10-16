@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azimuth-schedule-operator-values-default
+  namespace: azimuth
+data:
+  values.yaml: |
+    metrics:
+      enabled: true
+    config:
+      blazarEnabled: no
+      defaultGracePeriod: 0
