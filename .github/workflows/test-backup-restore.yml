@@ -40,7 +40,7 @@ jobs:
       # We need to check out the code under test first in order to use local
       # actions
       - name: Checkout code under test
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -122,7 +122,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Upload pre-restore debug bundle
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: azimuth-pre-restore-debug-bundle
           path: debug-bundle.tar.gz
@@ -165,7 +165,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Upload pre-cleanup debug bundle
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: azimuth-pre-cleanup-debug-bundle
           path: debug-bundle.tar.gz
@@ -191,7 +191,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload test report artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: azimuth-restore-test-reports
           path: reports/*
@@ -206,7 +206,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload debug bundle
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: azimuth-restore-debug-bundle
           path: debug-bundle.tar.gz
