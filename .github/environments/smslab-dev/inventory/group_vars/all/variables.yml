@@ -1,0 +1,41 @@
+---
+# Don't assign a floating IP to the seed
+infra_use_floatingip: false
+
+# Use the pre-existing stackhpc-ipv4-geneve network
+infra_network_id: "{{ lookup('pipe', 'openstack network show stackhpc-ipv4-geneve -f value -c id') }}"
+
+
+# The flavors only have 20GB root disks, which is not enough to unpack images
+# for uploading
+# So we need to use a Cinder root volume
+# We also don't need the encrypted volume type
+infra_root_volume_enabled: true
+infra_root_volume_size: 40
+# But we can decrease the size of the infra data volume
+infra_data_volume_size: 40
+
+# The flavor to use for the Azimuth AIO VM
+infra_flavor_id: 3af23f72-e2a0-4c06-908b-35a64ccdd025 # 4 vCPUs, 16GB RAM
+
+# Attach platforms to ipv4-geneve
+azimuth_openstack_internal_net_template: stackhpc-ipv4-geneve
+
+# Don't create an internal network
+azimuth_openstack_create_internal_net: false
+
+# Allow platforms to be attached to a shared network
+azimuth_release_overrides:
+  provider:
+    openstack:
+      allowSharedInternalNet: true
+
+azimuth_authenticator_appcred_hidden: false
+
+ingress_base_domain: "{{ ansible_facts['default_ipv4']['address'] | replace('.', '-') }}.sslip.io"
+
+# Indicates the CIDR blocks to use for pods and services of provisioned clusters respectively
+azimuth_capi_operator_capi_helm_pods_cidr: "172.20.0.0/16"
+azimuth_capi_operator_capi_helm_services_cidr: "172.21.0.0/16"
+
+openstack_loadbalancer_provider: "ovn"
