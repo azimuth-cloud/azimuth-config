@@ -59,6 +59,7 @@ jobs:
           - azimuth-caas-operator
           - azimuth-schedule-operator
           - azimuth-flux
+          - capi-management-cluster
           - cert-manager
           - coral-credits
           - harbor
