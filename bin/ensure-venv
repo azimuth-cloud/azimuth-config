@@ -6,7 +6,7 @@
 # Check python version
 # NOTE: Python 3.10 EOL is scheduled for October 2026
 PY_MAJOR=3
-PY_MINOR=10
+PY_MINOR=12
 version_check() {
 cat << EOF | python3
 import sys
