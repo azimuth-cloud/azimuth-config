@@ -33,25 +33,13 @@ set:
 azimuth_clusters_enabled: no
 ```
 
-## Removing legacy AWX components
-
-If you are migrating from an installation using the previous AWX implementation then
-Azimuth itself will be reconfigured to use the CaaS CRD, but by default the AWX
-installation will be left untouched in order to allow any legacy apps to be cleaned up.
-
-To remove AWX components, an additional variable must be set when the `provision` playbook
-is executed:
-
-```sh
-ansible-playbook azimuth_cloud.azimuth_ops.provision -e awx_purge=yes
-```
-
 ## Standard Appliances
 
-By default, three standard appliances are made available - the
+The standard appliances include the
 [StackHPC Slurm appliance](https://github.com/stackhpc/ansible-slurm-appliance), the
-[Linux Workstation appliance](https://github.com/azimuth-cloud/caas-workstation) and the
-[repo2docker appliance](https://github.com/azimuth-cloud/caas-repo2docker).
+[Linux Workstation appliance](https://github.com/azimuth-cloud/caas-workstation) and
+[RStudio](https://github.com/azimuth-cloud/caas-r-studio-server).
+These are enabled by default when CaaS is enabled.
 
 ### StackHPC Slurm appliance
 
@@ -79,11 +67,17 @@ To disable the Linux Workstation appliance, use the following:
 azimuth_caas_workstation_enabled: no
 ```
 
+A workstation variant with external SSH access is also enabled by default. To disable
+only that variant, set `azimuth_caas_workstation_ssh_enabled: no`.
+
 ### repo2docker appliance
 
 The repo2docker appliance allows users to deploy a [Jupyter Notebook](https://jupyter.org/)
 server, exposed via Zenith, from a [repo2docker](https://repo2docker.readthedocs.io/en/latest/)
 compliant repository. A simple monitoring stack is also available, exposed via Zenith.
+
+This appliance is marked as deprecated on the [`azimuth-ops` main branch](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/pull/1430).
+It remains enabled by default in `azimuth-ops` 0.34.0 when CaaS is enabled.
 
 To disable the repo2docker appliance, use the following:
 
@@ -110,8 +104,9 @@ It is possible to make custom appliances available in the Azimuth interface for 
 For more information on building a CaaS-compatible appliance, please see the
 [sample appliance](https://github.com/azimuth-cloud/azimuth-sample-appliance).
 
-Custom appliances can be easily specified in your Azimuth configuration. For example,
-the following will configure the sample appliance as an available cluster type:
+Custom appliances can be specified in your Azimuth configuration. For example, the following will configure the sample appliance as an available cluster type.
+Replace `<image-uuid>` with the UUID of an image on your OpenStack cloud that meets the appliance's requirements. Images can be uploaded using the
+[community images configuration](./09-community-images.md#custom-images).
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_caas_cluster_templates_overrides:
@@ -128,11 +123,11 @@ azimuth_caas_cluster_templates_overrides:
       # The name of the playbook to use
       playbook: sample-appliance.yml
       # The URL of the metadata file
-      uiMetaUrl: https://raw.githubusercontent.com/azimuth-cloud/azimuth-sample-appliance/main/ui-meta/sample-appliance.yaml
+      uiMetaUrl: https://raw.githubusercontent.com/azimuth-cloud/azimuth-sample-appliance/main/ui-meta/sample-appliance.yml
       # Dict of extra variables for the appliance
       extraVars:
-        # Use the ID of an Ubuntu 20.04 image that we asked azimuth-ops to upload
-        cluster_image: "{{ community_images_image_ids.ubuntu_2004_20220712 }}"
+        # Use the UUID of an image suitable for this appliance
+        cluster_image: "<image-uuid>"
 ```
 
 <!-- prettier-ignore-start -->

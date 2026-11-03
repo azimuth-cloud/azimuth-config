@@ -24,7 +24,7 @@ separation of privilege.
 that encrypted files contain _only_ secret values so that information is not hidden
 unnecessarily. To this end, a typical `azimuth-config` environment for a site will
 have one or more `group_vars` files in the inventory that are unencrypted, but
-secret values will be placed in a `secrets.yaml` that is encrypted.
+secret values will be placed in a `secrets.yml` file that is encrypted when committed.
 
 ## Initialising git-crypt
 
@@ -47,10 +47,11 @@ git-crypt init
 
 ## Verifying which files are encrypted
 
-`azimuth-config` contains a `.gitattributes` file that ensures all `clouds.yaml`,
-`secrets.yaml`, `env.secret` and TLS key files in the repository will be encrypted (except those
-for the example environment). If required, you can add additional patterns to the
-file to encrypt other files.
+Once `git-crypt` is initialised, the repository's `.gitattributes` file selects `clouds.yaml`, `secrets.yml`, `env.secret` and `*.key` files for encryption when committed.
+The `clouds.yaml` and `secrets.yml` files in the `example` and `capi-mgmt-example` environments are excluded.
+If required, you can add additional patterns to the file to encrypt other files.
+
+The generated `secrets.yml` files in the `demo` and `standalone` environments are excluded from Git by `.gitignore`. They remain in plain text locally.
 
 You can check the files that `git-crypt` is encrypting using the following command:
 

@@ -14,6 +14,9 @@ using a layered approach.
 
 Documentation on deploying Azimuth can be found at <https://azimuth-config.readthedocs.io>.
 
+For local checks and the OpenStack and Tilt workflow, see the
+[development guide](./docs/developing/index.md).
+
 The documentation source is in the [docs](./docs/) directory of this repository.
 
 ## Developing locally

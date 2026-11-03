@@ -1,12 +1,15 @@
 # Developing Azimuth
 
-An Azimuth deployment consists of several interdependent components, some of which are
-Azimuth-specific and some of which are third-party components. Plugging code under
-development into such a system can be tricky, making development difficult and slow.
+Azimuth includes an API, a UI and several Kubernetes operators. You can check some changes locally, testing login, cloud resources and interactions between components requires a running deployment.
+
+## Checks without a cloud
+
+The portal's [local development guide](https://github.com/azimuth-cloud/azimuth/blob/master/docs/local-development.md) covers API tests, Python checks and UI builds without OpenStack or Kubernetes.
+See [CONTRIBUTING.md](https://github.com/azimuth-cloud/azimuth/blob/master/CONTRIBUTING.md) for chart checks and the contribution workflow.
 
 ## Deploying a dev instance
 
-In order to develop Azimuth, you first need a running Azimuth instance.
+For integration development with OpenStack and Tilt, you need a running Azimuth instance and an application credential for your cloud.
 
 Each developer should have their own independent instance of Azimuth for development,
 as during development they will make changes to the running Azimuth components that may
@@ -81,8 +84,9 @@ ansible-playbook azimuth_cloud.azimuth_ops.provision
 Azimuth has a number of components, mostly written in Python:
 
 - [Azimuth API and UI](https://github.com/azimuth-cloud/azimuth) - user-facing API and UI
+- [Azimuth Apps operator](https://github.com/azimuth-cloud/azimuth-apps-operator) - Kubernetes operator managing apps through App and AppTemplate resources
 - [Azimuth CaaS operator](https://github.com/azimuth-cloud/azimuth-caas-operator) - Kubernetes operator implementing CaaS functionality
-- [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator implementing Kubernetes and Kubernetes App functionality
+- [Azimuth CAPI operator](https://github.com/azimuth-cloud/azimuth-capi-operator) - Kubernetes operator managing Kubernetes clusters through Cluster API
 - [Azimuth identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) - Kubernetes operator implementing platform identity
 - [Azimuth schedule operator](https://github.com/azimuth-cloud/azimuth-schedule-operator) - Kubernetes operator implementing platform scheduling
 - [Zenith](https://github.com/azimuth-cloud/zenith) - secure, tunnelling application proxy used to expose platform services
@@ -113,8 +117,11 @@ development machine (in addition to those required to install Azimuth itself):
 
 For developing the Azimuth UI, the following are also required:
 
-- [Node.js](https://nodejs.org)
-- The [Yarn Classic](https://classic.yarnpkg.com/lang/en/docs/install/) package manager
+- [Node.js 24](https://nodejs.org), matching the portal's [UI Dockerfile](https://github.com/azimuth-cloud/azimuth/blob/master/ui/Dockerfile)
+- [Yarn 4](https://yarnpkg.com/), using the version pinned in [ui/package.json](https://github.com/azimuth-cloud/azimuth/blob/master/ui/package.json) through [Corepack](https://yarnpkg.com/corepack)
+
+Enable Corepack and run Yarn from the portal's `ui/` directory so it uses the pinned version.
+See the [UI build instructions](https://github.com/azimuth-cloud/azimuth/blob/master/docs/local-development.md#ui-build) for setup.
 
 ### Tilt settings
 
@@ -174,10 +181,12 @@ mirror_engine: skopeo
 
 ### Using the Tilt environment
 
-Tilt will look for checkouts of Azimuth components as siblings of your Azimuth configuration
-and include them in your development environment. For example, the following directory structure
-will result in a development environment where changes to the Azimuth API, UI and CaaS operators
-are built and pushed into your development Azimuth instance for testing:
+Tilt looks for sibling checkouts of the components configured in the [Tiltfile](https://github.com/azimuth-cloud/azimuth-config/blob/devel/Tiltfile).
+It updates existing Helm releases, so the components you want to develop must already be installed in your development instance.
+This also applies to the Apps operator, which Tilt can load from an `azimuth-apps-operator` checkout.
+
+For example, the following directory structure lets Tilt build changes to the Azimuth API,
+UI and CaaS operator and deploy them to your development instance for testing:
 
 ```text
 .
