@@ -11,6 +11,20 @@ variables:
   # This assumes that we are using GitLab-managed Terraform state (recommended when available)
   TF_HTTP_USERNAME: gitlab-ci-token
   TF_HTTP_PASSWORD: $CI_JOB_TOKEN
+  # Only gemerate and run tests for a subset of Azimuth platforms.
+  # The first variable defaults all test cases to disabled then individual
+  # test cases are enabled. There is no check for adequate resources eg if
+  # ML tests are enabled they will attempt to run even if a GPU is absent.
+  AZIMUTH_TEST_SET: >-
+    {
+      "generate_tests_kubernetes_apps_default_test_case_enabled": false,
+      "generate_tests_caas_suite_enabled": true,
+      "generate_tests_kubernetes_suite_enabled": true,
+      "generate_tests_kubernetes_apps_test_case_argocd_enabled": true,
+      "generate_tests_kubernetes_apps_test_case_binderhub_enabled": true,
+      "generate_tests_kubernetes_apps_test_case_daskhub_enabled": true,
+      "generate_tests_kubernetes_apps_test_case_jupyterhub_enabled": true
+    }
 
 stages:
   # This stage owns the scheduled job that checks for upstream changes
@@ -137,7 +151,7 @@ test_aio:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e "$AZIMUTH_TEST_SET"
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests
 
@@ -246,7 +260,7 @@ test_staging:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e "$AZIMUTH_TEST_SET"
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests
 
@@ -315,6 +329,6 @@ test_production:
   before_script:
     - source ./bin/ci-setup
   script:
-    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests
+    - ansible-playbook azimuth_cloud.azimuth_ops.generate_tests -e "$AZIMUTH_TEST_SET"
     # Use the unrestricted application credential to execute the tests, as per the docs
     - OS_CLOUD=unrestricted ./bin/run-tests
