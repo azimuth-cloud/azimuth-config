@@ -18,6 +18,17 @@ aware that the platform is deployed in an Azimuth tenancy.
 By default, platform admins are also platform users that are authorised to access all of the
 services for platforms deployed in their tenancies.
 
+The **deployment operator** is the person or team that installs and maintains Azimuth and its shared services.
+Platform admins manage platforms and access within their tenancies; deployment administration uses separate credentials.
+
+The credentials you need depend on what you are accessing:
+
+| Interface                                                           | Authentication                                                      | Details                                                       |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Azimuth portal                                                      | OpenStack credentials or the configured OIDC provider               | [Accessing Azimuth](#accessing-azimuth)                       |
+| Platform services, such as JupyterHub or a tenant cluster's Grafana | The tenancy's Keycloak realm, through Zenith                        | [Accessing platform services](#accessing-platform-services)   |
+| Installation monitoring dashboards                                  | Separate HTTP Basic Auth credentials set by the deployment operator | [Accessing the monitoring](../debugging/access-monitoring.md) |
+
 ## Technologies
 
 Azimuth utilises Kubernetes Ingress, Keycloak and Zenith to implement secure access to Azimuth
@@ -45,26 +56,25 @@ for the service that wants to be proxied. The server then forwards traffic for t
 back down the tunnel. This is accomplished by creating a Kubernetes `Service` for each Zenith
 service and using Kubernetes Ingress to route traffic to the correct service based on the hostname.
 
-Zenith is able to perform TLS termination and single sign-on using OpenID Connect (OIDC) for
-proxied services before forwarding traffic to them. This is implemented by configuring the
-Kubernetes `Ingress` resources appropriately - in particular the OIDC authentication and
-authorisation is implemented using an auth subrequest.
+Zenith supports TLS termination and single sign-on using OpenID Connect (OIDC) for proxied services.
+When OIDC is enabled, the Kubernetes `Ingress` routes requests through an OAuth2 Proxy for the service.
+This proxy authenticates users and checks their group membership before forwarding requests to the service.
 
 ## Accessing Azimuth
 
-An Azimuth operator can configure authentication and authorization for Azimuth itself using
-either OpenStack credentials directly or using a realm in the Azimuth-managed Keycloak. Each
-mechanism has pros and cons.
+Azimuth supports OpenStack authentication and OpenID Connect (OIDC) authentication.
+The `azimuth_authentication_type` setting selects the authentication method and defaults to `openstack`.
+With `oidc`, Azimuth can use a realm in its own Keycloak instance or an external OIDC provider.
 
 An "Azimuth tenancy" is essentially a `Namespace` in the Azimuth Kubernetes cluster that holds
 the platform definitions and related resources for that tenancy (implemented as Kubernetes custom
-resources). Currently, these tenancies have a one-to-one mapping with OpenStack projects.
+resources).
+With OpenStack authentication, tenancies correspond to the OpenStack projects that the user can access.
+With OIDC, an operator creates the tenancy namespaces and grants access through group membership.
 
-In order to manage platform resources in the underlying cloud on behalf of users, Azimuth needs
-to be able to translate an authenticated Azimuth session into two things:
-
-1. A list of Azimuth tenancies that a user is permitted to access
-2. A credential that is able to manage resources in the corresponding OpenStack project
+The cloud provider is configured separately using `azimuth_cloud_provider_type`.
+The default `openstack` provider needs credentials for the OpenStack project used by each tenancy.
+[Standalone mode](../configuration/17-standalone-mode.md) uses the `"null"` provider and deploys apps onto existing Kubernetes clusters using a kubeconfig for each tenancy.
 
 This section documents how this is achieved for each authentication method.
 
@@ -74,12 +84,16 @@ Azimuth allows authenticating directly using credentials for the underlying Open
 with support for domain/username/password, application credentials and Keystone federated
 identity providers.
 
-In each case, Azimuth obtains a token that can be used to interact with the OpenStack APIs on
-behalf of the user. This token is _unscoped_, i.e. not associated with a specific OpenStack
-project, but can be used to query the OpenStack projects that the user has access to - these
-projects correspond to the Azimuth tenancies that the user can access. Once the user enters
-a tenancy context in Azimuth, the unscoped token can be exchanged for a _project-scoped_ token
-that allows Azimuth to manage resources in the OpenStack project.
+Azimuth obtains a token that can be used to interact with the OpenStack APIs on behalf of the user.
+It uses this token to find the projects available to the user, which correspond to Azimuth tenancies.
+To manage resources in a tenancy, Azimuth needs a _project-scoped_ token.
+If the token is not already scoped to that project, Azimuth exchanges it for one that is.
+
+An [OpenStack application credential](https://docs.openstack.org/keystone/latest/user/application_credentials.html) consists of an ID and a secret.
+Azimuth uses these to authenticate with Keystone, OpenStack's identity service.
+
+Tokens issued for application credentials are already scoped to a project and cannot be exchanged for tokens scoped to other projects.
+When signing in with an application credential, the user can therefore access only the corresponding Azimuth tenancy.
 
 When authenticating using OpenStack credentials, Azimuth will create the corresponding tenant
 namespaces automatically when required.
@@ -95,15 +109,15 @@ sequenceDiagram
   participant O as OpenStack
 
   U ->> A: Create platform in tenancy X
-  opt Session cookie not present or unscoped token expired
+  opt Session cookie not present or token expired
     A ->> U: Authentication required
     U ->> A: Visit login page
     A ->> U: List of authentication methods
     alt Domain/username/password or application credential selected
       U ->> A: Supply credentials
-      A ->> O: Request unscoped token using supplied credentials
-      O ->> A: Return unscoped token for user
-      A -->> U: Redirect to tenancy<br/>Set cookie containing unscoped token
+      A ->> O: Request token using supplied credentials
+      O ->> A: Return token for user
+      A -->> U: Redirect to tenancy<br/>Set cookie containing token
     else Keystone federated IDP selected
       U ->> A: Keystone federated IDP selected
       A -->> U: Redirect to Keystone federation URL
@@ -115,8 +129,10 @@ sequenceDiagram
     end
     U ->> A: Re-submit create platform in tenancy X
   end
-  A ->> O: Exchange unscoped token for scoped token for project X
-  O ->> A: Return scoped token for project X
+  opt Token is not already scoped to project X
+    A ->> O: Exchange token for scoped token for project X
+    O ->> A: Return scoped token for project X
+  end
   opt Azimuth tenant namespace does not exist
     A ->> N: Create tenant namespace
     N ->> A: Namespace created successfully
@@ -134,38 +150,35 @@ sequenceDiagram
 
 <!-- prettier-ignore-start -->
 !!! warning
-    This authentication method is currently in technology preview and not recommended for production. Fully automated
-    configuration of the Keycloak realm is not yet supported in `azimuth-ops`, so it is recommended that you enable
-    backups for your Azimuth installation in order to preserve the Keycloak database in the case of an unrecoverable
-    failure.
+    OIDC authentication is currently in technology preview and is not recommended for production.
 <!-- prettier-ignore-end -->
 
-Azimuth also supports authenticating against a special realm in the Keycloak instance that is
-deployed as part of an Azimuth installation. When using this authentication method, it is no
-longer required that platform admins have accounts on the underlying OpenStack cloud - the
-Azimuth operator can configure the Keycloak realm with any identity providers (e.g. Microsoft
-Entra, Google, LDAP, OIDC) and policies (e.g. MFA) that are supported by Keycloak that they
-need for users signing in to Azimuth.
+To use OIDC authentication with the Keycloak instance deployed by Azimuth, set `azimuth_authentication_type: oidc`.
+When `azimuth_oidc_issuer_url` is unset, `azimuth-ops` creates the users realm (`azimuth-users` by default).
+It also creates an OIDC client for the portal when `azimuth_oidc_client_secret` is unset.
+These resources are managed by the identity operator.
 
-In this authentication method, an Azimuth tenant namespace must be _pre-created_ for each
-OpenStack project that you want to use with Azimuth and a group must exist in the Keycloak
-realm that is used to grant access to this tenancy - `azimuth-ops` handles the creation of
-these namespaces and groups for the projects listed in your Azimuth configuration. Keycloak
-can be configured to automatically map users from federated identity providers into these
-groups if desired, or users can be manually added to the groups as needed.
+The deployment administrator must still configure users or external identity providers, tenancy groups and group membership.
+Keycloak supports providers such as Microsoft Entra, Google, LDAP and OIDC, as well as policies such as multi-factor authentication.
+Platform admins signing in through OIDC do not need their own OpenStack accounts.
 
-Azimuth authenticates users against the Keycloak realm using OpenID Connect, and the `groups`
-claim from the resulting token is used to determine which Azimuth tenancies the user is
-permitted to access.
+Alternatively, set `azimuth_oidc_issuer_url`, `azimuth_oidc_client_id` and `azimuth_oidc_client_secret` to use an existing OIDC provider and client.
+In this case, `azimuth-ops` does not create the users realm or the client.
+
+Configure each tenancy namespace with a `tenant.azimuth-cloud.io/id` label and a `tenant.azimuth-cloud.io/oidc-group` annotation naming the group that grants access.
+Azimuth uses the access token to query the OIDC provider's UserInfo endpoint on each request.
+It matches the user's groups against these annotations to find the tenancies they can access.
+The groups claim defaults to `groups` and can be changed with `azimuth_oidc_groups_claim`.
+
+The [azimuth-tenant-config repository](https://github.com/azimuth-cloud/azimuth-tenant-config) provides example tenancy namespaces and credential secrets.
+For standalone deployments, see the [tenancy setup guide](../configuration/17-standalone-mode.md#tenancy-creation).
 
 #### Obtaining an OpenStack credential
 
-Because users no longer have OpenStack credentials, Azimuth must now own the credentials that
-are used to provision resources in the underlying cloud on behalf of users. For each OpenStack
-project that you want to use Azimuth with, an application credential must be _pre-created_ and
-stored in a `Secret` in the corresponding Azimuth tenant namespace. `azimuth-ops` handles the
-creation of these secrets, but not the creation of the application credentials themselves -
-these must be created ahead of time and placed in your Azimuth configuration.
+When OIDC authentication is used with the OpenStack provider, the operator must create an application credential for each tenancy's OpenStack project and store it in a Kubernetes `Secret` in that tenancy's namespace.
+The secret must have the label `credential.azimuth-cloud.io/provider: openstack` and a single data key containing the `clouds.yaml` configuration.
+Azimuth uses this credential to manage cloud resources on behalf of users.
+The null provider used in standalone mode does not need an OpenStack credential.
 
 <!-- prettier-ignore-start -->
 !!! warning
@@ -181,8 +194,7 @@ these must be created ahead of time and placed in your Azimuth configuration.
     revoked, e.g. if they leave the organisation.
 <!-- prettier-ignore-end -->
 
-The following sequence diagram shows a typical flow for creating a platform in an Azimuth
-tenancy using the Keycloak realm for authentication:
+The following sequence diagram shows a typical flow for creating a platform on OpenStack using the Keycloak realm for authentication:
 
 ```mermaid
 sequenceDiagram
@@ -193,7 +205,7 @@ sequenceDiagram
   participant O as OpenStack
 
   U ->> A: Create platform in tenancy X
-  opt Session cookie not present or ID token invalid or expired
+  opt No valid Azimuth session
     A ->> U: Authentication required
     U ->> A: Visit login page
     A -->> U: Redirect to OIDC authorize URL
@@ -205,12 +217,16 @@ sequenceDiagram
     end
     K -->> U: Redirect to OIDC callback URL
     U ->> A: Visit OIDC callback URL
-    A ->> K: Request OIDC ID token
-    K ->> A: Return OIDC ID token with groups claim
-    A -->> U: Redirect to tenancy<br/>Set cookie containing ID token
+    A ->> K: Exchange authorization code for tokens
+    K ->> A: Return tokens
+    A -->> U: Redirect to tenancy<br/>Set session cookie
     U ->> A: Re-submit create platform in tenancy X
   end
-  A ->> A: Verify that user is authorised for tenancy X<br/>using groups claim from OIDC token
+  A ->> K: Request UserInfo using access token
+  K ->> A: Return user information and groups
+  A ->> N: Find tenancy namespace and required group
+  N ->> A: Return tenancy configuration
+  A ->> A: Verify group membership grants access to tenancy X
   A ->> N: Read project application credential secret
   N ->> A: Return project application credential data
   A ->> O: Create application credential for platform
@@ -250,13 +266,13 @@ The following diagram shows the sequence of actions for a user accessing a platf
 ```mermaid
 sequenceDiagram
   actor U as User
-  participant P as Zenith Proxy
+  participant P as Zenith OAuth2 Proxy
   participant R as Keycloak Realm
   participant A as Azimuth Portal
   participant S as Platform Service
 
   U ->> P: Visit service URL
-  opt OIDC ID token cookie not present or ID token invalid or expired
+  opt No valid OAuth2 Proxy session
     P -->> U: Redirect to OIDC authorize URL
     U ->> R: Visit OIDC authorize URL
     opt User does not have a current Keycloak session
@@ -272,14 +288,14 @@ sequenceDiagram
         R ->> R: Authenticate user<br/>This may redirect to an external IDP
       end
     end
-    R -->> U: Redirect to OIDC callback URL
+    R -->> U: Redirect to OIDC callback URL with authorization code
     U ->> P: Visit OIDC callback URL
-    P ->> R: Request OIDC ID token
-    R ->> P: Return OIDC ID token with groups claim
-    P -->> U: Redirect to service URL, setting OIDC ID token cookie
-    U ->> P: Visit service URL with valid OIDC ID token cookie
+    P ->> R: Exchange authorization code for tokens
+    R ->> P: Return tokens, including ID token with groups claim
+    P -->> U: Redirect to service URL, setting session cookie
+    U ->> P: Visit service URL with session cookie
   end
-  P ->> P: Check groups claim of ID token for required groups
+  P ->> P: Check session groups against allowed groups
   alt User is authorised
     P ->> S: Forward request to proxied service
     S ->> P: Response from proxied service
@@ -288,3 +304,10 @@ sequenceDiagram
     P ->> U: Return error page
   end
 ```
+
+## Working on identity
+
+Portal authentication is implemented in [`api/azimuth_auth`](https://github.com/azimuth-cloud/azimuth/tree/master/api/azimuth_auth).
+The portal creates tenancy realm resources in [`api/azimuth/identity.py`](https://github.com/azimuth-cloud/azimuth/blob/master/api/azimuth/identity.py), and the [identity operator](https://github.com/azimuth-cloud/azimuth-identity-operator) manages their configuration in Keycloak.
+[Zenith](https://github.com/azimuth-cloud/zenith) handles authentication for proxied platform services.
+See [Developing Azimuth](../developing/index.md) for local checks and setting up a development instance.

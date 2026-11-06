@@ -5,13 +5,19 @@ In Azimuth, there are two kinds of users:
 - **Platform Users** who are able to access one or more platforms deployed by Azimuth.
 - **Platform Admins** who are able to sign in to Azimuth, manage the deployed platforms in a tenancy and administer access to those platforms.
 
-Only Platform Admins need to have an OpenStack account. Each Azimuth tenancy has an
-associated **Identity Realm** that provides the Platform Users for that tenancy and is
-administered by the Platform Admins for the tenancy. This allow access to platforms to be
-granted for users that do not have an OpenStack account.
+Platform Admins need an OpenStack account when Azimuth uses OpenStack authentication.
+With OIDC authentication, they sign in through the configured identity provider and gain access to tenancies through group membership.
+Platform Users do not need an OpenStack account or access to the Azimuth portal.
+
+Each Azimuth tenancy has an **Identity Realm** that manages access to its platform services.
+A realm is a separate set of users, groups and authentication settings in Keycloak.
+Platform Admins manage the users and groups in this realm.
+When OIDC authentication uses the Azimuth-managed Keycloak, the users realm for portal sign-in (`azimuth-users` by default) is separate from these tenancy realms.
 
 This separation of Platform Users from OpenStack accounts opens up a wide range of use cases
 that are not possible when platforms can only be accessed by users with OpenStack accounts.
+
+See [Identity in Azimuth](../architecture/identity.md) for the authentication methods and how they apply to OpenStack and standalone deployments.
 
 ## Example use case
 
@@ -28,10 +34,8 @@ at the end of the workshop their access can be revoked.
 
 In order to accomplish this, every Azimuth installation includes an instance of
 the [Keycloak](https://www.keycloak.org/) open-source identity management platform.
-Each Azimuth tenancy (i.e. OpenStack project) has an associated
-[realm](https://www.keycloak.org/docs/latest/server_admin/#configuring-realms)
-in this Keycloak instance that is used to manage access to platforms deployed
-in that tenancy. The realm provides authentication and authorization for
+Each Azimuth tenancy has an associated [realm](https://www.keycloak.org/docs/latest/server_admin/#configuring-realms) in this Keycloak instance that is used to manage access to platforms deployed in that tenancy.
+The realm provides authentication and authorization for
 the Zenith services associated with the platforms in the tenancy using
 [OpenID Connect (OIDC)](https://openid.net/connect/).
 
@@ -71,6 +75,10 @@ For example, the standard Linux Workstation platform (see
    This will grant the user access to the "Web Console" service only.
 
 ## Keycloak admin password
+
+This password is for the deployment operator's administrator account for the whole Keycloak instance.
+Platform Admins manage their tenancy's realm through the Azimuth identity provider, as described above, and do not need this password.
+The [monitoring dashboards](14-monitoring.md#accessing-web-interfaces) use a separate password, `admin_dashboard_ingress_basic_auth_password`.
 
 The only required configuration for platform identity is to set the admin password for Keycloak:
 
