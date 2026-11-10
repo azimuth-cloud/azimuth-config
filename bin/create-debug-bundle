@@ -91,6 +91,7 @@ kubectl get clustertemplates -o wide > debug-bundle/list-kube-templates.txt 2>&1
 kubectl get clusters --all-namespaces -o wide > debug-bundle/list-kube-clusters.txt 2>&1 || true
 kubectl get apptemplates --all-namespaces -o wide > debug-bundle/list-kube-apptemplates.txt 2>&1 || true
 kubectl get cluster-api --all-namespaces -o wide > debug-bundle/list-cluster-api.txt 2>&1 || true
+kubectl get crd > debug-bundle/seed-list-crds.txt 2>&1 || true
 
 # Capture Cluster API object snapshots.
 # These are useful when investigating control plane rollout, machine remediation and bootstrap failures.
