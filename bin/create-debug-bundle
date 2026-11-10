@@ -33,6 +33,7 @@ if [ "$install_mode" = "ha" ]; then
 kubectl get pods --all-namespaces -o wide > debug-bundle/seed-list-pods.txt 2>&1 || true
 kubectl get pvc --all-namespaces -o wide > debug-bundle/seed-list-pvcs.txt 2>&1 || true
 kubectl get cluster-api -o wide > debug-bundle/seed-list-cluster-api.txt 2>&1 || true
+kubectl get crd > debug-bundle/seed-list-crds.txt 2>&1 || true
 
 # Capture Cluster API object snapshots from the seed cluster.
 kubectl get clusters.cluster.x-k8s.io --all-namespaces -o json > debug-bundle/seed-capi-clusters.json 2>&1 || true
