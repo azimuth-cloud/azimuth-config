@@ -103,3 +103,15 @@ velero_s3_url: "<endpoint URL>"
 
 # The name of the S3 bucket to use for backups (must already exist)
 velero_bucket_name: "<bucket name>"
+
+# Example to generate tests for the set of Kubernetes and CAAS features that are tested
+# in StackHPC CI, no GPU consuming tests are included.
+# Client deployments should consider which platforms they want to be tested and what
+# resources are available for CI testing (see docs/deployments/testing.md)
+generate_tests_kubernetes_apps_default_test_case_enabled: false
+generate_tests_caas_suite_enabled: true
+generate_tests_kubernetes_suite_enabled: true
+generate_tests_kubernetes_apps_test_case_argocd_enabled: true
+generate_tests_kubernetes_apps_test_case_binderhub_enabled: true
+generate_tests_kubernetes_apps_test_case_daskhub_enabled: true
+generate_tests_kubernetes_apps_test_case_jupyterhub_enabled: true

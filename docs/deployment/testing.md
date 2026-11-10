@@ -200,6 +200,23 @@ different types of platform.
 
 More information on [generating_tests](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/) and the [large number of running variables](https://github.com/azimuth-cloud/ansible-collection-azimuth-ops/blob/main/roles/generate_tests/defaults/main.yml).
 
+### Upstream CI test configuration
+
+Running the full set of default tests is very time consuming and **will require GPU resources**, for general testing and development StackHPC run a subset of the test suite.
+This is the set of test configuration variables used by StackHPC during development CI/CD:
+
+```
+generate_tests_kubernetes_apps_default_test_case_enabled: false
+generate_tests_caas_suite_enabled: true
+generate_tests_kubernetes_suite_enabled: true
+generate_tests_kubernetes_apps_test_case_argocd_enabled: true
+generate_tests_kubernetes_apps_test_case_binderhub_enabled: true
+generate_tests_kubernetes_apps_test_case_daskhub_enabled: true
+generate_tests_kubernetes_apps_test_case_jupyterhub_enabled: true
+```
+
+There is an example of this in the [example environment](../../environments/example/inventory/group_vars/all/variables.yml), the example .
+
 ### CaaS cluster types
 
 Test cases for CaaS cluster types perform the following steps:
