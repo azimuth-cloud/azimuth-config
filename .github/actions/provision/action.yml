@@ -27,7 +27,7 @@ runs:
         set -e
         source ./ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        ./bin/seed-ssh -- sudo systemctl mask --now apt-daily-upgrade.timer apt-daily-upgrade.servic
+        ./bin/seed-ssh -- sudo systemctl mask --now apt-daily-upgrade.timer apt-daily-upgrade.service
 
     - name: Create debug bundle on provisioning failure
       shell: bash
