@@ -19,6 +19,16 @@ runs:
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
         ansible-playbook azimuth_cloud.azimuth_ops.provision -e @extra-vars.yml
 
+    # apt-daily-upgrade runs at 06:00/18:00 (+ up to 60m)
+    # unattended-upgrades restarts k3s -> Azimuth API 500s mid-test
+    - name: Disable automatic package upgrades on the seed
+      shell: bash
+      run: |
+        set -e
+        source ./ci.env
+        source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
+        ./bin/seed-ssh -- sudo systemctl mask --now apt-daily-upgrade.timer apt-daily-upgrade.servic
+
     - name: Create debug bundle on provisioning failure
       shell: bash
       run: |
