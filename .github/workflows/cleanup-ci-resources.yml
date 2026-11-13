@@ -14,21 +14,21 @@ on: # yamllint disable-line rule:truthy
     inputs:
       delete-resources:
         type: boolean
-        description: "Delete resources older than 6h"
+        description: "Delete old disposable resources in the CI project"
         required: true
+        default: false
       delete-all-keypairs:
         type: boolean
-        description: "Delete all CI user keypairs"
+        description: "Delete unused CI keypairs"
         required: true
+        default: false
       target-cloud:
         description: >-
           The cloud to target for the run.
-          Leave blank to use the default cloud.
-        type: choice
-        options:
-          - ""
-          - arcus
-          - leafcloud
+          Select default to use the repository's target cloud.
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: cleanup-ci-resources-${{ inputs.target-cloud || vars.TARGET_CLOUD || 'default' }}
@@ -39,6 +39,8 @@ jobs:
     name: Clean up stale CI resources
     if: github.repository == 'azimuth-cloud/azimuth-config'
     runs-on: ubuntu-latest
+    env:
+      OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -47,9 +49,13 @@ jobs:
 
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
 
       - name: Generate clouds.yaml
-        run: printf '%s\n' "$OS_CLOUDS" > clouds.yaml
+        run: |
+          umask 077
+          printf '%s\n' "$OS_CLOUDS" > clouds.yaml
         env:
           OS_CLOUDS: ${{ secrets.OS_CLOUDS }}
 
@@ -58,7 +64,7 @@ jobs:
 
       - name: Clean up stale CI resources
         run: |
-          args=(--older-than-hours 6)
+          args=()
           if [[ "$DELETE_RESOURCES" == "true" ]]; then
             args+=(--delete-resources)
           fi
@@ -67,7 +73,10 @@ jobs:
           fi
           python bin/cleanup-ci-resources "${args[@]}"
         env:
-          OS_CLOUD: ${{ inputs.target-cloud || vars.TARGET_CLOUD }}
-          CI_CLEANUP_PROJECT_ID: ${{ vars.CI_CLEANUP_PROJECT_ID }}
-          DELETE_RESOURCES: ${{ github.event_name == 'schedule' || inputs.delete-resources }}
-          DELETE_ALL_KEYPAIRS: ${{ inputs.delete-all-keypairs || false }}
+          # A branch dispatch can inspect candidates; only the default branch can delete resources.
+          DELETE_RESOURCES: >-
+            ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+                && (github.event_name == 'schedule' || inputs.delete-resources) }}
+          DELETE_ALL_KEYPAIRS: >-
+            ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+                && inputs.delete-all-keypairs || false }}
