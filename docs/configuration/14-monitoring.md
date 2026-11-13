@@ -1,42 +1,46 @@
 # Monitoring and alerting
 
-Azimuth installations come with a monitoring and alerting stack that uses
-[Prometheus](https://prometheus.io/) to collect metrics on various components of the Kubernetes
-cluster and the Azimuth components running on it,
-[Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) to produce alerts
-based on those metrics and [Grafana](https://grafana.com/) to visualise the metrics using a
-curated set of dashboards.
+Azimuth installations come with a monitoring and alerting stack that uses [Prometheus](https://prometheus.io/) to collect metrics on various components of the Kubernetes cluster and the Azimuth components running on it, and to evaluate alert rules.
+[Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) routes alert notifications and [Grafana](https://grafana.com/) visualises the metrics using a curated set of dashboards.
 
-HA installations also include a log aggregation stack using [Loki](https://grafana.com/oss/loki/)
-and [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) that collects logs
-from all the pods running on the cluster and the systemd services on each cluster node.
+For OpenStack deployments, this stack runs on the K3s node in a single node installation, or on the HA cluster in an HA installation.
+In [standalone mode](17-standalone-mode.md), monitoring is optional and is installed when `deploy_prometheus_stack: true` is set.
+
+HA installations also include a log aggregation stack using [Loki](https://grafana.com/oss/loki/) and [Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/) that collects logs from all the pods running on the HA cluster and the systemd services on each cluster node.
 These logs are available in a dashboard in Grafana, where they can be filtered and searched.
+
+The current HA defaults still use Promtail, which [reached end of life on 2 March 2026](https://grafana.com/docs/loki/latest/send-data/promtail/).
+Grafana provides a [migration guide for Alloy](https://grafana.com/docs/loki/latest/setup/migrate/migrate-to-alloy/).
 
 In addition to the monitoring and alerting stack, several additional dashboards are installed:
 
-- The [Kubernetes dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
-  for browsing the current state of Kubernetes resources.
 - The [Helm dashboard](https://github.com/komodorio/helm-dashboard) for browsing the current
   state of Helm releases.
-- The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the
-  Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances.
+  Write actions are disabled by default.
+- The [ARA Records Ansible (ARA)](https://ara.recordsansible.org/) web interface for browsing the Ansible playbook runs that have been recorded for operations on Cluster-as-a-Service appliances, when CaaS is enabled.
 
-All the dashboards that access Kubernetes resources are configured to be read-only.
+The Kubernetes Dashboard is no longer installed on the management cluster.
+Use [kubectl](../debugging/access-k3s.md) or [K9s](../debugging/using-k9s.md) to inspect its resources; for HA installations, [target the HA cluster](../debugging/access-ha.md).
+Tenant Kubernetes clusters can use the optional Headlamp dashboard, accessed through their service links in the Azimuth portal.
 
 ## Accessing web interfaces
 
-The monitoring and alerting web dashboards are exposed as subdomains under the `ingress_base_domain`:
+These interfaces are for the people operating the Azimuth installation.
+Monitoring services exposed by individual platforms use [platform identity](07-platform-identity.md) instead.
+
+The monitoring and alerting web dashboards are exposed as subdomains under the `ingress_base_domain` by default:
 
 - `grafana` for the Grafana dashboards
 - `prometheus` for the Prometheus web interface
 - `alertmanager` for the Alertmanager web interface
-- `ara` for the ARA web interface
+- `ara` for the ARA web interface, when CaaS is enabled
 - `helm` for the Helm dashboard
-- `kubernetes` for the Kubernetes dashboard
 
 The dashboards are protected by a username and password (using
 [HTTP Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication)).
-The username is `admin` and a strong password must be set in your configuration:
+These credentials are separate from the OpenStack or OIDC credentials used to sign in to the Azimuth portal.
+The default username is `admin`, configured by `admin_dashboard_ingress_basic_auth_username`.
+Set a strong password in your configuration:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/secrets.yml"
 admin_dashboard_ingress_basic_auth_password: "<secure password>"
@@ -44,8 +48,8 @@ admin_dashboard_ingress_basic_auth_password: "<secure password>"
 
 <!-- prettier-ignore-start -->
 !!! warning "Sensitive information"
-    The dashboards allow read-only access to the internals of your Azimuth installation.
-    As such you should ensure that a strong password is used, and take care when sharing it.
+    These interfaces expose installation details, logs and administrative functions, such as creating Alertmanager silences.
+    Use a strong password and restrict access to these interfaces.
 
 !!! tip
     azimuth-config includes a utility for generating secrets for an environment:
@@ -62,7 +66,8 @@ admin_dashboard_ingress_basic_auth_password: "<secure password>"
 
 <!-- prettier-ignore-start -->
 !!! note
-    Persistence is only configured for HA deployments.
+    Persistent storage for Prometheus, Alertmanager and Loki is configured by default for HA deployments.
+    The single node monitoring stack does not configure it by default.
 <!-- prettier-ignore-end -->
 
 In order for metrics, alert state (e.g. silences) and logs to persist across pod restarts,
