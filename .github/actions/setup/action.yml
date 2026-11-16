@@ -188,6 +188,22 @@ runs:
         export INGRESS_IP="$INGRESS_IP"
         EOF
 
+        until \
+          INFRA_FIXED_IP="$(
+            openstack floating ip create $EXTNET_ID \
+              --description "seed IP for $AZIMUTH_ENVIRONMENT" \
+              --format value \
+              --column floating_ip_address
+          )"
+        do
+            echo "waiting for seed IP to become available"
+            sleep 60
+        done
+        echo "assigned $INFRA_FIXED_IP for seed"
+        cat >> ci.env <<EOF
+        export INFRA_FIXED_FLOATING_IP="$INFRA_FIXED_IP"
+        EOF
+
         if [ "$INSTALL_MODE" = "ha" ]; then
             until \
               ZENITH_SSHD_IP="$(
