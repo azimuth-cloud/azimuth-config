@@ -282,7 +282,7 @@ For Kubernetes cluster templates, the generated test cases perform the following
 1. Build the Kubernetes cluster configuration
 2. Create a Kubernetes cluster using the configuration
 3. Wait for the Kubernetes cluster to become `Ready`
-4. Check that the Zenith service for the Kubernetes Dashboard is working, if configured
+4. Check that the Zenith service for the Headlamp dashboard is working, if configured
 5. Check that the Zenith service for the monitoring is working, if configured
 6. Delete the Kubernetes cluster
 

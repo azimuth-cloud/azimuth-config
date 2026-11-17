@@ -2,8 +2,8 @@
 
 # Recovery of the Seed Node
 
-The Seed Node is not a mission-critical component, but is important
-for any planned maintenance activities.
+In an HA deployment, the Seed Node manages the separate HA cluster that runs Azimuth.
+In a single node deployment, the Seed Node hosts Azimuth itself, so a failure interrupts the service.
 
 If access to the Seed Node fails via the `./bin/seed-ssh` script,
 and the Seed Node is effectively inaccessible, there are some methods
@@ -45,30 +45,35 @@ Enter 'help' for a list of built-in commands.
 
 ## Recovery via OpenStack Rescue
 
-OpenStack provides the [instance rescue](https://docs.openstack.org/nova/latest/user/rescue.html)
-service, in which an instance is temporarily booted with a clean
-OS image with the original disk present as a secondary device.
-This process can be instigated from the Horizon web interface,
-or from the OpenStack command line:
+OpenStack provides [instance rescue](https://docs.openstack.org/nova/latest/user/rescue.html), which temporarily boots an instance from a rescue image while making its original disk available for repair.
+The original disk's device name depends on the rescue mode and image.
+Rescue of volume-backed instances requires Compute API microversion 2.87 or later, a suitable rescue image and a compatible hypervisor configuration.
+Consult the cloud operator's rescue instructions before proceeding.
+Rescue can be started from Horizon or the OpenStack command line:
 
 ```sh
-openstack server rescue <seed-node>
+openstack server rescue "<seed-node>"
 ```
 
-Choose the same OS image that was originally used for the Seed Node
-(this is the default choice on the command line).
+For a volume-backed Seed Node, select an image configured for stable device rescue and specify the required API microversion:
 
-The rescued Seed Node can be accessed using the seed-ssh script:
+```sh
+openstack --os-compute-api-version 2.87 server rescue \
+  --image "<rescue-image-id>" "<seed-node>"
+```
+
+Access the rescued instance using its console or the SSH credentials supported by the rescue image.
+The `seed-ssh` script works only if the rescue image accepts the deployment's SSH key for the `ubuntu` user:
 
 ```sh
 ./bin/seed-ssh
 ```
 
-Once access has been gained, recover the root filesystem using the
-usual tools:
+Use `lsblk -f` to identify the original root filesystem and check that it is unmounted before repairing it.
+For example, if the original root filesystem is ext4 on `/dev/vdb1`, run:
 
 ```sh
-fsck -t ext4 /dev/vdb1
+sudo fsck -t ext4 /dev/vdb1
 ```
 
 Once recovery has been completed, the Seed Node can be booted again
@@ -76,5 +81,5 @@ using the recovered root disk through an `unrescue` process, either
 via Horizon or the OpenStack command line:
 
 ```sh
-openstack server unrescue <seed-node>
+openstack server unrescue "<seed-node>"
 ```

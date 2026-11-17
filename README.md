@@ -21,6 +21,26 @@ The documentation source is in the [docs](./docs/) directory of this repository.
 
 ## Developing locally
 
+### Previewing the documentation
+
+Documentation changes can be previewed and checked without OpenStack or Kubernetes:
+
+```sh
+python3 -m venv .venv-docs
+source .venv-docs/bin/activate
+python -m pip install -r requirements-docs.txt
+mkdocs serve
+```
+
+Open the local URL printed by MkDocs to preview the site.
+Before submitting a change, check the complete site for build errors and broken page links:
+
+```sh
+mkdocs build --strict
+```
+
+### Linters
+
 To run the GitHub Actions linters locally, use:
 
 ```sh

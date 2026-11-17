@@ -2,6 +2,7 @@
 .ansible
 .bin
 .venv
+.venv-docs
 .work
 .python-version
 /clouds.yaml*
