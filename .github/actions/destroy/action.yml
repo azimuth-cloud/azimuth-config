@@ -25,6 +25,9 @@ runs:
         if [ -n "$INGRESS_IP" ]; then
           openstack floating ip delete $INGRESS_IP
         fi
+        if [ -n "$INFRA_FIXED_FLOATING_IP" ]; then
+          openstack floating ip delete $INFRA_FIXED_FLOATING_IP
+        fi
         if [ -n "$ZENITH_SSHD_IP" ]; then
           openstack floating ip delete $ZENITH_SSHD_IP
         fi

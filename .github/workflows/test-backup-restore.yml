@@ -107,6 +107,8 @@ jobs:
           source ./ci.env
           source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
           ./bin/seed-ssh -- \
+            velero backup delete "$AZIMUTH_ENVIRONMENT" || true
+          ./bin/seed-ssh -- \
             velero backup create "$AZIMUTH_ENVIRONMENT" \
               --kubeconfig "./kubeconfig-azimuth-$AZIMUTH_ENVIRONMENT.yaml" \
               --from-schedule default \
