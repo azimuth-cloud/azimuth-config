@@ -22,12 +22,41 @@ runs:
         set -eo pipefail
         source ci.env
         source ./bin/activate "$AZIMUTH_CONFIG_ENVIRONMENT" "$AZIMUTH_ENVIRONMENT"
-        if [ -n "$INGRESS_IP" ]; then
-          openstack floating ip delete $INGRESS_IP
-        fi
-        if [ -n "$ZENITH_SSHD_IP" ]; then
-          openstack floating ip delete $ZENITH_SSHD_IP
-        fi
+        python - <<'PY'
+        import os
+        import sys
+
+        import openstack
+
+        connection = openstack.connect()
+        project_id = connection.current_project_id
+        environment = os.environ["AZIMUTH_ENVIRONMENT"]
+        if not project_id or not environment:
+            raise SystemExit("Cannot release CI floating IPs without a project and environment")
+
+        failed = False
+        for variable, purpose in (("INGRESS_IP", "ingress"), ("ZENITH_SSHD_IP", "Zenith SSHD")):
+            address = os.environ.get(variable)
+            if not address:
+                continue
+            try:
+                ips = list(connection.network.ips(project_id=project_id, floating_ip_address=address))
+                for ip in ips:
+                    # The address may have been released and reallocated to another CI run.
+                    if (
+                        ip.project_id != project_id
+                        or ip.floating_ip_address != address
+                        or ip.description != f"{purpose} IP for {environment}"
+                    ):
+                        raise RuntimeError("Floating IP is no longer owned by this CI environment")
+                    connection.network.delete_ip(ip.id, ignore_missing=True)
+                print(f"Released {purpose} floating IP, or it was already absent")
+            except Exception as exc:
+                # Still try the other allocation; do not print potentially sensitive API responses.
+                print(f"Failed to release {purpose} floating IP: {type(exc).__name__}", file=sys.stderr)
+                failed = True
+        raise SystemExit(1 if failed else 0)
+        PY
       if: ${{ always() }}
 
     - name: Configure S3 lock
