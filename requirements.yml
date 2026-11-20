@@ -3,7 +3,7 @@
 collections:
   - name: https://github.com/azimuth-cloud/ansible-collection-azimuth-ops.git
     type: git
-    version: 0.35.4
+    version: PLATFORM-1285-ingress-test-ci
   # For local development
   # - type: dir
   #   source: ../ansible-collection-azimuth-ops
