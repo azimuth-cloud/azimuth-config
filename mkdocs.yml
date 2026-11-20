@@ -43,6 +43,7 @@ nav:
       - configuration/ci-cleanup.md
   - Operations:
       - operations/maintenance.md
+      - operations/2026-6-upgrade.md
   - Debugging:
       - debugging/index.md
       - debugging/access-k3s.md
@@ -88,6 +89,7 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       toc_depth: 3
+  - sane_lists
 
 plugins:
   - git-revision-date-localized:
