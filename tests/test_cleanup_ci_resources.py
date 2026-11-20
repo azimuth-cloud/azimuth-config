@@ -252,11 +252,29 @@ class CiExecutionTests(CleanupTestCase):
         self.assert_no_mutations()
 
     def test_empty_project_is_not_repeatedly_fully_scanned(self):
-        self.make_runner().run()
+        runner = self.make_runner()
+        runner.run()
         for name, method in (("compute", "servers"), ("block_storage", "volumes"), ("network", "ports")):
             self.assertLessEqual(getattr(getattr(self.connection, name), method).call_count, 2)
         self.connection.compute.keypairs.assert_not_called()
+        self.assertIn("- Port-forwarding lookups: 0, skipped after not_found: 0", runner.summary_markdown())
         self.assert_no_mutations()
+
+    def test_main_succeeds_after_not_found_forwarding_lookup_and_releases_fip(self):
+        ip = self.add("floating_ip")
+        self.connection.network.floating_ip_port_forwardings.side_effect = exceptions.ResourceNotFound()
+        runner = self.make_runner()
+        with (
+            mock.patch.object(MODULE.openstack, "connect", return_value=self.connection),
+            mock.patch.object(MODULE, "CleanupRunner", return_value=runner),
+            mock.patch.object(sys, "argv", [str(SCRIPT), "--delete-resources"]),
+            mock.patch.dict(MODULE.os.environ, {"OS_CLOUD": "unit-test"}, clear=True),
+        ):
+            self.assertEqual(MODULE.main(), 0)
+        self.connection.network.delete_ip.assert_called_once_with(ip, ignore_missing=True, if_revision=5)
+        self.connection.network.floating_ip_port_forwardings.assert_called_once_with(ip)
+        self.assertEqual(runner.errors, [])
+        self.assertIn("- Port-forwarding lookups: 1, skipped after not_found: 1", runner.summary_markdown())
 
     def test_octavia_list_failure_blocks_dependent_ports_but_not_servers_or_volumes(self):
         self.add("server")
@@ -631,6 +649,26 @@ class DependencyTests(CleanupTestCase):
         self.connection.network.delete_ip.assert_not_called()
         self.assertTrue(runner.errors)
 
+    def test_not_found_forwarding_warnings_are_per_fip_but_attempts_are_counted(self):
+        first = self.add("floating_ip")
+        second = self.add("floating_ip", id="another-fip")
+        self.connection.network.floating_ip_port_forwardings.side_effect = exceptions.ResourceNotFound(
+            "sensitive-response-body"
+        )
+        runner = self.make_runner()
+        for ip in (first, first, second):
+            self.assertEqual(runner.forwardings(ip), [])
+        self.assertEqual(self.connection.network.floating_ip_port_forwardings.call_count, 3)
+        self.assertEqual(self.logger_mock.warning.call_count, 2)
+        warnings = " ".join(str(call) for call in self.logger_mock.warning.call_args_list)
+        self.assertIn(first.id, warnings)
+        self.assertIn(second.id, warnings)
+        self.assertNotIn("sensitive-response-body", warnings)
+        self.assertEqual(runner.errors, [])
+        self.assertEqual(runner.stats["port_forwarding.attempted"], 3)
+        self.assertEqual(runner.stats["port_forwarding.skipped"], 3)
+        self.assertIn("- Port-forwarding lookups: 3, skipped after not_found: 3", runner.summary_markdown())
+
     def test_freshly_detached_old_floating_ip_is_preserved(self):
         self.add("floating_ip", updated_at=NOW.isoformat())
         self.make_runner().run()
@@ -987,6 +1025,77 @@ class OrphanPortFloatingIpTests(CleanupTestCase):
 
         self.connection.network.wait_for_delete.side_effect = wait
         return port, ip
+
+    def test_lazy_not_found_allows_portal_network_orphan_port_and_fip_cleanup(self):
+        port, ip = self.orphan_with_fip()
+        self.add("network", id="test-network", name="portal-internal")
+
+        def forwardings(_ip):
+            yield from ()
+            raise exceptions.ResourceNotFound()
+
+        self.connection.network.floating_ip_port_forwardings.side_effect = forwardings
+        runner = self.make_runner()
+        runner.run()
+        self.connection.network.delete_port.assert_called_once_with(port, ignore_missing=True, if_revision=5)
+        self.connection.network.delete_ip.assert_called_once_with(ip, ignore_missing=True, if_revision=6)
+        self.connection.network.delete_network.assert_not_called()
+        self.assertLess(self.events.index("wait:port"), self.events.index("delete:floating_ip"))
+        self.assertGreater(self.connection.network.floating_ip_port_forwardings.call_count, 1)
+        self.logger_mock.warning.assert_called_once()
+        self.assertEqual(runner.errors, [])
+
+    def test_not_found_after_partial_forwarding_results_preserves_port_and_fip(self):
+        self.orphan_with_fip()
+
+        def forwardings(_ip):
+            yield SimpleNamespace(internal_port_id=PORT_ID)
+            raise exceptions.ResourceNotFound()
+
+        self.connection.network.floating_ip_port_forwardings.side_effect = forwardings
+        runner = self.make_runner()
+        runner.run()
+        self.assert_no_mutations()
+        self.assertTrue(
+            any(error.resource_type == "port_forwarding" and error.error_code == "not_found" for error in runner.errors)
+        )
+        self.assertEqual(runner.stats["port_forwarding.skipped"], 0)
+
+    def test_other_forwarding_errors_preserve_ports_and_fips_but_allow_volume_cleanup(self):
+        for failure in (http_error(403), http_error(503), exceptions.ResourceTimeout()):
+            with self.subTest(error=MODULE.error_code(failure)):
+                self.reset_cloud()
+                self.orphan_with_fip()
+                self.add("floating_ip", id="unattached-fip")
+                volume = self.add("volume")
+                self.connection.network.floating_ip_port_forwardings.side_effect = failure
+                runner = self.make_runner()
+                runner.run()
+                self.connection.network.delete_port.assert_not_called()
+                self.connection.network.delete_ip.assert_not_called()
+                self.connection.block_storage.delete_volume.assert_called_once_with(volume, ignore_missing=True)
+                self.assertTrue(
+                    any(
+                        error.resource_type == "port_forwarding" and error.error_code == MODULE.error_code(failure)
+                        for error in runner.errors
+                    )
+                )
+                self.assertEqual(runner.stats["port_forwarding.skipped"], 0)
+
+    def test_forwarding_after_ignored_not_found_is_still_checked_before_deletion(self):
+        _, ip = self.orphan_with_fip()
+        self.connection.network.floating_ip_port_forwardings.side_effect = [
+            exceptions.ResourceNotFound(),
+            [SimpleNamespace(internal_port_id=PORT_ID)],
+        ]
+        runner = self.make_runner()
+        self.assertEqual(runner.forwardings(ip), [])
+        runner.run()
+        self.assert_no_mutations()
+        self.assertEqual(self.connection.network.floating_ip_port_forwardings.call_count, 2)
+        self.assertEqual(runner.errors, [])
+        self.assertEqual(runner.stats["port_forwarding.attempted"], 2)
+        self.assertEqual(runner.stats["port_forwarding.skipped"], 1)
 
     def test_orphan_port_is_conditionally_deleted_before_its_fip_is_released(self):
         for status in ("ACTIVE", "ERROR"):
