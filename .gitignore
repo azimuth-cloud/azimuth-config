@@ -2,6 +2,7 @@
 .ansible
 .bin
 .venv
+.venv-docs
 .work
 __pycache__/
 .python-version
