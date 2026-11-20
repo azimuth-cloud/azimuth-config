@@ -1,43 +1,73 @@
 #!/usr/bin/env python3
-
-"""Safely clean up stale servers and their resources in the CI project."""
+"""Clean up leftover resources in the Azimuth CI project."""
 
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import logging
 import os
 import re
 import sys
 import time
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from collections import Counter
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
 
 import openstack
 from keystoneauth1 import exceptions as ks_exceptions
 from openstack import exceptions
 
-SERVER_STATUSES = ("ACTIVE", "BUILD", "ERROR", "SHUTOFF")
-OPENSTACK_EXCEPTIONS = (exceptions.SDKException, ks_exceptions.ClientException)
-DELETEABLE_VOLUME_STATUSES = {
-    "available",
-    "error",
-    "error_extending",
-    "error_managing",
-    "error_restoring",
-}
-SAFE_KEYPAIR_RE = re.compile(r"^(?:azimuth-[A-Za-z0-9_.-]+|packer_[A-Za-z0-9_.-]+)$")
+LOGGER = logging.getLogger(__name__)
+API_ERRORS = (exceptions.SDKException, ks_exceptions.ClientException)
 SAFE_LABEL_RE = re.compile(r"^[A-Za-z0-9_.:-]+$")
 SAFE_FAULT_TYPE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.]*(?:Error|Exception|Timeout)$")
-OPENSTACK_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
-LOGGER = logging.getLogger(__name__)
+ROUTER_INTERFACES = {
+    "network:router_interface",
+    "network:router_interface_distributed",
+    "network:ha_router_replicated_interface",
+}
+SERVER_RETENTION_HOURS = 6
+UNUSED_RESOURCE_HOURS = 24
+CI_KEEP_NAMES = {
+    "network": {"portal-internal"},
+    "router": {"portal-router"},
+    "security_group": {"SSH"},
+    "keypair": {"azimuth-stackhpc-large-deploy"},
+}
+KEYPAIR_PREFIXES = ("azimuth-", "packer_")
+# OpenStack service used for each resource type.
+RESOURCE_SERVICES = {
+    "server": "compute",
+    "volume": "block_storage",
+    "snapshot": "block_storage",
+    "backup": "block_storage",
+    "floating_ip": "network",
+    "port": "network",
+    "security_group": "network",
+    "router": "network",
+    "subnet": "network",
+    "network": "network",
+    "load_balancer": "load_balancer",
+    "keypair": "compute",
+}
+CLEANUP_ORDER = (
+    "server",
+    "load_balancer",
+    "floating_ip",
+    "volume",
+    "port",
+    "security_group",
+    "router",
+    "subnet",
+    "network",
+)
 
 
-class ConfigurationError(RuntimeError):
-    """Raised when cleanup cannot safely run with the supplied configuration."""
+class ConfigurationError(ValueError):
+    """The cloud configuration is not ready for cleanup."""
 
 
 @dataclass(frozen=True)
@@ -48,581 +78,1044 @@ class ErrorRecord:
     error_code: str
 
 
-@dataclass
-class CleanupStats:
-    servers_selected: int = 0
-    server_delete_requests: int = 0
-    servers_deleted: int = 0
-    servers_detail_missing: int = 0
-    server_delete_timeouts: int = 0
-    volumes_selected: int = 0
-    volumes_deleted: int = 0
-    volumes_already_absent: int = 0
-    keypairs_deleted: int = 0
-    errors: list[ErrorRecord] = field(default_factory=list)
+def sdk_resource_name(kind):
+    """Use the SDK name 'ip' for floating IPs."""
+    return "ip" if kind == "floating_ip" else kind
 
 
-def safe_label(value: object) -> str:
+# Keep log values to simple names and IDs.
+def safe_label(value):
     text = str(value or "")
     return text if SAFE_LABEL_RE.fullmatch(text) else "unknown"
 
 
-# format resources consistently so the name and UUID are easy to match in OpenStack
-def resource_label(name: object, resource_id: object) -> str:
-    return f"{safe_label(name)} ({safe_label(resource_id)})"
+def get_field(resource, name, default=None):
+    return resource.get(name, default) if isinstance(resource, Mapping) else getattr(resource, name, default)
 
 
-# keep only an exception like fault type instead of logging an arbitrary nova message
-def safe_fault_type(value: object) -> str:
-    text = str(value or "")
-    return text if SAFE_FAULT_TYPE_RE.fullmatch(text) else "unknown"
+def resource_label(resource):
+    return f"{safe_label(get_field(resource, 'name'))} ({safe_label(get_field(resource, 'id'))})"
 
 
-def error_code(exc: BaseException) -> str:
+def error_code(exc):
+    # Log the error type without exposing API responses or credentials.
     if isinstance(exc, exceptions.ResourceNotFound):
         return "not_found"
     if isinstance(exc, exceptions.ResourceTimeout):
         return "timeout"
-    if isinstance(exc, exceptions.HttpException):
-        status_code = getattr(exc, "status_code", None)
-        if status_code:
-            return f"http_{status_code}"
+    if isinstance(exc, exceptions.HttpException) and getattr(exc, "status_code", None):
+        return f"http_{exc.status_code}"
     return safe_label(type(exc).__name__)
 
 
-def get_field(resource: object, name: str, default: Any = None) -> Any:
-    if isinstance(resource, Mapping):
-        return resource.get(name, default)
-    return getattr(resource, name, default)
-
-
-# parse openstacksdk timestamps before comparing ERROR status server creation time with the cutoff
-def resource_datetime(value: object) -> datetime | None:
-    if isinstance(value, datetime):
-        parsed = value
-    elif isinstance(value, str):
+# some collected Cinder timestamps data includes "2026-09-07T09:03:43.000000" without a timezone.
+# manage these times as UTC and keep the fractional seconds.
+def resource_datetime(value):
+    # A date without a time is not enough to check resource age.
+    if isinstance(value, str) and "T" in value:
         try:
-            parsed = datetime.strptime(value, OPENSTACK_TIMESTAMP_FORMAT)
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
             return None
-    else:
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
+    return None
+
+
+def ip_addresses(values):
+    """Read IP addresses. Return None if any value is missing or invalid."""
+    # this function accepts numbers too, but we expect address strings from the API.
+    if any(not isinstance(value, str) for value in values):
+        return None
+    try:
+        return {ipaddress.ip_address(value) for value in values}
+    except ValueError:
         return None
 
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
 
-
-def attached_volumes(server: object) -> dict[str, str]:
-    volumes = {}
-    for attachment in get_field(server, "attached_volumes", []) or []:
-        volume_id = get_field(attachment, "id")
-        if volume_id:
-            volumes[str(volume_id)] = str(get_field(attachment, "name", "") or "")
-    return volumes
-
-
-# this is a temporary class for hotfix of ci cleanup resources
-# only handle server, volume, keypair currently
 class CleanupRunner:
-    # keep cleanup options and result together during one workflow run
     def __init__(
         self,
-        connection: object,
+        connection,
         *,
-        cutoff: datetime,
-        expected_project_id: str = "",
-        server_delete_timeout: int = 300,
-        server_attempts: int = 2,
-        server_retry_delay: float = 5,
-        volume_delete_timeout: int = 120,
-        volume_attempts: int = 6,
-        volume_initial_delay: float = 2,
-        sleep: Callable[[float], None] = time.sleep,
-    ) -> None:
-        self.connection = connection
-        self.cutoff = cutoff
-        self.expected_project_id = expected_project_id
-        self.server_delete_timeout = server_delete_timeout
-        self.server_attempts = server_attempts
+        delete_resources=False,
+        delete_all_keypairs=False,
+        now=None,
+        server_delete_timeout=300,
+        server_attempts=2,
+        server_retry_delay=5,
+        volume_delete_timeout=120,
+        volume_attempts=6,
+        volume_initial_delay=2,
+        sleep=time.sleep,
+    ):
+        self.connection, self.project_id = connection, connection.current_project_id
+        # only use the project selected by the CI credentials.
+        if not self.project_id:
+            raise ConfigurationError("OpenStack credentials must be scoped to a project")
+        self.now = now or datetime.now(timezone.utc)
+        self.server_cutoff = self.now - timedelta(hours=SERVER_RETENTION_HOURS)
+        self.unused_cutoff = self.now - timedelta(hours=UNUSED_RESOURCE_HOURS)
+        self.apply, self.delete_all_keypairs = delete_resources, delete_all_keypairs
+        self.server_delete_timeout, self.server_attempts = server_delete_timeout, server_attempts
         self.server_retry_delay = server_retry_delay
-        self.volume_delete_timeout = volume_delete_timeout
-        self.volume_attempts = volume_attempts
-        self.volume_initial_delay = volume_initial_delay
-        self.sleep = sleep
-        self.stats = CleanupStats()
-        self.project_id = ""
-        self.keypairs_to_delete: set[str] = set()
-        self.volumes_seen: set[str] = set()
+        self.volume_delete_timeout, self.volume_attempts = volume_delete_timeout, volume_attempts
+        self.volume_initial_delay, self.sleep = volume_initial_delay, sleep
+        self.followup_volumes = set()
+        self.followup_floating_ips = set()
+        self.cache = {}
+        self.stats, self.errors = Counter(), []
 
-    # make sure cleanup is not accidentally running on another project
-    def validate_project(self) -> None:
+    def record_error(self, operation, kind, resource_id, exc):
+        code = error_code(exc) if isinstance(exc, BaseException) else safe_label(exc)
+        record = ErrorRecord(safe_label(operation), safe_label(kind), safe_label(resource_id), code)
+        # some checks may report the same error, so record it once.
+        if record not in self.errors:
+            self.errors.append(record)
+            LOGGER.error("%s failed for %s %s (%s)", record.operation, record.resource_type, record.resource_id, code)
+
+    def read(self, kind, operation, resource_id="all"):
         try:
-            project_id = str(self.connection.current_project_id or "")
-        except OPENSTACK_EXCEPTIONS as exc:
-            raise ConfigurationError(f"could not determine scoped project ({error_code(exc)})") from exc
+            result = list(operation())
 
-        if not project_id:
-            raise ConfigurationError("the OpenStack credential is not project-scoped")
-        self.project_id = project_id
+            # Some child objects have no project ID. Reject IDs for other projects.
+            if any(get_field(item, "project_id") not in (None, "", self.project_id) for item in result):
+                self.record_error("list", kind, resource_id, "project_mismatch")
+                return None
+            return result
 
-        if self.expected_project_id and project_id != self.expected_project_id:
-            raise ConfigurationError("the credential is scoped to a different OpenStack project")
+        except API_ERRORS as exc:
+            # Return None for a failed lookup. An empty list means the lookup found nothing.
+            self.record_error("list", kind, resource_id, exc)
+            return None
 
-        LOGGER.info("Authenticated to OpenStack project %s", safe_label(project_id))
-        if not self.expected_project_id:
-            LOGGER.warning(
-                "CI_CLEANUP_PROJECT_ID is not configured; the project ID was "
-                "recorded but not compared to an expected value"
-            )
+    def resource_proxy(self, kind):
+        return getattr(self.connection, RESOURCE_SERVICES[kind])
 
-    def record_error(
-        self,
-        operation: str,
-        resource_type: str,
-        resource_id: object,
-        exc_or_code: BaseException | str,
-    ) -> None:
-        code = error_code(exc_or_code) if isinstance(exc_or_code, BaseException) else safe_label(exc_or_code)
-        record = ErrorRecord(
-            operation=safe_label(operation),
-            resource_type=safe_label(resource_type),
-            resource_id=safe_label(resource_id),
-            error_code=code,
-        )
-        self.stats.errors.append(record)
-        LOGGER.error(
-            "%s failed for %s %s (%s)",
-            record.operation,
-            record.resource_type,
-            record.resource_id,
-            record.error_code,
-        )
+    def list_resources(self, kind, refresh=False, **query):
+        # Use cached full lists. Read filtered or refreshed lists from the API.
+        if not query and not refresh and kind in self.cache:
+            return self.cache[kind]
+        proxy_name = RESOURCE_SERVICES[kind]
 
-    # select only old and unlocked servers which this hotfix is allowed to remove
-    def list_stale_servers(self, status: str) -> list[object]:
-        query: dict[str, object] = {
-            "details": status == "ERROR",
-            "status": status,
-            "locked": False,
-        }
-        if status != "ERROR":
-            query["changes_before"] = self.cutoff.isoformat(timespec="seconds")
+        # Nova and Cinder summaries leave out fields needed for age and attachment checks.
+        options = {"details": True} if kind in {"server", "volume", "snapshot", "backup"} else {}
 
+        # Neutron and Octavia can show other projects' resources. Limit the results to this project.
+        if proxy_name in {"network", "load_balancer"}:
+            options["project_id"] = self.project_id
+        method = f"{sdk_resource_name(kind)}s"
+        result = self.read(kind, lambda: getattr(self.resource_proxy(kind), method)(**(options | query)))
+        # Cache only full lists so a filtered result cannot hide other resources.
+        if not query:
+            self.cache[kind] = result
+        return result
+
+    def get_resource(self, kind, resource_id):
+        proxy = self.resource_proxy(kind)
         try:
-            servers = list(self.connection.compute.servers(**query))
-        except OPENSTACK_EXCEPTIONS as exc:
-            self.record_error("list", "server", status, exc)
-            return []
-
-        if status != "ERROR":
-            return servers
-
-        stale_servers = []
-        for server in servers:
-            created_at = resource_datetime(get_field(server, "created_at"))
-            if created_at is None:
-                LOGGER.warning(
-                    "Skipping ERROR server %s because its creation time is unavailable",
-                    resource_label(get_field(server, "name", ""), get_field(server, "id", "")),
-                )
-            elif created_at <= self.cutoff:
-                stale_servers.append(server)
-        return stale_servers
-
-    # delete server resources first and clean their keypairs after it is finished
-    def cleanup_resources(self) -> None:
-        for status in SERVER_STATUSES:
-            for server in self.list_stale_servers(status):
-                self.cleanup_server(server, status)
-        self.cleanup_keypairs(self.keypairs_to_delete)
-
-    # remember volume names before deleting a server in case cinder removes them with it
-    def add_volume_names(self, volumes: dict[str, str]) -> None:
-        for volume_id, volume_name in volumes.items():
-            if volume_name:
-                continue
-            try:
-                volume = self.connection.block_storage.get_volume(volume_id)
-            except OPENSTACK_EXCEPTIONS:
-                continue
-            if volume is not None:
-                volumes[volume_id] = str(get_field(volume, "name", "") or "")
-
-    # check server detail again because the list result can be stale or empty
-    def cleanup_server(self, listed_server: object, status: str) -> None:
-        server_id = str(get_field(listed_server, "id", ""))
-        listed_server_name = get_field(listed_server, "name", "")
-        if not server_id:
-            self.record_error("inspect", "server", status, "missing_id")
-            return
-        self.stats.servers_selected += 1
-
-        try:
-            server = self.connection.compute.get_server(server_id)
+            return getattr(proxy, f"get_{sdk_resource_name(kind)}")(resource_id)
         except exceptions.ResourceNotFound:
-            self.stats.servers_detail_missing += 1
-            LOGGER.warning(
-                "%s server %s was returned by list but is absent from the detail API; skipping it",
-                status,
-                resource_label(listed_server_name, server_id),
+            # Another cleanup may have deleted it. Other API errors still need to be reported.
+            return None
+
+    def protected(self, kind, resource):
+        name = get_field(resource, "name")
+        if name in CI_KEEP_NAMES.get(kind, ()):
+            return True
+
+        # protect workloads that use default or shared security groups.
+        if kind == "security_group" and (str(name).lower() == "default" or get_field(resource, "is_shared")):
+            return True
+
+        # these networks provide infrastructure for other workloads, so need to be protected
+        if kind == "network" and any(
+            get_field(resource, key) for key in ("is_shared", "is_router_external", "is_default")
+        ):
+            return True
+
+        # Keep subnets of protected networks. Also keep them if we cannot check the network.
+        if kind == "subnet":
+            networks = self.list_resources("network")
+            parent = next(
+                (item for item in networks or [] if get_field(item, "id") == get_field(resource, "network_id")), None
             )
-            return
-        except OPENSTACK_EXCEPTIONS as exc:
-            self.record_error("inspect", "server", server_id, exc)
-            return
+            return parent is None or self.protected("network", parent)
+        return False
 
-        if server is None:
-            self.stats.servers_detail_missing += 1
-            LOGGER.warning(
-                "%s server %s was returned by list but is absent from the detail API, skipping it",
-                status,
-                resource_label(listed_server_name, server_id),
-            )
-            return
+    # Check age and status. Age alone does not show that a test has finished.
+    def eligible(self, kind, resource, followup=False):
+        # Keypairs belong to a user. Other resources must belong to this project.
+        if kind != "keypair" and get_field(resource, "project_id") != self.project_id:
+            return False
 
-        volumes = attached_volumes(server)
-        self.add_volume_names(volumes)
-        key_name = str(get_field(server, "key_name", "") or "")
-        server_name = get_field(server, "name", listed_server_name)
-        label = resource_label(server_name, server_id)
-        LOGGER.info("Selected %s server %s with %d attached volume(s)", status, label, len(volumes))
+        if self.protected(kind, resource):
+            return False
 
-        if not self.delete_server(server, server_id, label):
-            return
+        if kind == "keypair":
+            # Keypairs use name prefixes instead of an age limit.
+            name = get_field(resource, "name")
+            return isinstance(name, str) and name.startswith(KEYPAIR_PREFIXES)
 
-        if SAFE_KEYPAIR_RE.fullmatch(key_name):
-            self.keypairs_to_delete.add(key_name)
+        if kind == "server":
+            task = get_field(resource, "task_state")
+            # Do not interrupt a locked server, rebuild or migration.
+            if get_field(resource, "is_locked") is not False or task not in (None, "", "deleting"):
+                return False
+            if get_field(resource, "status") not in {"ACTIVE", "BUILD", "ERROR", "SHUTOFF"}:
+                return False
+            if followup:
+                # Do not restart the age limit for a DELETE already accepted in this run.
+                return True
+            # Deletion can change updated_at on ERROR or deleting servers.
+            field = "created_at" if task == "deleting" or get_field(resource, "status") == "ERROR" else "updated_at"
+            timestamp = resource_datetime(get_field(resource, field))
+            return timestamp is not None and timestamp <= self.server_cutoff
 
-        for volume_id, volume_name in sorted(volumes.items()):
-            if volume_id in self.volumes_seen:
+        if followup:
+            # Detachment changes timestamps. Do not wait another 24 hours after parent deletion.
+            return True
+        # For other leftovers, use time since the last update.
+        timestamp = resource_datetime(get_field(resource, "updated_at") or get_field(resource, "created_at"))
+        return timestamp is not None and timestamp <= self.unused_cutoff
+
+    # Read Nova's attachment API because server list fields may be incomplete.
+    def server_volumes(self, server):
+        attachments = self.read(
+            "volume_attachment", lambda: self.connection.compute.volume_attachments(server), get_field(server, "id")
+        )
+        if attachments is None:
+            return None
+
+        ids = [get_field(item, "volume_id") or get_field(item, "id") for item in attachments]
+        if any(not item for item in ids):
+            self.record_error("inspect", "server", get_field(server, "id"), "missing_volume_id")
+            return None
+        return ids
+
+    # Record FIP IDs before deleting their server or LB.
+    def parent_floating_ip_ids(self, kind, resource):
+        if kind == "server":
+            ports = self.list_resources("port", device_id=get_field(resource, "id"))
+            if ports is None or any(not get_field(port, "id") for port in ports):
+                return None
+            port_ids = {get_field(port, "id") for port in ports}
+        else:
+            # check if LB's public FIP is attached to its VIP port.
+            vip_port_id = get_field(resource, "vip_port_id")
+            if not vip_port_id:
+                return None
+            port_ids = {vip_port_id}
+
+        if not port_ids:
+            return set()
+
+        ips = self.list_resources("floating_ip", refresh=True)
+        if ips is None:
+            return None
+
+        attached = [ip for ip in ips if get_field(ip, "port_id") in port_ids]
+        if any(not get_field(ip, "id") for ip in attached):
+            return None
+        return {get_field(ip, "id") for ip in attached}
+
+    def forwardings(self, floating_ip):
+        return self.read(
+            "port_forwarding",
+            lambda: self.connection.network.floating_ip_port_forwardings(floating_ip),
+            get_field(floating_ip, "id"),
+        )
+
+    # A DOWN port may still belong to a stopped VM or router.
+    # Check its owner and binding before treating it as unused.
+    def idle_port(self, port):
+        return (
+            get_field(port, "status") == "DOWN"
+            and all(get_field(port, field) == "" for field in ("device_owner", "device_id", "binding_host_id"))
+            and get_field(port, "binding_profile") == {}
+            and get_field(port, "binding_vif_type") in {"unbound", "binding_failed"}
+            and not get_field(port, "trunk_details")
+        )
+
+    # Read LB backend addresses from its pools and members.
+    # Octavia cascade handles deletion of listeners and health monitors.
+    def lb_members(self, lb):
+        proxy, lb_id = self.connection.load_balancer, get_field(lb, "id")
+        pools = self.read("pool", lambda: proxy.pools(loadbalancer_id=lb_id, project_id=self.project_id), lb_id)
+        if pools is None:
+            return None
+
+        members = []
+        for pool in pools:
+            # Check that the pool belongs to this LB even if the API ignores the filter.
+            parents = get_field(pool, "loadbalancers")
+            if not isinstance(parents, list):
+                return None
+            if not any(get_field(parent, "id") == lb_id for parent in parents):
                 continue
-            self.volumes_seen.add(volume_id)
-            self.cleanup_volume(volume_id, volume_name)
+            items = self.read("member", lambda pool=pool: proxy.members(pool), get_field(pool, "id"))
+            if items is None:
+                return None
+            members.extend(items)
+        return members
 
-    # retry server delete once when nova accepts the request but cannot finish it
-    def delete_server(self, server: object, server_id: str, label: str) -> bool:
-        for attempt in range(1, self.server_attempts + 1):
-            # check if nova accept delete request
+    def lb_references(self):
+        load_balancers = self.list_resources("load_balancer", refresh=True)
+        if load_balancers is None:
+            return None
+
+        references = []
+        for lb in load_balancers:
+            members = self.lb_members(lb)
+            if members is None:
+                return None
+            references.append((lb, members))
+        return references
+
+    def member_addresses(self, member):
+        addresses = [get_field(member, "address")]
+        monitor_address = get_field(member, "monitor_address")
+        if monitor_address not in (None, ""):
+            # A health check can use a different address from normal traffic.
+            addresses.append(monitor_address)
+        return ip_addresses(addresses)
+
+    def port_addresses(self, port):
+        fixed_ips = get_field(port, "fixed_ips")
+        if not isinstance(fixed_ips, list):
+            # Without addresses, we cannot check whether an LB uses this port.
+            return None
+        return ip_addresses([get_field(item, "ip_address") for item in fixed_ips])
+
+    def member_references_port(self, member, port):
+        addresses, fixed_addresses = self.member_addresses(member), self.port_addresses(port)
+        if addresses is None or fixed_addresses is None:
+            return None
+        # Keep matching addresses even if they appear in different networks.
+        return bool(addresses & fixed_addresses)
+
+    def member_references_subnet(self, lb, member, subnet):
+        # Use the VIP subnet when the member has no subnet set.
+        access_subnet = get_field(member, "subnet_id") or get_field(lb, "vip_subnet_id")
+        if access_subnet == get_field(subnet, "id"):
+            return True
+        addresses = self.member_addresses(member)
+
+        if not isinstance(access_subnet, str) or not access_subnet or addresses is None:
+            return None
+        try:
+            # The backend address may be in a different subnet. Keep that subnet too.
+            network = ipaddress.ip_network(get_field(subnet, "cidr"), strict=False)
+        except (TypeError, ValueError):
+            return None
+
+        return any(address in network for address in addresses)
+
+    def nova_port_ids(self):
+        # Nova may still use a port that Neutron shows as unbound, so need to check Nova as well.
+        if "nova_port_ids" not in self.cache:
+            servers = self.list_resources("server")
+            if servers is None:
+                return None
+            port_ids = set()
+
+            for server in servers:
+                interfaces = self.read(
+                    "server_interface", lambda server=server: self.connection.compute.server_interfaces(server)
+                )
+                if interfaces is None or any(not get_field(item, "port_id") for item in interfaces):
+                    return None
+                port_ids.update(get_field(item, "port_id") for item in interfaces)
+            self.cache["nova_port_ids"] = port_ids
+        return self.cache["nova_port_ids"]
+
+    def volume_copies_clear(self, volume_id):
+        for kind in ("snapshot", "backup"):
+            records = self.list_resources(kind, volume_id=volume_id)
+            if records is None or any(get_field(item, "volume_id") == volume_id for item in records):
+                return False
+        return True
+
+    # Nova may delete attached volumes with the server, so need to check dependencies first.
+    def server_volumes_clear(self, volume_ids):
+        for volume_id in volume_ids:
+            volume = self.get_resource("volume", volume_id)
+            if volume is None or get_field(volume, "project_id") != self.project_id:
+                return False
+            if not self.volume_copies_clear(volume_id):
+                return False
+        return True
+
+    # Check whether other resources still use this resource.
+    def dependencies_clear(self, kind, resource, releasable_fip_ids=()):
+        resource_id = get_field(resource, "id")
+
+        if kind == "volume":
+            # Check attachments in both Cinder and Nova.
+            if get_field(resource, "status") != "available" or get_field(resource, "attachments") != []:
+                return False
+            servers = self.list_resources("server", refresh=True)
+            if servers is None:
+                return False
+            for server in servers:
+                attached = self.server_volumes(server)
+                if attached is None or resource_id in attached:
+                    return False
+            return self.volume_copies_clear(resource_id)
+
+        if kind == "floating_ip":
+            # ERROR FIP can still be unused. check if its connections and forwarding exists.
+            return (
+                all(
+                    get_field(resource, field, "missing") is None
+                    for field in ("port_id", "router_id", "fixed_ip_address")
+                )
+                and self.forwardings(resource) == []
+            )
+
+        if kind == "port":
+            if not self.idle_port(resource):
+                return False
+            nova_ports = self.nova_port_ids()
+            if nova_ports is None or resource_id in nova_ports:
+                return False
+            ips = self.list_resources("floating_ip", refresh=True)
+            if ips is None:
+                return False
+            for ip in ips:
+                # attached FIP must pass its own cleanup checks
+                if get_field(ip, "port_id") == resource_id and (
+                    get_field(ip, "id") not in releasable_fip_ids or not self.eligible("floating_ip", ip)
+                ):
+                    return False
+                forwards = self.forwardings(ip)
+                # Forwarding can use a port without attaching the FIP to it.
+                if forwards is None or any(get_field(item, "internal_port_id") == resource_id for item in forwards):
+                    return False
+            lbs = self.lb_references()
+            if lbs is None:
+                return False
+            for lb, members in lbs:
+                # Keep the LB's VIP port and also its backend ports.
+                if get_field(lb, "vip_port_id") == resource_id:
+                    return False
+                for member in members:
+                    if self.member_references_port(member, resource) is not False:
+                        return False
+            return True
+
+        if kind == "security_group":
+            # Check port use and references from other security groups.
+            ports = self.list_resources("port", refresh=True)
+            groups = self.list_resources("security_group", refresh=True)
+            if ports is None or groups is None:
+                return False
+            if any(
+                not isinstance(get_field(port, "security_group_ids"), list)
+                or resource_id in get_field(port, "security_group_ids")
+                for port in ports
+            ):
+                return False
+            for group in groups:
+                # The group's own rules are deleted with it.
+                if get_field(group, "id") == resource_id:
+                    continue
+                rules = get_field(group, "security_group_rules")
+                if not isinstance(rules, list):
+                    return False
+                if any(get_field(rule, "remote_group_id") == resource_id for rule in rules):
+                    return False
+            return True
+
+        if kind == "load_balancer":
+            # skip LBs when cctavia operation still running.
+            if get_field(resource, "provisioning_status") not in {"ACTIVE", "ERROR"}:
+                return False
+            ports = self.list_resources("port", refresh=True)
+            members = self.lb_members(resource)
+            if ports is None or members is None:
+                return False
+            nova_ports = self.nova_port_ids() if members else set()
+            if nova_ports is None:
+                return False
+            for member in members:
+                addresses = self.member_addresses(member)
+                if addresses is None:
+                    return False
+                matched = set()
+                for port in ports:
+                    fixed_addresses = self.port_addresses(port)
+                    if fixed_addresses is None:
+                        return False
+                    shared_addresses = addresses & fixed_addresses
+                    # Keep backends with a port when active or used by VM.
+                    if shared_addresses and (not self.idle_port(port) or get_field(port, "id") in nova_ports):
+                        return False
+                    matched.update(shared_addresses)
+                if not addresses <= matched:
+                    return False
+            return True
+
+        if kind == "router":
+            # Keep routers with FIPs or custom routes. Connected subnets must be unused.
+            ports = self.list_resources("port", device_id=resource_id)
+            ips = self.list_resources("floating_ip", router_id=resource_id)
+            if ports is None or ips is None or ips or get_field(resource, "routes", None) != []:
+                return False
+            for port in ports:
+                owner = get_field(port, "device_owner")
+                if owner not in ROUTER_INTERFACES | {"network:router_gateway"}:
+                    return False
+                if owner in ROUTER_INTERFACES:
+                    fixed_ips = get_field(port, "fixed_ips")
+                    if not isinstance(fixed_ips, list) or not fixed_ips:
+                        return False
+                    for ip in fixed_ips:
+                        if not get_field(ip, "subnet_id"):
+                            return False
+                        subnet = self.get_resource("subnet", get_field(ip, "subnet_id"))
+                        if subnet is None or self.protected("subnet", subnet) or not self.subnet_clear(subnet, ports):
+                            return False
+            return True
+
+        if kind == "subnet":
+            return self.subnet_clear(resource)
+        if kind == "network":
+            # Delete a network only after its ports and subnets are gone.
+            if get_field(resource, "is_shared") is not False or get_field(resource, "is_router_external") is not False:
+                return False
+            ports = self.list_resources("port", network_id=resource_id)
+            subnets = self.list_resources("subnet", network_id=resource_id)
+            lbs = self.list_resources("load_balancer", refresh=True)
+            return (
+                ports == []
+                and subnets == []
+                and lbs is not None
+                and not any(get_field(lb, "vip_network_id") == resource_id for lb in lbs)
+            )
+        return False
+
+    # Neutron can remove DHCP ports when deleting a subnet. Other ports must be gone first.
+    def subnet_clear(self, subnet, ignored_ports=()):
+        subnet_id = get_field(subnet, "id")
+        ports = self.list_resources("port", network_id=get_field(subnet, "network_id"))
+        lbs = self.lb_references()
+        if ports is None or lbs is None:
+            return False
+        ignored = {get_field(port, "id") for port in ignored_ports}
+
+        for port in ports:
+            # Ignore router interfaces that this cleanup will remove.
+            if get_field(port, "id") in ignored:
+                continue
+            fixed = get_field(port, "fixed_ips")
+            if not isinstance(fixed, list):
+                return False
+            if (
+                any(get_field(ip, "subnet_id") == subnet_id for ip in fixed)
+                and get_field(port, "device_owner") != "network:dhcp"
+            ):
+                return False
+
+        for lb, members in lbs:
+            # LB may still need this subnet even when no VM port using it
+            if not get_field(lb, "vip_subnet_id") or get_field(lb, "vip_subnet_id") == subnet_id:
+                return False
+            if any(self.member_references_subnet(lb, member, subnet) is not False for member in members):
+                return False
+        return True
+
+    # Drop the cached list for this resource type after deletions
+    def confirmed(self, kind, resource, absent=False):
+        self.stats[f"{kind}.absent" if absent else f"{kind}.deleted"] += 1
+        LOGGER.info("%s %s %s", "Already absent" if absent else "Deleted", kind, resource_label(resource))
+        self.cache.pop(kind, None)
+
+    def finish_server(self, volume_ids, floating_ip_ids):
+        # Start cleanup of the recorded volumes and FIPs only after the server is gone.
+        self.followup_volumes.update(volume_ids)
+        self.followup_floating_ips.update(floating_ip_ids)
+        # Server deletion changes attachments. Read fresh lists for the next checks.
+        for kind in ("server", "port", "floating_ip", "nova_port_ids"):
+            self.cache.pop(kind, None)
+
+    # Retry normal server deletion and wait for it to finish.
+    def cleanup_server(self, listed_server):
+        server_id = get_field(listed_server, "id")
+        if not server_id:
+            return
+        # Keep retry data in memory for this run only.
+        captured_volume_ids = set()
+        floating_ip_ids = set()
+        delete_accepted = False
+
+        for attempt in range(self.server_attempts):
+            server = self.get_resource("server", server_id)
+            if server is None:
+                # Continue dependent cleanup only when this run already recorded the server
+                if delete_accepted:
+                    self.finish_server(captured_volume_ids, floating_ip_ids)
+                    self.confirmed("server", listed_server, absent=True)
+                else:
+                    self.stats["server.detail_missing"] += 1
+                    LOGGER.warning(
+                        "Listed server %s is absent from detail API; skipping", resource_label(listed_server)
+                    )
+                return
+            # Check the server and its attachments again on each retry.
+            if not self.eligible("server", server, followup=delete_accepted):
+                return
+
+            volume_ids = self.server_volumes(server)
+            if volume_ids is None or not self.server_volumes_clear(volume_ids):
+                return
+            if attempt == 0:
+                self.stats["server.selected"] += 1
+                LOGGER.info("Selected server %s", resource_label(server))
+            if not self.apply:
+                return
+
+            attached_ips = self.parent_floating_ip_ids("server", server)
+            if attached_ips is None:
+                return
+            floating_ip_ids.update(attached_ips)
+            # Keep volume IDs from all delete attempts in this run.
+            captured_volume_ids.update(volume_ids)
+            # The server may have changed while we read its attachments.
+            server = self.get_resource("server", server_id)
+
+            if server is None:
+                if delete_accepted:
+                    self.finish_server(captured_volume_ids, floating_ip_ids)
+                    self.confirmed("server", listed_server, absent=True)
+                return
+            if not self.eligible("server", server, followup=delete_accepted):
+                return
             try:
                 self.connection.compute.delete_server(server, ignore_missing=True)
             except exceptions.ResourceNotFound:
-                self.server_deleted(label)
-                return True
-            except OPENSTACK_EXCEPTIONS as exc:
+                self.finish_server(captured_volume_ids, floating_ip_ids)
+                self.confirmed("server", server, absent=True)
+                return
+            except API_ERRORS as exc:
+                # Do not start dependent cleanup if DELETE fails.
                 self.record_error("delete", "server", server_id, exc)
-                return False
-
-            self.stats.server_delete_requests += 1
-            LOGGER.info(
-                "Delete request %d/%d accepted for server %s; waiting up to %ds",
-                attempt,
-                self.server_attempts,
-                label,
-                self.server_delete_timeout,
-            )
-
-            # check if the server actually deleted by the first delete request
+                return
+            self.stats["server.requests"] += 1
+            # Remember that Nova accepted DELETE before waiting for removal.
+            delete_accepted = True
             try:
-                self.connection.compute.wait_for_delete(
-                    server,
-                    interval=2,
-                    wait=self.server_delete_timeout,
-                )
+                self.connection.compute.wait_for_delete(server, interval=2, wait=self.server_delete_timeout)
             except exceptions.ResourceNotFound:
-                self.server_deleted(label)
-                return True
+                pass
             except exceptions.ResourceTimeout as exc:
-                will_retry = attempt < self.server_attempts
-                server, deleted = self.server_after_timeout(server_id, label, attempt, will_retry)
-                if deleted:
-                    return True
-                if server is None:
-                    self.stats.server_delete_timeouts += 1
-                    return False
-                if attempt == self.server_attempts:
-                    self.stats.server_delete_timeouts += 1
+                # check if the server disappeared right after the timeout
+                current = self.get_resource("server", server_id)
+                if current is not None:
+                    fault = get_field(current, "fault", {}) or {}
+                    message = str(get_field(fault, "message", ""))
+                    LOGGER.warning(
+                        "Server %s delete timed out; status=%s task_state=%s fault_code=%s fault_type=%s",
+                        resource_label(current),
+                        safe_label(get_field(current, "status")),
+                        safe_label(get_field(current, "task_state")),
+                        safe_label(get_field(fault, "code")),
+                        message if SAFE_FAULT_TYPE_RE.fullmatch(message) else "unknown",
+                    )
+                    if attempt + 1 < self.server_attempts:
+                        self.sleep(self.server_retry_delay)
+                        continue
+                    self.stats["server.timeout"] += 1
                     self.record_error("wait", "server", server_id, exc)
-                    return False
-                self.sleep(self.server_retry_delay)
-                continue
-            except OPENSTACK_EXCEPTIONS as exc:
+                    return
+            except API_ERRORS as exc:
                 self.record_error("wait", "server", server_id, exc)
-                return False
+                return
+            self.finish_server(captured_volume_ids, floating_ip_ids)
+            self.confirmed("server", server)
+            return
 
-            self.server_deleted(label)
-            return True
-
-        return False
-
-    # refresh only safe state fields after a timed out server delete
-    def server_after_timeout(
-        self,
-        server_id: str,
-        label: str,
-        attempt: int,
-        will_retry: bool,
-    ) -> tuple[object | None, bool]:
-        try:
-            server = self.connection.compute.get_server(server_id)
-        except exceptions.ResourceNotFound:
-            self.server_deleted(label)
-            return None, True
-        except OPENSTACK_EXCEPTIONS as exc:
-            self.record_error("inspect", "server", server_id, exc)
-            return None, False
-
-        if server is None:
-            self.server_deleted(label)
-            return None, True
-
-        fault = get_field(server, "fault", {}) or {}
-        # add more detailed warning message if server delete retry failed
-        LOGGER.warning(
-            "Timed out waiting for server %s after delete request %d/%d; "
-            "status=%s task_state=%s updated_at=%s fault_code=%s fault_message=%s; %s",
-            label,
-            attempt,
-            self.server_attempts,
-            safe_label(get_field(server, "status", "unknown")),
-            safe_label(get_field(server, "task_state", "unknown")),
-            safe_label(get_field(server, "updated_at", "unknown")),
-            safe_label(get_field(fault, "code", "unknown")),
-            safe_fault_type(get_field(fault, "message", "unknown")),
-            "retrying" if will_retry else "no retries remaining",
-        )
-        return server, False
-
-    # record deletion only after the server is confirmed absent from nova
-    def server_deleted(self, label: str) -> None:
-        self.stats.servers_deleted += 1
-        LOGGER.info("Deleted server %s", label)
-
-    # retry volume cleanup because detach from deleted server is asynchronous
-    def cleanup_volume(self, volume_id: str, volume_name: str = "") -> None:
-        self.stats.volumes_selected += 1
+    # Volumes may take time to detach after their server is deleted.
+    def cleanup_volume(self, volume_id, followup=False):
         delay = self.volume_initial_delay
-
-        for attempt in range(1, self.volume_attempts + 1):
-            try:
-                volume = self.connection.block_storage.get_volume(volume_id)
-            except exceptions.ResourceNotFound:
-                self.stats.volumes_already_absent += 1
-                LOGGER.info("Volume %s is already absent", resource_label(volume_name, volume_id))
-                return
-            except OPENSTACK_EXCEPTIONS as exc:
-                self.record_error("inspect", "volume", volume_id, exc)
-                return
-
+        for attempt in range(self.volume_attempts):
+            volume = self.get_resource("volume", volume_id)
             if volume is None:
-                self.stats.volumes_already_absent += 1
+                self.stats["volume.absent"] += 1
                 return
-
-            volume_name = str(get_field(volume, "name", volume_name) or volume_name)
-            status = str(get_field(volume, "status", "unknown") or "unknown").lower()
-            if status == "deleting":
-                self.wait_for_volume_delete(volume, volume_id, volume_name)
+            if not self.eligible("volume", volume, followup=followup):
                 return
-
-            if status in DELETEABLE_VOLUME_STATUSES:
+            if attempt == 0:
+                self.stats["volume.selected"] += 1
+            status = get_field(volume, "status")
+            if status == "deleting" and followup and self.apply:
+                # Nova may already be deleting this volume with its server. Wait for it to finish.
+                self.connection.block_storage.wait_for_delete(volume, interval=2, wait=self.volume_delete_timeout)
+            elif status == "available":
+                # Cinder may report available while Nova still references the volume.
+                if not self.dependencies_clear("volume", volume):
+                    return
+                LOGGER.info("Selected volume %s", resource_label(volume))
+                if not self.apply:
+                    return
+                # Check for new attachments or updates before deleting the volume.
+                current = self.get_resource("volume", volume_id)
+                if current is None or not self.eligible("volume", current, followup=followup):
+                    return
+                if get_field(current, "status") != "available" or get_field(current, "attachments") != []:
+                    return
                 try:
-                    self.connection.block_storage.delete_volume(volume, ignore_missing=True)
+                    self.connection.block_storage.delete_volume(current, ignore_missing=True)
                 except exceptions.ResourceNotFound:
-                    self.stats.volumes_already_absent += 1
+                    self.confirmed("volume", current, absent=True)
                     return
                 except exceptions.HttpException as exc:
-                    if getattr(exc, "status_code", None) == 400 and attempt < self.volume_attempts:
-                        self.retry_volume(volume_id, volume_name, status, attempt, delay)
-                        delay = min(delay * 2, 30)
-                        continue
-                    self.record_error("delete", "volume", volume_id, exc)
-                    return
-                except OPENSTACK_EXCEPTIONS as exc:
-                    self.record_error("delete", "volume", volume_id, exc)
-                    return
-
-                self.wait_for_volume_delete(volume, volume_id, volume_name)
-                return
-
-            if attempt < self.volume_attempts:
-                self.retry_volume(volume_id, volume_name, status, attempt, delay)
+                    # Cinder may reject DELETE while it finishes detaching the volume.
+                    if getattr(exc, "status_code", None) != 400 or attempt + 1 == self.volume_attempts:
+                        raise
+                    self.sleep(delay)
+                    delay = min(delay * 2, 30)
+                    continue
+                self.connection.block_storage.wait_for_delete(current, interval=2, wait=self.volume_delete_timeout)
+            elif followup and self.apply and attempt + 1 < self.volume_attempts:
+                # Give Cinder time to finish detaching the volume after Nova deletes the server.
+                self.sleep(delay)
                 delay = min(delay * 2, 30)
                 continue
-
-            self.record_error("delete", "volume", volume_id, f"state_{status.replace('_', '-')}")
+            else:
+                if followup and self.apply:
+                    # Report the unfinished detach. The next scheduled run will check again
+                    self.record_error("detach", "volume", volume_id, f"state_{safe_label(status)}")
+                return
+            self.confirmed("volume", volume)
             return
 
-    # wait a little so cinder can finish detaching volume from deleted server
-    def retry_volume(self, volume_id: str, volume_name: str, status: str, attempt: int, delay: float) -> None:
-        LOGGER.info(
-            "Volume %s is %s after server deletion; retrying after %gs (attempt %d/%d)",
-            resource_label(volume_name, volume_id),
-            safe_label(status),
-            delay,
-            attempt,
-            self.volume_attempts,
-        )
-        self.sleep(delay)
+    # Use the resource revision to reject DELETE if the resource has changed.
+    def neutron_delete_options(self, kind, resource):
+        # Read Neutron features once and reuse the result.
+        if "revision-if-match" not in self.cache:
+            self.cache["revision-if-match"] = self.connection.network.find_extension("revision-if-match") is not None
+        revision = get_field(resource, "revision_number")
+        if self.cache["revision-if-match"] and isinstance(revision, int) and not isinstance(revision, bool):
+            return {"if_revision": revision}
+        # A FIP can be attached after our check, so its DELETE must include the revision.
+        LOGGER.warning("Skipping %s %s: conditional deletion unavailable", kind, resource_label(resource))
+        return None
 
-    # confirm asynchronous volume deletion before making sure it as deleted
-    def wait_for_volume_delete(self, volume: object, volume_id: str, volume_name: str) -> bool:
-        try:
-            self.connection.block_storage.wait_for_delete(volume, interval=2, wait=self.volume_delete_timeout)
-        except exceptions.ResourceNotFound:
-            pass
-        except OPENSTACK_EXCEPTIONS as exc:
-            self.record_error("wait", "volume", volume_id, exc)
-            return False
-        self.stats.volumes_deleted += 1
-        LOGGER.info("Deleted volume %s", resource_label(volume_name, volume_id))
-        return True
+    # Check all attached FIPs before deleting an unused port.
+    def port_floating_ips_to_release(self, port):
+        ips = self.list_resources("floating_ip", port_id=get_field(port, "id"))
+        if ips is None:
+            return None
+        for ip in ips:
+            # Keep the port if any FIP is too new or used for forwarding.
+            if (
+                not get_field(ip, "id")
+                or get_field(ip, "port_id") != get_field(port, "id")
+                or not self.eligible("floating_ip", ip)
+                or self.forwardings(ip) != []
+                or self.neutron_delete_options("floating_ip", ip) is None
+            ):
+                return None
+        return ips
 
-    # collect only ci keypairs when full keypair cleanup is manually requested
-    def collect_all_safe_keypairs(self) -> None:
-        try:
-            keypairs = list(self.connection.compute.keypairs())
-        except OPENSTACK_EXCEPTIONS as exc:
-            self.record_error("list", "keypair", "all", exc)
+    # Read current resource details and references before deletion.
+    def cleanup_one(self, kind, listed_resource):
+        followup = kind == "floating_ip" and get_field(listed_resource, "id") in self.followup_floating_ips
+        resource = self.get_resource(kind, get_field(listed_resource, "id"))
+
+        if resource is None or not self.eligible(kind, resource, followup=followup):
             return
-        for keypair in keypairs:
-            name = str(get_field(keypair, "name", "") or "")
-            if SAFE_KEYPAIR_RE.fullmatch(name):
-                self.keypairs_to_delete.add(name)
 
-    # deleting only 'azimuth-*' or 'packer_*' keypairs
-    def cleanup_keypairs(self, keypair_names: set[str]) -> None:
-        processed_names = set(keypair_names)
-        for name in sorted(processed_names):
+        port_ips = self.port_floating_ips_to_release(resource) if kind == "port" else []
+        if port_ips is None:
+            return
+
+        port_fip_ids = {get_field(ip, "id") for ip in port_ips}
+        if not self.dependencies_clear(kind, resource, releasable_fip_ids=port_fip_ids):
+            return
+
+        self.stats[f"{kind}.selected"] += 1
+        LOGGER.info("Selected %s %s", kind, resource_label(resource))
+        if not self.apply:
+            return
+
+        # The resource may have changed during the dependency checks.
+        current = self.get_resource(kind, get_field(resource, "id"))
+        if current is None or not self.eligible(kind, current, followup=followup):
+            return
+        proxy = self.resource_proxy(kind)
+        options = {"ignore_missing": True}
+
+        ### network ###
+        if RESOURCE_SERVICES[kind] == "network":
+            # Stop if the revision changed. Include the same revision in the delete request.
+            if get_field(current, "revision_number") != get_field(resource, "revision_number"):
+                return
+            conditions = self.neutron_delete_options(kind, current)
+            if conditions is None:
+                return
+            options.update(conditions)
+
+        ### port ###
+        if kind == "port":
+            # The FIP revision does not show a new VM attachment to the port. Check the port revision too.
+            # Release the FIPs only after the port is gone.
+            self.cache.pop("server", None)
+            self.cache.pop("nova_port_ids", None)
+            # Recheck attached FIPs and server references just before deleting the port.
+            fresh_ips = self.port_floating_ips_to_release(current)
+            if fresh_ips is None or {get_field(ip, "id") for ip in fresh_ips} != port_fip_ids:
+                return
+            if not self.dependencies_clear(kind, current, releasable_fip_ids=port_fip_ids):
+                return
+
+        ### router ###
+        if kind == "router":
+            # Remove router interfaces and the gateway before deleting the router.
+            self.cleanup_router(current)
+            return
+
+        ### LoadBalancer ###
+        if kind == "load_balancer":
+            # Octavia may have started another operation since our first check.
+            if get_field(current, "provisioning_status") not in {"ACTIVE", "ERROR"}:
+                return
+            floating_ip_ids = self.parent_floating_ip_ids(kind, current)
+            if floating_ip_ids is None:
+                return
+            # Octavia deletes the LB and its children together.
+            options["cascade"] = True
+        getattr(proxy, f"delete_{sdk_resource_name(kind)}")(current, **options)
+        proxy.wait_for_delete(current, interval=2, wait=self.volume_delete_timeout)
+        if kind == "load_balancer":
+            self.followup_floating_ips.update(floating_ip_ids)
+            self.cache.pop("floating_ip", None)
+        self.confirmed(kind, current)
+
+        if kind == "port" and port_ips:
+            # The FIP sweep ran earlier. Check these newly detached FIPs now.
+            self.followup_floating_ips.update(port_fip_ids)
+            self.cache.pop("floating_ip", None)
+            for ip in port_ips:
+                try:
+                    self.cleanup_one("floating_ip", ip)
+                except exceptions.ResourceNotFound:
+                    continue
+                except API_ERRORS as exc:
+                    # Continue with the other FIPs if one release fails.
+                    self.record_error("delete", "floating_ip", get_field(ip, "id"), exc)
+
+    # remove interfaces through the router API, not the normal port delete API.
+    def cleanup_router(self, router):
+        router_id, proxy = get_field(router, "id"), self.connection.network
+        ports = self.list_resources("port", device_id=router_id)
+        if ports is None:
+            return
+
+        for port in ports:
+            # Remove only router interfaces here. Remove the gateway later.
+            if get_field(port, "device_owner") not in ROUTER_INTERFACES:
+                continue
+            # Removing interfaces changes the router timestamp.
+            # Keep checking dependencies without restarting the age delay.
+            current = self.get_resource("router", router_id)
+            if (
+                current is None
+                or not self.eligible("router", current, followup=True)
+                or not self.dependencies_clear("router", current)
+            ):
+                return
             try:
-                self.connection.compute.delete_keypair(name, ignore_missing=True)
+                proxy.remove_interface_from_router(current, port_id=get_field(port, "id"))
+                proxy.wait_for_delete(port, interval=2, wait=self.volume_delete_timeout)
+            except exceptions.ResourceNotFound:
+                # Another cleanup may already have removed this interface.
+                pass
+
+        # Check for new FIPs or routes before removing the gateway.
+        current = self.get_resource("router", router_id)
+        if (
+            current is None
+            or not self.eligible("router", current, followup=True)
+            or not self.dependencies_clear("router", current)
+        ):
+            return
+
+        if get_field(current, "external_gateway_info"):
+            proxy.remove_gateway_from_router(current)
+
+        # Delete only after all ports are gone and the router still passes the checks.
+        current = self.get_resource("router", router_id)
+        ports = self.list_resources("port", device_id=router_id)
+        if (
+            current is None
+            or ports != []
+            or not self.dependencies_clear("router", current)
+            or self.protected("router", current)
+        ):
+            return
+
+        conditions = self.neutron_delete_options("router", current)
+        if conditions is None:
+            return
+
+        proxy.delete_router(current, ignore_missing=True, **conditions)
+        proxy.wait_for_delete(current, interval=2, wait=self.volume_delete_timeout)
+        self.confirmed("router", current)
+
+    # keypairs are belong to user. need to check them only when keypair cleanup is requested.
+    def cleanup_keypairs(self):
+        keys = self.list_resources("keypair")
+        if keys is None:
+            return
+
+        # Skip the server lookup if there are no candidate keys.
+        keys = [key for key in keys if self.eligible("keypair", key)]
+        if not keys:
+            return
+        try:
+            # The same user may use a key in other projects.
+            servers = list(self.connection.compute.servers(details=True, all_projects=True))
+        except API_ERRORS as exc:
+            self.record_error("list", "keypair_server_scope", "all", exc)
+            return
+
+        for key in keys:
+            name = get_field(key, "name")
+            try:
+                current = self.connection.compute.get_keypair(name)
+
+                if current is None or not self.eligible("keypair", current):
+                    continue
+                user_id, fingerprint = get_field(current, "user_id"), get_field(current, "fingerprint")
+
+                # Use the owner and fingerprint to identify this key.
+                if not user_id or not fingerprint:
+                    continue
+
+                # Keep the key if a server with this key name has the same or an unknown owner.
+                if any(
+                    get_field(server, "key_name") == name
+                    and (not get_field(server, "user_id") or get_field(server, "user_id") == user_id)
+                    for server in servers
+                ):
+                    continue
+                fresh = self.connection.compute.get_keypair(name)
+
+                # new key might have replaced the old key under the same name.
+                if (
+                    fresh is None
+                    or get_field(fresh, "user_id") != user_id
+                    or get_field(fresh, "fingerprint") != fingerprint
+                    or self.protected("keypair", fresh)
+                ):
+                    continue
+                self.connection.compute.delete_keypair(fresh, ignore_missing=True, user_id=user_id)
+                self.stats["keypair.deleted"] += 1
+                LOGGER.info("Deleted keypair %s", safe_label(name))
+
             except exceptions.ResourceNotFound:
                 continue
-            except OPENSTACK_EXCEPTIONS as exc:
+            except API_ERRORS as exc:
                 self.record_error("delete", "keypair", name, exc)
-                continue
-            self.stats.keypairs_deleted += 1
-            LOGGER.info("Deleted keypair %s", name)
-        self.keypairs_to_delete.difference_update(processed_names)
 
-    # use a small markdown list for github step summary
-    def summary_markdown(self) -> str:
+    def cleanup_resources(self):
+        # follow the cleanup order so dependent resources can be removed afterwards.
+        for kind in CLEANUP_ORDER:
+            resources = self.list_resources(kind)
+            if resources is None:
+                # A failed lookup does not stop cleanup of other resource types.
+                continue
+
+            targets = {get_field(item, "id"): item for item in resources if get_field(item, "id")}
+            if kind == "volume":
+                # Also check recorded volumes that are missing from the list during detachment.
+                for resource_id in self.followup_volumes:
+                    targets.setdefault(resource_id, {"id": resource_id})
+
+            for resource_id, resource in targets.items():
+                try:
+                    if kind == "server":
+                        self.cleanup_server(resource)
+                    elif kind == "volume":
+                        self.cleanup_volume(resource_id, followup=resource_id in self.followup_volumes)
+                    else:
+                        # Skip resources that fail the first check. cleanup_one reads their details again.
+                        followup = kind == "floating_ip" and resource_id in self.followup_floating_ips
+                        if self.eligible(kind, resource, followup=followup):
+                            self.cleanup_one(kind, resource)
+                except exceptions.ResourceNotFound:
+                    # Another cleanup may have deleted the resource after we listed it.
+                    LOGGER.info("%s %s disappeared during cleanup", kind, resource_label(resource))
+                except API_ERRORS as exc:
+                    # Continue with other resources and report a failed run at the end.
+                    self.record_error("cleanup", kind, resource_id, exc)
+
+    def run(self):
+        LOGGER.info("Authenticated to project %s", safe_label(self.project_id))
+        # keypair only request skips the general resource sweep.
+        if self.apply or not self.delete_all_keypairs:
+            self.cleanup_resources()
+        if self.delete_all_keypairs:
+            self.cleanup_keypairs()
+
+    def summary_markdown(self):
+        resource_mode = "apply" if self.apply else "dry-run"
+        if self.delete_all_keypairs and not self.apply:
+            resource_mode = "skipped"
         lines = [
-            "### OpenStack CI cleanup summary",
+            "### OpenStack cleanup summary",
             "",
             f"- Project: `{safe_label(self.project_id)}`",
-            f"- Cutoff: `{self.cutoff.isoformat(timespec='seconds')}`",
-            (
-                f"- Servers: {self.stats.servers_selected} selected, "
-                f"{self.stats.server_delete_requests} delete requests, "
-                f"{self.stats.servers_deleted} deleted, "
-                f"{self.stats.servers_detail_missing} missing from detail API, "
-                f"{self.stats.server_delete_timeouts} timed out"
-            ),
-            (
-                f"- Volumes: {self.stats.volumes_selected} selected, "
-                f"{self.stats.volumes_deleted} deleted, "
-                f"{self.stats.volumes_already_absent} already absent"
-            ),
-            f"- Keypairs: {self.stats.keypairs_deleted} deleted",
-            f"- Errors: **{len(self.stats.errors)}**",
+            f"- Resource cleanup: {resource_mode}",
+            f"- Keypair cleanup: {'apply' if self.delete_all_keypairs else 'disabled'}",
         ]
-
-        for error in self.stats.errors:
+        for kind in (*CLEANUP_ORDER, "keypair"):
+            counts = {key.split(".")[1]: value for key, value in self.stats.items() if key.startswith(f"{kind}.")}
+            if counts:
+                lines.append(f"- {kind}: " + ", ".join(f"{value} {key}" for key, value in sorted(counts.items())))
+        lines.append(f"- Errors: **{len(self.errors)}**")
+        for error in self.errors:
             lines.append(f"  - `{error.operation}` `{error.resource_type}` `{error.resource_id}`: `{error.error_code}`")
-
         return "\n".join(lines) + "\n"
 
 
-def positive_int(value: str) -> int:
-    parsed = int(value)
-    if parsed <= 0:
-        raise argparse.ArgumentTypeError("must be positive")
-    return parsed
-
-
-def non_negative_float(value: str) -> float:
-    parsed = float(value)
-    if parsed < 0:
-        raise argparse.ArgumentTypeError("must be non-negative")
-    return parsed
-
-
-def make_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Clean up stale servers, attached volumes, and CI keypairs")
-    parser.add_argument("--cloud", default=os.environ.get("OS_CLOUD"))
-    parser.add_argument("--delete-resources", action="store_true")
-    parser.add_argument("--delete-all-keypairs", action="store_true")
-    parser.add_argument("--older-than-hours", type=positive_int, default=6)
-    parser.add_argument(
-        "--expected-project-id",
-        default=os.environ.get("CI_CLEANUP_PROJECT_ID", ""),
-    )
-    parser.add_argument("--server-delete-timeout", type=positive_int, default=300)
-    parser.add_argument("--server-attempts", type=positive_int, default=2)
-    parser.add_argument("--server-retry-delay", type=non_negative_float, default=5)
-    parser.add_argument("--volume-delete-timeout", type=positive_int, default=120)
-    parser.add_argument("--volume-attempts", type=positive_int, default=6)
-    parser.add_argument("--volume-initial-delay", type=non_negative_float, default=2)
-    return parser
-
-
-def append_step_summary(markdown: str) -> None:
-    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-    if not summary_path:
-        return
-    try:
-        with Path(summary_path).open("a", encoding="utf-8") as summary_file:
-            summary_file.write(markdown)
-    except OSError:
-        LOGGER.warning("Could not write the GitHub Actions step summary")
-
-
-def main() -> int:
+def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s", stream=sys.stdout)
-    args = make_parser().parse_args()
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=args.older_than_hours)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--delete-resources", action="store_true", help="apply resource cleanup; otherwise dry-run")
+    parser.add_argument(
+        "--delete-all-keypairs", action="store_true", help="explicitly delete unused prefix-matching keypairs"
+    )
+    args = parser.parse_args()
+    runner = None
 
     try:
         connection = openstack.connect(
-            cloud=args.cloud,
-            app_name="azimuth-ci-cleanup",
-            app_version="1",
+            cloud=os.environ.get("OS_CLOUD"), compute_api_version="2.10", app_name="azimuth-ci-cleanup", app_version="2"
         )
-        runner = CleanupRunner(
-            connection,
-            cutoff=cutoff,
-            expected_project_id=args.expected_project_id,
-            server_delete_timeout=args.server_delete_timeout,
-            server_attempts=args.server_attempts,
-            server_retry_delay=args.server_retry_delay,
-            volume_delete_timeout=args.volume_delete_timeout,
-            volume_attempts=args.volume_attempts,
-            volume_initial_delay=args.volume_initial_delay,
-        )
-        runner.validate_project()
-    except (
-        ConfigurationError,
-        exceptions.SDKException,
-        ks_exceptions.ClientException,
-    ) as exc:
-        LOGGER.error("Cleanup configuration failed (%s)", error_code(exc))
-        return 2
-
-    try:
-        if args.delete_resources:
-            runner.cleanup_resources()
-        if args.delete_all_keypairs:
-            runner.collect_all_safe_keypairs()
-            runner.cleanup_keypairs(runner.keypairs_to_delete)
-    except Exception as exc:  # noqa: BLE001
-        # Preserve a safe summary even if an unexpected SDK response reaches a
-        # path that is not covered by the per-resource handlers above.
+        runner = CleanupRunner(connection, **vars(args))
+        runner.run()
+    except ConfigurationError as exc:
+        LOGGER.error("Cleanup configuration failed: %s", exc)
+        return 1
+    except Exception as exc:  # noqa: BLE001 - never emit SDK credentials or response bodies
+        if runner is None:
+            LOGGER.error("Cleanup failed (%s)", error_code(exc))
+            return 1
         runner.record_error("run", "cleanup", "all", exc)
-
     summary = runner.summary_markdown()
     LOGGER.info("\n%s", summary.rstrip())
-    append_step_summary(summary)
-    return 1 if runner.stats.errors else 0
+
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        try:
+            with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as stream:
+                stream.write(summary)
+        except OSError:
+            LOGGER.warning("Could not write GitHub step summary")
+    # Return a failure code if any cloud operation failed.
+    return 1 if runner.errors else 0
 
 
 if __name__ == "__main__":

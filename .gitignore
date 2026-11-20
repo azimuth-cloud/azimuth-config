@@ -3,6 +3,7 @@
 .bin
 .venv
 .work
+__pycache__/
 .python-version
 /clouds.yaml*
 tilt-settings.yaml

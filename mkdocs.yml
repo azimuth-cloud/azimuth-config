@@ -35,10 +35,12 @@ nav:
       - configuration/15-disaster-recovery.md
       - configuration/16-local-customisations.md
       - configuration/17-standalone-mode.md
+      - configuration/18-scheduling.md
   - Deployment:
       - deployment/index.md
       - deployment/automation.md
       - deployment/testing.md
+      - configuration/ci-cleanup.md
   - Operations:
       - operations/maintenance.md
   - Debugging:

@@ -1,4 +1,7 @@
 ---
+# This example pipeline does not configure which test suites are run,
+# test generation should be controlled in the environment.
+# See docs/deployment/testing.md for details
 
 default:
   image: ubuntu:jammy
