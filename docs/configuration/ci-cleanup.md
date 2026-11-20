@@ -12,7 +12,7 @@ python -m pip install 'openstacksdk>=4,<5'
 ```
 
 Configure `clouds.yaml` for the CI project and select the cloud with `OS_CLOUD`.
-The script needs access to the Compute, Block Storage, Network and Load Balancer APIs, including FIP port-forwarding.
+The script needs access to the Compute, Block Storage, Network and Load Balancer APIs.
 Neutron deletions require `revision-if-match` support and a resource revision to prevent deletion if the resource changes after the check.
 If either is missing, the script keeps the resource and logs a warning.
 
@@ -91,9 +91,12 @@ The script then rechecks and releases its FIPs.
 Retry state and IDs needed for follow-up cleanup stay in memory for that run.
 If the run stops, the next run scans OpenStack again and applies the normal rules.
 
-API failures are reported and block the affected cleanup.
+If a FIP port-forwarding lookup returns `not_found` before any rules are read, the script logs a warning and skips that check.
+The FIP or port can still be deleted if the other checks pass.
+Other API failures are reported and block the affected cleanup.
 Cleanup of other resources continues, and a run with recorded errors exits with status 1.
 Results are written to the console and, in GitHub Actions, to the step summary.
+The summary also counts port-forwarding lookups and those skipped after `not_found`.
 
 ## Floating IP reservations and CI teardown
 

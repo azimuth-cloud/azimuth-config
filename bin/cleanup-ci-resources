@@ -163,6 +163,7 @@ class CleanupRunner:
         self.volume_initial_delay, self.sleep = volume_initial_delay, sleep
         self.followup_volumes = set()
         self.followup_floating_ips = set()
+        self.forwarding_not_found = set()
         self.cache = {}
         self.stats, self.errors = Counter(), []
 
@@ -320,10 +321,30 @@ class CleanupRunner:
         return {get_field(ip, "id") for ip in attached}
 
     def forwardings(self, floating_ip):
+        floating_ip_id = get_field(floating_ip, "id")
+        self.stats["port_forwarding.attempted"] += 1
+
+        def fetch():
+            forwardings = []
+            try:
+                forwardings.extend(self.connection.network.floating_ip_port_forwardings(floating_ip))
+            except exceptions.ResourceNotFound:
+                # A later page failure must not discard forwarding rules we already found.
+                if forwardings:
+                    raise
+                self.stats["port_forwarding.skipped"] += 1
+                if floating_ip_id not in self.forwarding_not_found:
+                    self.forwarding_not_found.add(floating_ip_id)
+                    LOGGER.warning(
+                        "Skipping port-forwarding check for floating IP %s (not_found); continuing cleanup",
+                        safe_label(floating_ip_id),
+                    )
+            return forwardings
+
         return self.read(
             "port_forwarding",
-            lambda: self.connection.network.floating_ip_port_forwardings(floating_ip),
-            get_field(floating_ip, "id"),
+            fetch,
+            floating_ip_id,
         )
 
     # A DOWN port may still belong to a stopped VM or router.
@@ -1070,6 +1091,10 @@ class CleanupRunner:
             f"- Project: `{safe_label(self.project_id)}`",
             f"- Resource cleanup: {resource_mode}",
             f"- Keypair cleanup: {'apply' if self.delete_all_keypairs else 'disabled'}",
+            (
+                f"- Port-forwarding lookups: {self.stats['port_forwarding.attempted']}, "
+                f"skipped after not_found: {self.stats['port_forwarding.skipped']}"
+            ),
         ]
         for kind in (*CLEANUP_ORDER, "keypair"):
             counts = {key.split(".")[1]: value for key, value in self.stats.items() if key.startswith(f"{kind}.")}
