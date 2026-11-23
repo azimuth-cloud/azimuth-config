@@ -12,7 +12,7 @@ from unittest import mock
 
 from openstack import exceptions
 
-SCRIPT = Path(__file__).parents[1] / "bin" / "collect-ci-inventory"
+SCRIPT = Path(__file__).parents[1] / ".github" / "ci-cleanup" / "collect-ci-inventory"
 MODULE_NAME = "collect_ci_inventory_test_module"
 LOADER = importlib.machinery.SourceFileLoader(MODULE_NAME, str(SCRIPT))
 SPEC = importlib.util.spec_from_loader(MODULE_NAME, LOADER)

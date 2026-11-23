@@ -39,7 +39,7 @@ jobs:
 
       - name: Collect read-only inventory
         run: |
-          python bin/collect-ci-inventory \
+          python .github/ci-cleanup/collect-ci-inventory \
             --expected-project-id "$CI_CLEANUP_PROJECT_ID" \
             --project-name "$CI_CLEANUP_PROJECT_NAME" \
             --output-dir reports/ci-inventory

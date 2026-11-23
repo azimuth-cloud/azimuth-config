@@ -1,9 +1,13 @@
 # CI resource cleanup
 
-`bin/cleanup-ci-resources` removes leftover OpenStack resources in the project selected by the cloud credentials.
+These scripts are for maintaining the Azimuth CI project.
+
+`.github/ci-cleanup/cleanup-ci-resources` removes leftover OpenStack resources in the project selected by the cloud credentials.
 The deletion rules and protected resource names are specific to Azimuth CI.
 
 ## Run the script
+
+Run the commands below from the repository root.
 
 Use Python 3.12, as in the cleanup workflow, and install the SDK:
 
@@ -18,13 +22,13 @@ If either is missing, the script keeps the resource and logs a warning.
 
 ```sh
 # Dry run: inspect candidates without deleting resources.
-OS_CLOUD=leafcloud python bin/cleanup-ci-resources
+OS_CLOUD=leafcloud python .github/ci-cleanup/cleanup-ci-resources
 
 # Delete eligible resources, including unused floating IPs.
-OS_CLOUD=leafcloud python bin/cleanup-ci-resources --delete-resources
+OS_CLOUD=leafcloud python .github/ci-cleanup/cleanup-ci-resources --delete-resources
 
 # Delete eligible keypairs only.
-OS_CLOUD=leafcloud python bin/cleanup-ci-resources --delete-all-keypairs
+OS_CLOUD=leafcloud python .github/ci-cleanup/cleanup-ci-resources --delete-all-keypairs
 ```
 
 `--delete-all-keypairs` performs real keypair deletion even without `--delete-resources`.
@@ -42,8 +46,8 @@ To change these limits, edit `SERVER_RETENTION_HOURS` and `UNUSED_RESOURCE_HOURS
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Servers         | `ACTIVE`, `BUILD`, `ERROR` or `SHUTOFF`, unlocked, and no task other than deletion. Attached volumes must pass the snapshot and backup checks.            |
 | Volumes         | `available`, no attachment in Cinder or Nova, and no snapshot or backup.                                                                                  |
-| Floating IPs    | No port, router, fixed IP or port-forwarding use. Release the allocation using Neutron's delete API.                                                      |
-| Ports           | `DOWN`, no owner, device, host binding or trunk membership. No Nova, forwarding or LB reference. Any attached FIPs must also qualify for release.         |
+| Floating IPs    | No port, router or fixed IP association. Release the allocation using Neutron's delete API.                                                               |
+| Ports           | `DOWN`, no owner, device or trunk membership. Binding checks are described below. No Nova or LB reference. Attached FIPs must qualify for release.        |
 | Security groups | No port uses the group, and no other group's rule refers to it. The group's own rules are deleted with it.                                                |
 | Load balancers  | Provisioning status is `ACTIVE` or `ERROR`. Every backend and health-check address must match unused project ports. LBs without members can also qualify. |
 | Routers         | No FIPs or custom routes. Connected subnets must be unused and not protected. Remove interfaces and the gateway before deleting the router.               |
@@ -58,6 +62,13 @@ Times without a timezone, such as Cinder's `2026-09-07T09:03:43.000000`, are rea
 The script skips resources with missing required timestamps.
 
 The server policy can delete an old `ACTIVE` server even if its test has not finished.
+
+Ports normally require an empty `binding_host_id`, an empty `binding_profile` and a `binding_vif_type` of `unbound` or `binding_failed`.
+Leafcloud can return `null` for all three fields to the CI credentials.
+Port cleanup accepts this combination if the other checks pass; any other binding combination keeps the port.
+This exception does not apply to the backend checks for load balancer deletion.
+
+The script does not query Floating IP port forwarding because Leafcloud does not support it.
 
 ### Resources to keep
 
@@ -91,12 +102,9 @@ The script then rechecks and releases its FIPs.
 Retry state and IDs needed for follow-up cleanup stay in memory for that run.
 If the run stops, the next run scans OpenStack again and applies the normal rules.
 
-If a FIP port-forwarding lookup returns `not_found` before any rules are read, the script logs a warning and skips that check.
-The FIP or port can still be deleted if the other checks pass.
-Other API failures are reported and block the affected cleanup.
+API failures are reported and block the affected cleanup.
 Cleanup of other resources continues, and a run with recorded errors exits with status 1.
 Results are written to the console and, in GitHub Actions, to the step summary.
-The summary also counts port-forwarding lookups and those skipped after `not_found`.
 
 ## Floating IP reservations and CI teardown
 

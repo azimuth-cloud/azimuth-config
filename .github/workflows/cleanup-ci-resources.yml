@@ -71,7 +71,7 @@ jobs:
           if [[ "$DELETE_ALL_KEYPAIRS" == "true" ]]; then
             args+=(--delete-all-keypairs)
           fi
-          python bin/cleanup-ci-resources "${args[@]}"
+          python .github/ci-cleanup/cleanup-ci-resources "${args[@]}"
         env:
           # A branch dispatch can inspect candidates; only the default branch can delete resources.
           DELETE_RESOURCES: >-
