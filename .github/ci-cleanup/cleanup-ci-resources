@@ -163,7 +163,6 @@ class CleanupRunner:
         self.volume_initial_delay, self.sleep = volume_initial_delay, sleep
         self.followup_volumes = set()
         self.followup_floating_ips = set()
-        self.forwarding_not_found = set()
         self.cache = {}
         self.stats, self.errors = Counter(), []
 
@@ -320,41 +319,23 @@ class CleanupRunner:
             return None
         return {get_field(ip, "id") for ip in attached}
 
-    def forwardings(self, floating_ip):
-        floating_ip_id = get_field(floating_ip, "id")
-        self.stats["port_forwarding.attempted"] += 1
-
-        def fetch():
-            forwardings = []
-            try:
-                forwardings.extend(self.connection.network.floating_ip_port_forwardings(floating_ip))
-            except exceptions.ResourceNotFound:
-                # A later page failure must not discard forwarding rules we already found.
-                if forwardings:
-                    raise
-                self.stats["port_forwarding.skipped"] += 1
-                if floating_ip_id not in self.forwarding_not_found:
-                    self.forwarding_not_found.add(floating_ip_id)
-                    LOGGER.warning(
-                        "Skipping port-forwarding check for floating IP %s (not_found); continuing cleanup",
-                        safe_label(floating_ip_id),
-                    )
-            return forwardings
-
-        return self.read(
-            "port_forwarding",
-            fetch,
-            floating_ip_id,
-        )
-
     # A DOWN port may still belong to a stopped VM or router.
     # Check its owner and binding before treating it as unused.
-    def idle_port(self, port):
-        return (
-            get_field(port, "status") == "DOWN"
-            and all(get_field(port, field) == "" for field in ("device_owner", "device_id", "binding_host_id"))
+    def idle_port(self, port, *, allow_unknown_binding=False):
+        unbound = (
+            get_field(port, "binding_host_id") == ""
             and get_field(port, "binding_profile") == {}
             and get_field(port, "binding_vif_type") in {"unbound", "binding_failed"}
+        )
+        # Leafcloud environment can return no binding details to the CI credentials.
+        # Only port cleanup allows this case, after checking references in other services.
+        unknown_binding = allow_unknown_binding and all(
+            get_field(port, field) is None for field in ("binding_host_id", "binding_profile", "binding_vif_type")
+        )
+        return (
+            get_field(port, "status") == "DOWN"
+            and all(get_field(port, field) == "" for field in ("device_owner", "device_id"))
+            and (unbound or unknown_binding)
             and not get_field(port, "trunk_details")
         )
 
@@ -485,17 +466,13 @@ class CleanupRunner:
             return self.volume_copies_clear(resource_id)
 
         if kind == "floating_ip":
-            # ERROR FIP can still be unused. check if its connections and forwarding exists.
-            return (
-                all(
-                    get_field(resource, field, "missing") is None
-                    for field in ("port_id", "router_id", "fixed_ip_address")
-                )
-                and self.forwardings(resource) == []
+            # An ERROR FIP can still be unused.
+            return all(
+                get_field(resource, field, "missing") is None for field in ("port_id", "router_id", "fixed_ip_address")
             )
 
         if kind == "port":
-            if not self.idle_port(resource):
+            if not self.idle_port(resource, allow_unknown_binding=True):
                 return False
             nova_ports = self.nova_port_ids()
             if nova_ports is None or resource_id in nova_ports:
@@ -508,10 +485,6 @@ class CleanupRunner:
                 if get_field(ip, "port_id") == resource_id and (
                     get_field(ip, "id") not in releasable_fip_ids or not self.eligible("floating_ip", ip)
                 ):
-                    return False
-                forwards = self.forwardings(ip)
-                # Forwarding can use a port without attaching the FIP to it.
-                if forwards is None or any(get_field(item, "internal_port_id") == resource_id for item in forwards):
                     return False
             lbs = self.lb_references()
             if lbs is None:
@@ -829,12 +802,11 @@ class CleanupRunner:
         if ips is None:
             return None
         for ip in ips:
-            # Keep the port if any FIP is too new or used for forwarding.
+            # Keep the port if any FIP is too new or cannot be deleted conditionally.
             if (
                 not get_field(ip, "id")
                 or get_field(ip, "port_id") != get_field(port, "id")
                 or not self.eligible("floating_ip", ip)
-                or self.forwardings(ip) != []
                 or self.neutron_delete_options("floating_ip", ip) is None
             ):
                 return None
@@ -964,7 +936,7 @@ class CleanupRunner:
             return
 
         if get_field(current, "external_gateway_info"):
-            proxy.remove_gateway_from_router(current)
+            proxy.update_router(current, external_gateway_info={})
 
         # Delete only after all ports are gone and the router still passes the checks.
         current = self.get_resource("router", router_id)
@@ -1091,10 +1063,6 @@ class CleanupRunner:
             f"- Project: `{safe_label(self.project_id)}`",
             f"- Resource cleanup: {resource_mode}",
             f"- Keypair cleanup: {'apply' if self.delete_all_keypairs else 'disabled'}",
-            (
-                f"- Port-forwarding lookups: {self.stats['port_forwarding.attempted']}, "
-                f"skipped after not_found: {self.stats['port_forwarding.skipped']}"
-            ),
         ]
         for kind in (*CLEANUP_ORDER, "keypair"):
             counts = {key.split(".")[1]: value for key, value in self.stats.items() if key.startswith(f"{kind}.")}

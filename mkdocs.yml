@@ -40,7 +40,6 @@ nav:
       - deployment/index.md
       - deployment/automation.md
       - deployment/testing.md
-      - configuration/ci-cleanup.md
   - Operations:
       - operations/maintenance.md
   - Debugging:
