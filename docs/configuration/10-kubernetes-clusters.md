@@ -20,10 +20,9 @@ the cluster. Cluster templates can be deprecated, e.g. when a new Kubernetes ver
 resulting in a warning being shown to the user that they should upgrade.
 
 `clusters.azimuth.stackhpc.com`
-: A cluster represents the user-facing definition of a Kubernetes cluster. It references a
-template, from which the Kubernetes version and other advanced options are taken, but allows
-the user to specify one or more node groups and toggle a few simple options such as
-auto-healing and whether the monitoring stack is deployed on the cluster.
+: A cluster represents the user-facing definition of a Kubernetes cluster.
+It references a template that supplies the Kubernetes version and other advanced options.
+Users can specify one or more node groups and enable options such as auto-healing, monitoring and the Headlamp dashboard.
 
 For each `Cluster`, the operator manages a release of the
 [openstack-cluster Helm chart](https://github.com/azimuth-cloud/capi-helm-charts/tree/main/charts/openstack-cluster).
@@ -59,8 +58,8 @@ maps cluster template names to their specifications, and represents the **curren
 not deprecated) cluster templates. `azimuth-ops` will _not_ remove cluster templates,
 but it will mark any templates that are not present in this variable as deprecated.
 
-By default, `azimuth-ops` will ensure a cluster template is present for the latest
-patch version of each Kubernetes release that is currently maintained. These templates
+By default, `azimuth-ops` creates a cluster template for each configured [community image](./09-community-images.md) that specifies a `kubernetes_version`.
+These templates
 are configured so that Kubernetes nodes will go onto the Azimuth `portal-internal`
 network for the project in which the cluster is being deployed.
 
@@ -84,25 +83,27 @@ worker nodes have two networks attached - the control plane nodes and workers ar
 attached to the Azimuth internal network but the workers are attached to an additional
 SR-IOV capable storage network:
 
+Replace `<kubernetes-version>` and `<openstack-image-uuid>` with a matching Kubernetes version and image available in the target cloud.
+
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_cluster_templates_extra:
   # The index in the dict is the template name
-  kube-1-31-2-multinet:
+  my-multinet-cluster:
     # Access control annotations
     annotations: {}
     # The cluster template specification
     spec:
       # A human-readable label for the template
-      label: v1.31.2 / multinet
+      label: Custom Kubernetes / multinet
       # A brief description of the template
       description: >-
-        Kubernetes 1.31.2 with HA control plane and high-performance networking.
+        Kubernetes with an additional SR-IOV storage network on worker nodes.
       # Values for the openstack-cluster Helm chart
       values:
         # Specify the image and version for the cluster
         # These are the only required values
-        kubernetesVersion: 1.31.2
-        machineImageId: "{{ community_images_image_ids.kube_1_31 }}"
+        kubernetesVersion: "<kubernetes-version>"
+        machineImageId: "<openstack-image-uuid>"
         # Use the portal-internal network as the main cluster network
         clusterNetworking:
           internalNetwork:
@@ -128,9 +129,8 @@ azimuth_capi_operator_cluster_templates_extra:
 ## Harbor registry
 
 `azimuth-ops` is able to manage a [Harbor registry](https://goharbor.io/) as part of an Azimuth
-installation. This registry is primarily used as a
-[proxy cache](https://goharbor.io/docs/2.1.0/administration/configure-proxy-cache/)
-to limit the number of times that images that are pulled directly from the internet.
+installation.
+This registry is primarily used as a [proxy cache](https://goharbor.io/docs/2.1.0/administration/configure-proxy-cache/) to reduce the number of image downloads from the internet.
 
 If enabled, the Harbor registry will be made available at `registry.<ingress base domain>`,
 e.g. `registry.azimuth.example.org` and will be configured for tenant clusters by default.

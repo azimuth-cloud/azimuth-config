@@ -9,16 +9,11 @@ to enable snapshotting of a cluster's persistent volumes.
     Backup and restore is only available for production-grade HA installations of Azimuth.
 <!-- prettier-ignore-end -->
 
-The Azimuth playbooks install Velero on the HA management cluster and the Velero command-line-tool on the seed node. Once configured with the appropriate credentials, the installation process will create a [Schedule](https://velero.io/docs/latest/api-types/schedule/) on the HA cluster, which triggers a daily backup at midnight and cleans up backups older which are more than 1 week old.
+The Azimuth playbooks install Velero on the HA management cluster and the Velero command-line tool on the seed node.
+Once configured with the appropriate credentials, the installation process creates a [Schedule](https://velero.io/docs/latest/api-types/schedule/) on the HA cluster, which defaults to a daily backup at midnight and a retention period of one week.
 
-The
-[AWS Velero plugin](https://github.com/vmware-tanzu/velero-plugin-for-aws) is used for S3 support
-and the
-[CSI plugin](https://github.com/vmware-tanzu/velero-plugin-for-csi) for volume snapshots.
-The CSI plugin uses Kubernetes generic support for
-[Volume Snapshots](https://kubernetes.io/docs/concepts/storage/volume-snapshots/), which is
-implemented for OpenStack by the
-[Cinder CSI plugin](https://github.com/kubernetes/cloud-provider-openstack).
+The [AWS Velero plugin](https://github.com/vmware-tanzu/velero-plugin-for-aws) provides S3 support.
+Volume snapshots use [Velero's built-in CSI support](https://velero.io/docs/v1.18/csi/) and the Kubernetes [VolumeSnapshot API](https://kubernetes.io/docs/concepts/storage/volume-snapshots/), implemented for OpenStack by the [Cinder CSI plugin](https://github.com/kubernetes/cloud-provider-openstack).
 
 ## Configuration
 
@@ -94,11 +89,10 @@ activated (similar to a provision):
 
 ```bash
 ansible-playbook azimuth_cloud.azimuth_ops.restore \
-  -e velero_restore_backup_name=<backup name>
+  -e velero_restore_backup_name="<backup-name>"
 ```
 
-This will provision a new HA cluster, restore the backup onto it and then bring the installation
-up-to-date with your configuration.
+This ensures that the HA cluster exists, restores the backup onto it and then reapplies the Azimuth deployment configuration.
 
 ## Performing ad-hoc backups
 

@@ -1,16 +1,13 @@
 # Accessing the K3s cluster
 
-Both the single node and high-availability (HA) deployment methods have a K3s node that
-is provisioned using Terraform. In the single node case, this is the cluster that actually
+For OpenStack deployments, both the single node and high-availability (HA) deployment methods have a K3s node provisioned using OpenTofu.
+In the single node case, this is the cluster that actually
 hosts Azimuth and all its dependencies. In the HA case, this cluster is configured as a
 Cluster API management cluster for the HA cluster that actually runs Azimuth.
 
-In both cases, the K3s node is deployed using Terraform and the IP address and SSH key
-for accessing the node are in the Terraform state for the environment. The `azimuth-config`
-repository contains a utility script -
-[seed-ssh](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/seed-ssh) - that will
-extract these details from the Terraform state for the active environment and use them to
-execute an SSH command to access the provisioned node.
+The IP address and SSH key for accessing the node are stored in the OpenTofu state for the environment.
+The [seed-ssh](https://github.com/azimuth-cloud/azimuth-config/tree/stable/bin/seed-ssh) script extracts these details from the state for the active environment and uses them to connect to the node over SSH.
+For [standalone deployments](../configuration/17-standalone-mode.md), use the SSH access configured for the existing host instead.
 
 <!-- prettier-ignore-start -->
 !!! warning "Accessing an environment deployed using automation"

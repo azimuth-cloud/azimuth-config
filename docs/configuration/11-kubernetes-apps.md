@@ -1,8 +1,10 @@
 # Kubernetes apps
 
-Azimuth allows operators to provide a catalog of applications (apps) that users are able to
-install onto their Kubernetes clusters via the Azimuth user interface. Multiple apps can
+Azimuth allows operators to provide a catalog of applications (apps) that users can install on Kubernetes clusters managed by Azimuth.
+Multiple apps can
 be installed on the same Kubernetes cluster, and each app gets its own namespace.
+
+For apps on existing clusters without OpenStack, see [standalone mode](./17-standalone-mode.md).
 
 A Kubernetes app in Azimuth essentially consists of a
 [Helm chart](https://helm.sh/docs/topics/charts/). Azimuth manages specially annotated instances
@@ -45,7 +47,7 @@ provides a multi-user environment for using [Jupyter notebooks](https://jupyter.
 each user gets their own dynamically-provisioned notebook server and storage. The JupyterHub
 notebook profiles can be customised by the Azimuth administrator to provide users with required
 environments - see
-[user notebook profiles](https://github.com/azimuth-cloud/azimuth-charts/blob/54a06cfc08acf5a9147e56a23de2d018261d1f82/jupyterhub-azimuth/values.yaml#L7-L15).
+[user notebook profiles](https://github.com/azimuth-cloud/azimuth-charts/blob/0.16.0/jupyterhub-azimuth/values.yaml).
 The Jupyter notebook interface is exposed using [Zenith](./08-zenith.md).
 
 `daskhub`
@@ -73,7 +75,16 @@ model. A convenient web interface is exposed via Zenith and the backend API is d
 to other applications running on the same Kubernetes cluster for programmatic use cases. For
 further details, see [this blog post](https://stackhpc.com/running-large-language-models-on-openstack.html).
 
-These can be disabled by setting the following variables:
+`argocd`
+: Deploys [Argo CD](https://argo-cd.readthedocs.io/) to manage Kubernetes applications from Git repositories.
+
+`inference`
+: Deploys the [Azimuth Inference Platform](https://github.com/azimuth-cloud/azimuth-charts/tree/0.16.0/azimuth-inference), which provides llama.cpp inference services on Kubernetes.
+This app is in the Preview catalogue.
+
+By default, the bundled app templates retain up to three stable chart versions matching their configured version range.
+
+To disable an app template, set its corresponding variable to `false`:
 
 ```yaml title="environments/my-site/inventory/group_vars/all/variables.yml"
 azimuth_capi_operator_app_templates_jupyterhub_enabled: false
@@ -81,6 +92,8 @@ azimuth_capi_operator_app_templates_daskhub_enabled: false
 azimuth_capi_operator_app_templates_binderhub_enabled: false
 azimuth_capi_operator_app_templates_kubeflow_enabled: false
 azimuth_capi_operator_app_templates_huggingface_llm_enabled: false
+azimuth_capi_operator_app_templates_argocd_enabled: false
+azimuth_capi_operator_app_templates_inference_enabled: false
 ```
 
 ## Custom app templates
@@ -93,7 +106,7 @@ azimuth_capi_operator_app_templates_extra:
   my-custom-app:
     # Access control annotations
     annotations: {}
-    # The cluster template specification
+    # The app template specification
     spec:
       # This is the only required field, and determines the chart that is used
       chart:
@@ -183,9 +196,8 @@ Kubernetes secret containing an SSH keypair associated with the allocated domain
 `clients.zenith.stackhpc.com`
 : Defines a Zenith client, pointing at a Zenith reservation and upstream Kubernetes service.
 
-In addition, services can benefit from the project-level authentication and authorization
-that is performed by Zenith at it's proxy to prevent unauthorised users from accessing the
-service. The Zenith services associated with an app are monitored and made available in the
+In addition, services can benefit from the project-level authentication and authorization that is performed by Zenith at its proxy to prevent unauthorised users from accessing the service.
+The Zenith services associated with an app are monitored and made available in the
 Azimuth user interface, making the apps easy to use.
 
 Azimuth supports the following annotations on the reservation to determine how the service
