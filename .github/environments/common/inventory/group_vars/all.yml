@@ -32,6 +32,12 @@ generate_tests_kubernetes_collect_logs_from_loki: true
 # Only generate tests for specifically enabled app templates
 generate_tests_kubernetes_apps_default_test_case_enabled: false
 
-# Enable the jupyterhub and daskhub apps
+# Enable app Kubernetes app tests which don't require GPUs
 generate_tests_kubernetes_apps_test_case_jupyterhub_enabled: true
 generate_tests_kubernetes_apps_test_case_daskhub_enabled: true
+generate_tests_kubernetes_apps_test_case_argocd_enabled: true
+generate_tests_kubernetes_apps_test_case_binderhub_enabled: true
+
+# To test that current version of CVE mitigation chart doesn't
+# disrupt tenant clusters
+azimuth_capi_operator_patch_cves_chart_enabled: true
